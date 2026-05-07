@@ -1530,3 +1530,52 @@ select.input-field { appearance: none; background-image: url("data:image/svg+xml
   border-color: var(--primary, #6366f1) !important;
   color: var(--primary-light, #818cf8) !important;
 }
+
+/* ── Optimización para tablet ── */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+body {
+  font-weight: 400 !important;
+}
+
+/* Títulos de tareas — menos bold */
+.task-title, .tl-card-title {
+  font-weight: 600 !important;
+  letter-spacing: -0.01em;
+}
+.task-card h4, .tl-card-title {
+  font-size: 0.95rem !important;
+}
+
+/* ── Etiquetas más grandes y legibles ── */
+.tag-pill-card,
+.tag-pill,
+.tag-pill-sm,
+.tag-pill-xs,
+[class*="tag-pill"] {
+  font-size: 0.82rem !important;
+  padding: 3px 10px 3px 7px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em;
+  border-radius: 6px !important;
+}
+
+/* Punto de color más visible */
+.tag-pill-card span[style*="border-radius:50%"],
+.tag-pill span[style*="border-radius:50%"] {
+  width: 9px !important;
+  height: 9px !important;
+}
+
+/* Etiquetas en tarjetas del dashboard — aún más grandes */
+#dash-today-list .tag-pill-card,
+#dash-urgent-list .tag-pill-card,
+#dash-tomorrow-list .tag-pill-card {
+  font-size: 0.88rem !important;
+  padding: 4px 12px 4px 8px !important;
+}
+
+/* ── Viewport meta fix para tablet ── */
