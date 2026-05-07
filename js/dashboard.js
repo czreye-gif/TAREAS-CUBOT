@@ -12,120 +12,124 @@ const Dashboard = {
 
   // ── Inicialización ─────────────────────────────────────────
   // ── Mini calendario lateral ────────────────────────────────
-  _scYear:  new Date().getFullYear(),
-  _scMonth: new Date().getMonth(),
+  _scDate: new Date(),       // mes/año visible
+  _scSelected: new Date(),   // día seleccionado
+
+  _scMonthNames: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+  _scDayNames:   ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],
 
   _initSideCal() {
-    const prev = document.getElementById('sc-prev');
-    const next = document.getElementById('sc-next');
+    const prev     = document.getElementById('sc-prev');
+    const next     = document.getElementById('sc-next');
     const todayBtn = document.getElementById('sc-today-btn');
-    if (!prev || !next) return;
+    if (!prev) return;
 
     prev.onclick = () => {
-      this._scMonth--;
-      if (this._scMonth < 0) { this._scMonth = 11; this._scYear--; }
+      this._scDate.setMonth(this._scDate.getMonth() - 1);
       this._renderSideCal();
     };
     next.onclick = () => {
-      this._scMonth++;
-      if (this._scMonth > 11) { this._scMonth = 0; this._scYear++; }
+      this._scDate.setMonth(this._scDate.getMonth() + 1);
       this._renderSideCal();
     };
     if (todayBtn) todayBtn.onclick = () => {
-      const now = new Date();
-      this._scYear  = now.getFullYear();
-      this._scMonth = now.getMonth();
+      this._scDate     = new Date();
+      this._scSelected = new Date();
       this._renderSideCal();
-      todayBtn.style.background = 'var(--primary,#6366f1)';
-      todayBtn.style.color = '#fff';
-      todayBtn.style.borderColor = 'var(--primary,#6366f1)';
       setTimeout(() => {
-        todayBtn.style.background = 'transparent';
-        todayBtn.style.color = 'var(--muted,#888)';
-        todayBtn.style.borderColor = 'var(--border,#2a2a4a)';
-      }, 800);
+        const el = document.querySelector('#sc-days .sc-today');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 80);
     };
 
     this._renderSideCal();
+    // Scroll a hoy al cargar
+    setTimeout(() => {
+      const el = document.querySelector('#sc-days .sc-today');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
   },
 
   _renderSideCal() {
-    const label = document.getElementById('sc-month-label');
-    const list  = document.getElementById('sc-days');
-    if (!label || !list) return;
+    const monthEl = document.getElementById('sc-month-label');
+    const yearEl  = document.getElementById('sc-year-label');
+    const list    = document.getElementById('sc-days');
+    const footer  = document.getElementById('sc-selected-label');
+    if (!list) return;
 
-    const year  = this._scYear;
-    const month = this._scMonth;
-    const today = new Date().toLocaleDateString('sv-SE');
+    const year  = this._scDate.getFullYear();
+    const month = this._scDate.getMonth();
+    const today = new Date();
 
-    // Nombre del mes
-    const monthName = new Date(year, month, 1)
-      .toLocaleDateString('es-MX', { month: 'short' }).toUpperCase();
-    label.innerHTML = `${monthName}<br><span style="font-size:0.6rem;color:var(--muted,#888);font-weight:400">${year}</span>`;
+    if (monthEl) monthEl.textContent = this._scMonthNames[month];
+    if (yearEl)  yearEl.textContent  = year;
 
-    // Contar tareas por día de forma segura
-    const allTasks = storage.getAllTasks ? storage.getAllTasks() : [];
-    const prefix   = `${year}-${String(month+1).padStart(2,'0')}`;
+    // Contar tareas por día
+    const allTasks   = storage.getAllTasks ? storage.getAllTasks() : [];
+    const prefix     = `${year}-${String(month+1).padStart(2,'0')}`;
     const monthTasks = allTasks.filter(t => t.date && t.date.startsWith(prefix));
-    const counts = {};
+    const counts     = {};
     monthTasks.forEach(t => {
-      const day = parseInt(t.date.split('-')[2], 10);
-      if (!counts[day]) counts[day] = { total:0, pending:0, completed:0 };
-      counts[day].total++;
-      if (t.completed) counts[day].completed++;
-      else counts[day].pending++;
+      const d = parseInt(t.date.split('-')[2], 10);
+      if (!counts[d]) counts[d] = { total:0, pending:0, completed:0 };
+      counts[d].total++;
+      t.completed ? counts[d].completed++ : counts[d].pending++;
     });
 
-    const daysInMonth = new Date(year, month+1, 0).getDate();
-    const DAYS = ['D','L','M','X','J','V','S'];
-    const DAYS_FULL = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+    const lastDay = new Date(year, month+1, 0).getDate();
+    list.innerHTML = '';
 
-    let html = '';
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr   = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-      const d         = new Date(year, month, day);
-      const dow       = d.getDay();
-      const isToday   = dateStr === today;
+    for (let i = 1; i <= lastDay; i++) {
+      const dateObj   = new Date(year, month, i);
+      const dow       = dateObj.getDay();
       const isWeekend = dow === 0 || dow === 6;
-      const c         = counts[day];
+      const isToday   = i === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+      const isSel     = i === this._scSelected.getDate() && month === this._scSelected.getMonth() && year === this._scSelected.getFullYear();
+      const c         = counts[i];
       const hasTasks  = c && c.total > 0;
       const allDone   = hasTasks && c.completed === c.total;
-      const dotColor  = allDone ? '#10b981' : '#6366f1';
 
-      html += `<div
-        data-date="${dateStr}"
-        onclick="SideCal.select('${dateStr}')"
-        style="
-          display:flex;flex-direction:column;align-items:center;
-          padding:6px 4px;margin:1px 8px;border-radius:10px;cursor:pointer;
-          background:${isToday ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'transparent'};
-          border:${isToday ? 'none' : '1px solid transparent'};
-          transition:background .12s"
-        onmouseover="if(this.style.background.indexOf('6366f1')===-1||'${isToday}'==='false')this.style.background='rgba(99,102,241,0.18)'"
-        onmouseout="this.style.background='${isToday ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'transparent'}'">
-        <span style="font-size:0.55rem;font-weight:700;letter-spacing:.3px;
-          color:${isToday ? 'rgba(255,255,255,0.75)' : isWeekend ? '#f87171' : 'var(--muted,#888)'}">
-          ${DAYS_FULL[dow]}
-        </span>
-        <span style="font-size:1.05rem;font-weight:${isToday?'800':'500'};line-height:1.1;
-          color:${isToday ? '#fff' : isWeekend ? '#f87171' : 'var(--text,#e2e8f0)'}">
-          ${day}
-        </span>
-        <span style="height:5px;width:5px;border-radius:50%;margin-top:2px;
-          background:${hasTasks ? dotColor : 'transparent'};display:block">
-        </span>
-      </div>`;
+      const row = document.createElement('div');
+      row.style.cssText = `
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        padding:10px 4px;border-bottom:1px solid var(--border,#2a2a4a);
+        cursor:pointer;text-align:center;transition:background .15s;
+        background:${isToday ? '#6366f1' : isSel ? 'rgba(99,102,241,0.2)' : isWeekend ? 'rgba(255,255,255,0.02)' : 'transparent'};
+        border-left:${isSel && !isToday ? '3px solid #6366f1' : '3px solid transparent'};
+      `;
+      if (isToday) row.classList.add('sc-today');
+
+      const nameColor  = isToday ? 'rgba(255,255,255,0.75)' : isWeekend ? '#f87171' : 'var(--muted,#888)';
+      const numColor   = isToday ? '#fff' : isWeekend ? '#f87171' : 'var(--text,#e2e8f0)';
+      const dotColor   = allDone ? '#10b981' : '#818cf8';
+
+      row.innerHTML = `
+        <span style="font-size:0.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:${nameColor}">${this._scDayNames[dow]}</span>
+        <span style="font-size:1.3rem;font-weight:700;line-height:1.1;margin-top:2px;color:${numColor}">${i}</span>
+        <span style="width:5px;height:5px;border-radius:50%;margin-top:3px;display:block;background:${hasTasks ? dotColor : 'transparent'}"></span>
+      `;
+
+      row.onmouseover = () => { if (!isToday) row.style.background = 'rgba(99,102,241,0.15)'; };
+      row.onmouseout  = () => { if (!isToday) row.style.background = isSel ? 'rgba(99,102,241,0.2)' : isWeekend ? 'rgba(255,255,255,0.02)' : 'transparent'; };
+
+      row.onclick = () => {
+        this._scSelected = new Date(year, month, i);
+        this._renderSideCal();
+        // Navegar al detalle del día
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+        app.selectedDate = dateStr;
+        app.navigate('day');
+      };
+
+      list.appendChild(row);
     }
 
-    list.innerHTML = html;
-
-    // Scroll a hoy si es el mes actual
-    const now = new Date();
-    if (year === now.getFullYear() && month === now.getMonth()) {
-      setTimeout(() => {
-        const todayEl = list.querySelector(`[data-date="${today}"]`);
-        if (todayEl) todayEl.scrollIntoView({ block:'center', behavior:'smooth' });
-      }, 100);
+    // Footer fecha seleccionada
+    if (footer) {
+      const d = String(this._scSelected.getDate()).padStart(2,'0');
+      const m = String(this._scSelected.getMonth()+1).padStart(2,'0');
+      const y = String(this._scSelected.getFullYear()).slice(-2);
+      footer.textContent = `${d}/${m}/${y}`;
     }
   },
 
