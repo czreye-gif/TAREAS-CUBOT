@@ -1850,3 +1850,54 @@ body {
 #sc-days::-webkit-scrollbar { width: 3px; }
 #sc-days::-webkit-scrollbar-thumb { background: var(--border,#2a2a4a); border-radius: 2px; }
 #sc-today-btn:hover { background: var(--primary,#6366f1) !important; color: #fff !important; border-color: var(--primary,#6366f1) !important; }
+
+/* ── Sidebar solo iconos ── */
+#sidebar {
+  width: 64px !important;
+  min-width: 64px !important;
+}
+#sidebar .logo-text,
+#sidebar .nav-btn span,
+#sidebar .sb-collapse-label {
+  display: none !important;
+}
+#sidebar .nav-btn {
+  justify-content: center !important;
+  padding: 14px 0 !important;
+}
+#sidebar .sidebar-header {
+  justify-content: center !important;
+  padding: 16px 8px !important;
+}
+
+/* Quitar gap entre sidebar y calendario lateral */
+#main-content {
+  padding: 0 !important;
+}
+#view-today {
+  padding: 0 !important;
+}
+
+/* Calendario lateral: scrolleable 100% */
+#side-cal {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+#sc-days {
+  flex: 1 !important;
+  overflow-y: scroll !important;
+  min-height: 0 !important;
+}
+#today-layout {
+  height: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
+}
+#today-main {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;
+  padding: 16px 20px !important;
+}
