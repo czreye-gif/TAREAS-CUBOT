@@ -1722,3 +1722,73 @@ body {
 .agenda-row-summary:hover {
   background: rgba(99,102,241,0.08);
 }
+
+/* ============================================================
+   AGENDA — overrides finales (forzar visibilidad de cambios)
+   ============================================================ */
+
+/* Filas crecen libremente — sin recorte */
+.agenda-row,
+.agenda-row-tasks {
+  max-height: none !important;
+  overflow: visible !important;
+  height: auto !important;
+}
+
+/* Botón colapsar/expandir más grande y visible */
+.agenda-row-toggle {
+  position: absolute !important;
+  top: 8px;
+  right: 8px;
+  width: 32px !important;
+  height: 32px !important;
+  background: var(--primary, #6366f1) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  color: #fff !important;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(99,102,241,0.4);
+  transition: all .15s;
+}
+.agenda-row-toggle:hover {
+  background: var(--secondary, #8b5cf6) !important;
+  transform: translateY(-1px);
+}
+.agenda-row-toggle svg {
+  width: 18px !important;
+  height: 18px !important;
+  stroke: #fff !important;
+}
+
+/* La etiqueta (fecha) necesita position:relative para anclar el botón */
+.agenda-row-label {
+  position: relative !important;
+  padding-right: 44px !important;
+  min-width: 100px !important;
+}
+
+/* Resumen colapsado más visible */
+.agenda-row-summary {
+  flex: 1;
+  display: flex !important;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px !important;
+  cursor: pointer;
+  flex-wrap: wrap;
+  font-size: 0.88rem;
+  transition: background .15s;
+}
+.agenda-row-summary:hover {
+  background: rgba(99,102,241,0.1) !important;
+}
+
+/* Cuando colapsado, fila más compacta */
+.agenda-row-collapsed {
+  min-height: 0 !important;
+}
