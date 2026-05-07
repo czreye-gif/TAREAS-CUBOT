@@ -118,23 +118,35 @@
           display:flex;flex-direction:column;
           height:100%;overflow:hidden">
 
-          <!-- Navegación mes -->
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 8px 6px;flex-shrink:0;background:var(--surface,#1e1e2e)">
-            <button id="sc-prev" style="background:none;border:none;color:var(--muted,#888);cursor:pointer;padding:4px 6px;font-size:1.2rem;line-height:1;border-radius:6px">‹</button>
-            <div id="sc-month-label" style="font-size:0.7rem;font-weight:700;color:var(--text,#fff);text-align:center;line-height:1.4"></div>
-            <button id="sc-next" style="background:none;border:none;color:var(--muted,#888);cursor:pointer;padding:4px 6px;font-size:1.2rem;line-height:1;border-radius:6px">›</button>
+          <!-- Cabecera -->
+          <div style="padding:10px 8px 6px;background:var(--surface,#1e1e2e);border-bottom:1px solid var(--border,#2a2a4a);flex-shrink:0;z-index:1">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <button id="sc-prev" style="background:none;border:none;color:var(--muted,#888);cursor:pointer;padding:4px;border-radius:6px;display:flex;align-items:center;justify-content:center">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 19l-7-7 7-7"/></svg>
+              </button>
+              <div style="text-align:center">
+                <div id="sc-month-label" style="font-size:0.7rem;font-weight:700;color:var(--text,#fff);text-transform:uppercase;letter-spacing:.3px"></div>
+                <div id="sc-year-label" style="font-size:0.62rem;font-weight:700;color:var(--primary-light,#818cf8)"></div>
+              </div>
+              <button id="sc-next" style="background:none;border:none;color:var(--muted,#888);cursor:pointer;padding:4px;border-radius:6px;display:flex;align-items:center;justify-content:center">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+            <button id="sc-today-btn" style="
+              width:100%;padding:4px;border-radius:6px;
+              background:var(--surface-2,#16213e);border:1px solid var(--border,#2a2a4a);
+              color:var(--muted,#888);font-size:0.6rem;font-weight:800;
+              letter-spacing:.8px;text-transform:uppercase;cursor:pointer">HOY</button>
           </div>
 
-          <!-- Botón Hoy -->
-          <button id="sc-today-btn" style="
-            margin:0 10px 8px;padding:5px;border-radius:6px;
-            border:1px solid var(--border,#2a2a4a);background:transparent;
-            color:var(--muted,#888);font-size:0.62rem;font-weight:700;
-            letter-spacing:.5px;cursor:pointer;flex-shrink:0">HOY</button>
+          <!-- Lista de días — scroll solo aquí -->
+          <div id="sc-days" style="flex:1;overflow-y:auto;overflow-x:hidden;min-height:0;scrollbar-width:none">
+          </div>
 
-          <!-- Lista de días con scroll -->
-          <div id="sc-days" style="overflow-y:auto;flex:1;padding-bottom:8px;
-            scrollbar-width:thin;scrollbar-color:var(--border,#2a2a4a) transparent"></div>
+          <!-- Footer con fecha seleccionada -->
+          <div style="padding:6px;background:var(--surface-2,#16213e);border-top:1px solid var(--border,#2a2a4a);text-align:center;flex-shrink:0">
+            <span id="sc-selected-label" style="font-size:0.62rem;font-weight:700;color:var(--muted,#888)">--/--/--</span>
+          </div>
         </div>
 
         <!-- ── Contenido principal ── -->
