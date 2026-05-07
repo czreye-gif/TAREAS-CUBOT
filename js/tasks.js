@@ -194,7 +194,7 @@ const Tasks = {
             <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
           </svg>
           Adjuntar archivo
-          <input id="att-input" type="file" accept="image/*,.pdf" multiple style="display:none">
+          <input id="att-input" type="file" accept="image/*,application/pdf,.pdf" multiple style="display:none">
         </label>
 
         <div id="paste-zone" style="
@@ -315,6 +315,11 @@ const Tasks = {
 
     // Focus
     setTimeout(() => box.querySelector('#note-ta')?.focus(), 80);
+  },
+
+  cancelForm() {
+    this.resetForm();
+    app.navigate('today');
   },
 
   toggleTask(id) {
