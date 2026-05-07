@@ -127,31 +127,16 @@
 
       <div id="dashboard-search-container" style="margin-bottom:16px">
 
-        <!-- Fila 1: Texto libre + Fecha -->
-        <div style="display:flex;gap:10px;margin-bottom:10px">
-          <div id="sbox-text" style="display:flex;align-items:center;gap:10px;background:var(--surface-2,#1a1a2e);border:1px solid var(--border,#2a2a4a);border-radius:10px;padding:10px 14px;flex:1;box-sizing:border-box;min-width:0">
-            <svg style="flex-shrink:0;opacity:.5;display:block" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="dashboard-search" placeholder="Buscar por título o descripción..." style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text,#fff);font-size:0.875rem;padding:0;margin:0;display:block">
-            <button id="clear-text" title="Limpiar" style="display:none;background:none;border:none;color:var(--muted,#888);cursor:pointer;font-size:1rem;padding:0;line-height:1;flex-shrink:0">×</button>
-          </div>
-          <div id="sbox-date" style="display:flex;align-items:center;gap:10px;background:var(--surface-2,#1a1a2e);border:1px solid var(--border,#2a2a4a);border-radius:10px;padding:10px 14px;flex:0 0 auto;box-sizing:border-box">
-            <svg style="flex-shrink:0;opacity:.5;display:block" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <input type="date" id="dashboard-date-filter" style="background:transparent;border:none;outline:none;color:var(--text,#fff);font-size:0.875rem;padding:0;margin:0;color-scheme:dark;min-width:130px;display:block">
-            <button id="clear-date" title="Limpiar" style="display:none;background:none;border:none;color:var(--muted,#888);cursor:pointer;font-size:1rem;padding:0;line-height:1;flex-shrink:0">×</button>
-          </div>
-        </div>
-
-        <!-- Fila 2: Etiquetas -->
+        <!-- Barra única de búsqueda universal -->
         <div style="display:flex;gap:10px;margin-bottom:10px;position:relative">
-          <div id="sbox-tags" style="display:flex;align-items:center;gap:10px;background:var(--surface-2,#1a1a2e);border:1px solid var(--border,#2a2a4a);border-radius:10px;padding:10px 14px;flex:1;box-sizing:border-box;min-width:0">
-            <svg style="flex-shrink:0;opacity:.5;display:block" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-            <input type="text" id="dashboard-tag-search" placeholder="Buscar etiqueta por nombre..." style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text,#fff);font-size:0.875rem;padding:0;margin:0;display:block">
-            <button id="clear-tags" title="Limpiar" style="display:none;background:none;border:none;color:var(--muted,#888);cursor:pointer;font-size:1rem;padding:0;line-height:1;flex-shrink:0">×</button>
+          <div id="sbox-universal" style="display:flex;align-items:center;gap:10px;background:var(--surface-2,#1a1a2e);border:1px solid var(--border,#2a2a4a);border-radius:10px;padding:10px 14px;flex:1;box-sizing:border-box;min-width:0">
+            <svg style="flex-shrink:0;opacity:.6;display:block" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="dashboard-search" placeholder="Busca lo que sea: título, etiqueta, folio (T-0001), fecha, notas..." style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text,#fff);font-size:0.9rem;padding:0;margin:0;display:block">
+            <button id="clear-text" title="Limpiar" style="display:none;background:none;border:none;color:var(--muted,#888);cursor:pointer;font-size:1.2rem;padding:0;line-height:1;flex-shrink:0">×</button>
           </div>
-          <div id="tag-search-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface,#1e1e2e);border:1px solid var(--border,#2a2a4a);border-radius:10px;z-index:1000;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4)"></div>
         </div>
 
-        <!-- Fila 3: Shortcuts + chips + contador -->
+        <!-- Atajos de fecha + chips activos -->
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <div style="display:flex;gap:6px;flex-wrap:wrap">
             <button class="dsh-btn" data-shortcut="today">Hoy</button>
@@ -168,10 +153,7 @@
           .dsh-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border,#2a2a4a);background:transparent;color:var(--muted,#888);cursor:pointer;font-size:0.78rem;transition:all .15s}
           .dsh-btn:hover,.dsh-btn.active{background:var(--primary,#6366f1);border-color:var(--primary,#6366f1);color:#fff}
           .active-filter-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:500}
-          .tag-drop-item{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;font-size:0.88rem;color:var(--text,#fff)}
-          .tag-drop-item:hover{background:var(--surface-2,#2a2a3e)}
-          .tag-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-          #sbox-text:focus-within,#sbox-date:focus-within,#sbox-tags:focus-within{border-color:var(--primary,#6366f1)!important}
+          #sbox-universal:focus-within{border-color:var(--primary,#6366f1)!important}
         </style>
 
         <style>
@@ -305,7 +287,7 @@
                   <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
                 </svg>
                 Adjuntar imagen o PDF
-                <input id="form-att-input" type="file" accept="image/*,.pdf" multiple style="display:none">
+                <input id="form-att-input" type="file" accept="image/*,application/pdf,.pdf" multiple style="display:none">
               </label>
               <div id="form-paste-zone" style="
                 flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
@@ -392,6 +374,7 @@
           <div class="form-actions">
             <button type="submit" id="form-submit-btn" class="btn btn-primary">Crear Tarea</button>
             <button type="button" class="btn btn-secondary" onclick="Tasks.resetForm()">Limpiar</button>
+            <button type="button" class="btn btn-secondary" style="border:1px solid #ef444455;color:#ef4444" onclick="Tasks.cancelForm()">Cancelar</button>
           </div>
         </form>
       </div>
