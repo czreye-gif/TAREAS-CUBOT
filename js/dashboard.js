@@ -56,72 +56,77 @@ const Dashboard = {
 
     const year  = this._scYear;
     const month = this._scMonth;
-    const today = storage._todayStr();
+    const today = new Date().toLocaleDateString('sv-SE');
 
     // Nombre del mes
-    const monthName = new Date(year, month, 1).toLocaleDateString('es-MX', { month: 'short' }).toUpperCase();
-    label.innerHTML = `${monthName}<br><span style="font-size:0.58rem;color:var(--muted,#888);font-weight:400">${year}</span>`;
+    const monthName = new Date(year, month, 1)
+      .toLocaleDateString('es-MX', { month: 'short' }).toUpperCase();
+    label.innerHTML = `${monthName}<br><span style="font-size:0.6rem;color:var(--muted,#888);font-weight:400">${year}</span>`;
 
-    // Task counts para el mes
-    const taskCounts = storage.getTaskCountByDay(year, month);
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    // Contar tareas por día de forma segura
+    const allTasks = storage.getAllTasks ? storage.getAllTasks() : [];
+    const prefix   = `${year}-${String(month+1).padStart(2,'0')}`;
+    const monthTasks = allTasks.filter(t => t.date && t.date.startsWith(prefix));
+    const counts = {};
+    monthTasks.forEach(t => {
+      const day = parseInt(t.date.split('-')[2], 10);
+      if (!counts[day]) counts[day] = { total:0, pending:0, completed:0 };
+      counts[day].total++;
+      if (t.completed) counts[day].completed++;
+      else counts[day].pending++;
+    });
 
-    const DAYS = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const DAYS = ['D','L','M','X','J','V','S'];
+    const DAYS_FULL = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+
     let html = '';
-
     for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-      const d       = new Date(year, month, day);
-      const dow     = d.getDay(); // 0=dom,6=sab
+      const dateStr   = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const d         = new Date(year, month, day);
+      const dow       = d.getDay();
       const isToday   = dateStr === today;
       const isWeekend = dow === 0 || dow === 6;
-      const counts    = taskCounts[day];
-      const hasTasks  = counts && counts.total > 0;
-      const allDone   = hasTasks && counts.completed === counts.total;
+      const c         = counts[day];
+      const hasTasks  = c && c.total > 0;
+      const allDone   = hasTasks && c.completed === c.total;
+      const dotColor  = allDone ? '#10b981' : '#6366f1';
 
-      let indicatorHTML = '';
-      if (hasTasks) {
-        const dotColor = allDone ? '#10b981' : (counts.pending > 0 ? '#6366f1' : '#f59e0b');
-        indicatorHTML = `<span style="width:5px;height:5px;border-radius:50%;background:${dotColor};display:inline-block;flex-shrink:0"></span>`;
-      }
-
-      const dayColor = isToday
-        ? '#fff'
-        : isWeekend ? '#ef4444' : 'var(--text,#e2e8f0)';
-
-      const bg = isToday
-        ? 'linear-gradient(135deg,#6366f1,#8b5cf6)'
-        : 'transparent';
-
-      html += `
-        <div onclick="SideCal.select('${dateStr}')" style="
+      html += `<div
+        data-date="${dateStr}"
+        onclick="SideCal.select('${dateStr}')"
+        style="
           display:flex;flex-direction:column;align-items:center;
-          padding:5px 4px;cursor:pointer;border-radius:8px;
-          margin:1px 6px;background:${bg};
-          transition:background .15s;position:relative"
-          onmouseover="if(!this.classList.contains('sc-today'))this.style.background='rgba(99,102,241,0.15)'"
-          onmouseout="if(!this.classList.contains('sc-today'))this.style.background='${isToday?bg:'transparent'}'">
-          <span style="font-size:0.55rem;font-weight:700;color:${isToday?'rgba(255,255,255,0.7)':isWeekend?'#ef4444':'var(--muted,#888)'};letter-spacing:.3px">${DAYS[dow]}</span>
-          <span style="font-size:1rem;font-weight:${isToday?'800':'500'};color:${dayColor};line-height:1.2">${day}</span>
-          <div style="height:6px;display:flex;align-items:center;justify-content:center">
-            ${indicatorHTML}
-          </div>
-        </div>`;
+          padding:6px 4px;margin:1px 8px;border-radius:10px;cursor:pointer;
+          background:${isToday ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'transparent'};
+          border:${isToday ? 'none' : '1px solid transparent'};
+          transition:background .12s"
+        onmouseover="if(this.style.background.indexOf('6366f1')===-1||'${isToday}'==='false')this.style.background='rgba(99,102,241,0.18)'"
+        onmouseout="this.style.background='${isToday ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'transparent'}'">
+        <span style="font-size:0.55rem;font-weight:700;letter-spacing:.3px;
+          color:${isToday ? 'rgba(255,255,255,0.75)' : isWeekend ? '#f87171' : 'var(--muted,#888)'}">
+          ${DAYS_FULL[dow]}
+        </span>
+        <span style="font-size:1.05rem;font-weight:${isToday?'800':'500'};line-height:1.1;
+          color:${isToday ? '#fff' : isWeekend ? '#f87171' : 'var(--text,#e2e8f0)'}">
+          ${day}
+        </span>
+        <span style="height:5px;width:5px;border-radius:50%;margin-top:2px;
+          background:${hasTasks ? dotColor : 'transparent'};display:block">
+        </span>
+      </div>`;
     }
 
     list.innerHTML = html;
 
-    // Scroll a hoy si está en este mes
-    requestAnimationFrame(() => {
-      const now = new Date();
-      if (year === now.getFullYear() && month === now.getMonth()) {
-        const dayEls = list.querySelectorAll('div[onclick]');
-        const todayIdx = now.getDate() - 1;
-        if (dayEls[todayIdx]) {
-          dayEls[todayIdx].scrollIntoView({ block: 'center', behavior: 'smooth' });
-        }
-      }
-    });
+    // Scroll a hoy si es el mes actual
+    const now = new Date();
+    if (year === now.getFullYear() && month === now.getMonth()) {
+      setTimeout(() => {
+        const todayEl = list.querySelector(`[data-date="${today}"]`);
+        if (todayEl) todayEl.scrollIntoView({ block:'center', behavior:'smooth' });
+      }, 100);
+    }
   },
 
   init() {
