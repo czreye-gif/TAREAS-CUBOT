@@ -102,7 +102,6 @@ const Timeline = {
   _renderCard(task) {
     const code = task.code || '---';
     const pColor = UI.priorityColor(task.priority);
-    const catIcon = UI.categoryIcon(task.category);
     const hasSubs = task.subtasks && task.subtasks.length > 0;
     const subsDone = hasSubs ? task.subtasks.filter(s => s.completed).length : 0;
     const subsTotal = hasSubs ? task.subtasks.length : 0;
@@ -124,7 +123,6 @@ const Timeline = {
             <span class="tl-card-title">${this._esc(task.title)}</span>
           </div>
           <div class="tl-card-meta">
-            <span class="tl-card-cat">${catIcon}</span>
             ${task.timeStart ? `<span class="tl-card-time">${task.timeStart}${task.timeEnd ? '-' + task.timeEnd : ''}</span>` : ''}
             ${hasSubs ? `<span class="tl-card-subs">📋 ${subsDone}/${subsTotal}</span>` : ''}
             ${task.alarm ? '<span class="tl-card-alarm">🔔</span>' : ''}
