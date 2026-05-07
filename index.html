@@ -314,30 +314,11 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label for="task-time-start">Hora inicio</label>
-              <input type="time" id="task-time-start" class="input-field">
-            </div>
-            <div class="form-group">
-              <label for="task-time-end">Hora fin</label>
-              <input type="time" id="task-time-end" class="input-field">
-            </div>
-          </div>
-          <div class="form-row-3">
-            <div class="form-group">
               <label for="task-priority">Prioridad</label>
               <select id="task-priority" class="input-field">
                 <option value="low">🟢 Baja</option>
                 <option value="medium" selected>🟡 Media</option>
                 <option value="high">🔴 Alta</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="task-category">Categoría</label>
-              <select id="task-category" class="input-field">
-                <option value="trabajo">💼 Trabajo</option>
-                <option value="personal">👤 Personal</option>
-                <option value="salud">❤️ Salud</option>
-                <option value="otro" selected>📌 Otro</option>
               </select>
             </div>
             <div class="form-group">
@@ -374,7 +355,7 @@
           <div class="form-actions">
             <button type="submit" id="form-submit-btn" class="btn btn-primary">Crear Tarea</button>
             <button type="button" class="btn btn-secondary" onclick="Tasks.resetForm()">Limpiar</button>
-            <button type="button" class="btn btn-secondary" style="border:1px solid #ef444455;color:#ef4444" onclick="Tasks.cancelForm()">Cancelar</button>
+            <button type="button" id="form-cancel-btn" class="btn btn-secondary" style="border:1px solid #ef444455;color:#ef4444">Cancelar</button>
           </div>
         </form>
       </div>
