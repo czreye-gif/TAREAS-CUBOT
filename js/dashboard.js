@@ -11,9 +11,123 @@ const Dashboard = {
   },
 
   // ── Inicialización ─────────────────────────────────────────
+  // ── Mini calendario lateral ────────────────────────────────
+  _scYear:  new Date().getFullYear(),
+  _scMonth: new Date().getMonth(),
+
+  _initSideCal() {
+    const prev = document.getElementById('sc-prev');
+    const next = document.getElementById('sc-next');
+    const todayBtn = document.getElementById('sc-today-btn');
+    if (!prev || !next) return;
+
+    prev.onclick = () => {
+      this._scMonth--;
+      if (this._scMonth < 0) { this._scMonth = 11; this._scYear--; }
+      this._renderSideCal();
+    };
+    next.onclick = () => {
+      this._scMonth++;
+      if (this._scMonth > 11) { this._scMonth = 0; this._scYear++; }
+      this._renderSideCal();
+    };
+    if (todayBtn) todayBtn.onclick = () => {
+      const now = new Date();
+      this._scYear  = now.getFullYear();
+      this._scMonth = now.getMonth();
+      this._renderSideCal();
+      todayBtn.style.background = 'var(--primary,#6366f1)';
+      todayBtn.style.color = '#fff';
+      todayBtn.style.borderColor = 'var(--primary,#6366f1)';
+      setTimeout(() => {
+        todayBtn.style.background = 'transparent';
+        todayBtn.style.color = 'var(--muted,#888)';
+        todayBtn.style.borderColor = 'var(--border,#2a2a4a)';
+      }, 800);
+    };
+
+    this._renderSideCal();
+  },
+
+  _renderSideCal() {
+    const label = document.getElementById('sc-month-label');
+    const list  = document.getElementById('sc-days');
+    if (!label || !list) return;
+
+    const year  = this._scYear;
+    const month = this._scMonth;
+    const today = storage._todayStr();
+
+    // Nombre del mes
+    const monthName = new Date(year, month, 1).toLocaleDateString('es-MX', { month: 'short' }).toUpperCase();
+    label.innerHTML = `${monthName}<br><span style="font-size:0.58rem;color:var(--muted,#888);font-weight:400">${year}</span>`;
+
+    // Task counts para el mes
+    const taskCounts = storage.getTaskCountByDay(year, month);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const DAYS = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+    let html = '';
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const d       = new Date(year, month, day);
+      const dow     = d.getDay(); // 0=dom,6=sab
+      const isToday   = dateStr === today;
+      const isWeekend = dow === 0 || dow === 6;
+      const counts    = taskCounts[day];
+      const hasTasks  = counts && counts.total > 0;
+      const allDone   = hasTasks && counts.completed === counts.total;
+
+      let indicatorHTML = '';
+      if (hasTasks) {
+        const dotColor = allDone ? '#10b981' : (counts.pending > 0 ? '#6366f1' : '#f59e0b');
+        indicatorHTML = `<span style="width:5px;height:5px;border-radius:50%;background:${dotColor};display:inline-block;flex-shrink:0"></span>`;
+      }
+
+      const dayColor = isToday
+        ? '#fff'
+        : isWeekend ? '#ef4444' : 'var(--text,#e2e8f0)';
+
+      const bg = isToday
+        ? 'linear-gradient(135deg,#6366f1,#8b5cf6)'
+        : 'transparent';
+
+      html += `
+        <div onclick="SideCal.select('${dateStr}')" style="
+          display:flex;flex-direction:column;align-items:center;
+          padding:5px 4px;cursor:pointer;border-radius:8px;
+          margin:1px 6px;background:${bg};
+          transition:background .15s;position:relative"
+          onmouseover="if(!this.classList.contains('sc-today'))this.style.background='rgba(99,102,241,0.15)'"
+          onmouseout="if(!this.classList.contains('sc-today'))this.style.background='${isToday?bg:'transparent'}'">
+          <span style="font-size:0.55rem;font-weight:700;color:${isToday?'rgba(255,255,255,0.7)':isWeekend?'#ef4444':'var(--muted,#888)'};letter-spacing:.3px">${DAYS[dow]}</span>
+          <span style="font-size:1rem;font-weight:${isToday?'800':'500'};color:${dayColor};line-height:1.2">${day}</span>
+          <div style="height:6px;display:flex;align-items:center;justify-content:center">
+            ${indicatorHTML}
+          </div>
+        </div>`;
+    }
+
+    list.innerHTML = html;
+
+    // Scroll a hoy si está en este mes
+    requestAnimationFrame(() => {
+      const now = new Date();
+      if (year === now.getFullYear() && month === now.getMonth()) {
+        const dayEls = list.querySelectorAll('div[onclick]');
+        const todayIdx = now.getDate() - 1;
+        if (dayEls[todayIdx]) {
+          dayEls[todayIdx].scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+      }
+    });
+  },
+
   init() {
     this._bindSearch();
     this.setupDragAndDrop();
+    this._initSideCal();
     this.render();
   },
 
@@ -476,4 +590,19 @@ const Dashboard = {
 // ── Auto-init independiente ────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => Dashboard.init(), 50);
+});
+
+// ── SideCal: handler de selección de día ──────────────────
+const SideCal = {
+  select(dateStr) {
+    app.selectedDate = dateStr;
+    app.navigate('day');
+  }
+};
+
+// Re-render del mini cal cuando se regresa a Hoy
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (typeof Dashboard !== 'undefined') Dashboard._renderSideCal();
+  }, 80);
 });
