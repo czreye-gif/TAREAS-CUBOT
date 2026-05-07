@@ -71,8 +71,6 @@ const Tasks = {
             </div>
             <div class="task-meta">
               ${codeBadge}
-              ${task.timeStart ? `<span class="task-time">${task.timeStart}${task.timeEnd ? ' - ' + task.timeEnd : ''}</span>` : ''}
-              <span class="task-category">${UI.categoryIcon(task.category)}</span>
               <span class="task-priority-dot" style="background:${UI.priorityColor(task.priority)}" title="${UI.priorityLabel(task.priority)}"></span>
               ${alarmBadge}${deadlineBadge}
             </div>
@@ -416,6 +414,16 @@ const Tasks = {
     this._renderFormAtts();
     this._initFormAttachments();
     this._initTagAutocomplete('task-title');
+
+    // Bind botón Cancelar
+    const cancelBtn = document.getElementById('form-cancel-btn');
+    if (cancelBtn) {
+      cancelBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.cancelForm();
+      };
+    }
     this._initTagAutocomplete('task-description');
   },
 
@@ -734,10 +742,7 @@ const Tasks = {
     document.getElementById('task-title').value = task.title || '';
     document.getElementById('task-description').value = task.description || '';
     document.getElementById('task-date').value = task.date || '';
-    document.getElementById('task-time-start').value = task.timeStart || '';
-    document.getElementById('task-time-end').value = task.timeEnd || '';
     document.getElementById('task-priority').value = task.priority || 'medium';
-    document.getElementById('task-category').value = task.category || 'otro';
     document.getElementById('task-deadline').value = task.deadline || '';
     document.getElementById('task-alarm').value = task.alarm ? task.alarm.slice(0, 16) : '';
 
@@ -826,10 +831,7 @@ const Tasks = {
       title,
       description: document.getElementById('task-description').value.trim(),
       date: document.getElementById('task-date').value,
-      timeStart: document.getElementById('task-time-start').value,
-      timeEnd: document.getElementById('task-time-end').value,
       priority: document.getElementById('task-priority').value,
-      category: document.getElementById('task-category').value,
       deadline: document.getElementById('task-deadline').value || null,
       alarm: alarmVal ? new Date(alarmVal).toISOString() : null,
       recurrence,
