@@ -1602,3 +1602,41 @@ body {
 #dash-urgent-list *, #dash-today-list *, #dash-tomorrow-list * {
   font-weight: 400 !important;
 }
+
+/* ── Sidebar colapsable ── */
+#sidebar { transition: width .25s ease; }
+#sidebar.collapsed { width: 64px; min-width: 64px; }
+#sidebar.collapsed .logo-text,
+#sidebar.collapsed .nav-btn span,
+#sidebar.collapsed .sidebar-footer span,
+#sidebar.collapsed .nav-btn .badge {
+  display: none !important;
+}
+#sidebar.collapsed .nav-btn,
+#sidebar.collapsed .sidebar-footer button {
+  justify-content: center !important;
+  padding: 12px 0 !important;
+}
+#sidebar.collapsed .sidebar-header {
+  justify-content: center;
+  padding: 16px 8px !important;
+}
+#sidebar.collapsed #sidebar-collapse-btn {
+  position: absolute;
+  top: 12px;
+  right: -14px;
+  background: var(--surface, #1e1e2e) !important;
+  border: 1px solid var(--border, #2a2a4a) !important;
+  border-radius: 50% !important;
+  width: 28px;
+  height: 28px;
+  z-index: 100;
+}
+#sidebar.collapsed #sb-icon-collapse {
+  transform: rotate(180deg);
+}
+#sidebar-collapse-btn:hover {
+  background: var(--surface-2, #2a2a3e);
+  color: var(--text, #fff) !important;
+}
+#sidebar { position: relative; }
