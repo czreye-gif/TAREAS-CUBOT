@@ -10,17 +10,14 @@ const Agenda = {
   ghost: null,
 
   init() {
-    // Default to current week (Monday start)
-    const now = new Date();
-    const dow = now.getDay();
-    const mondayOffset = dow === 0 ? -6 : 1 - dow;
-    this.startDate = new Date(now);
-    this.startDate.setDate(now.getDate() + mondayOffset);
+    // Start from TODAY, not Monday of current week
+    this.startDate = new Date();
+    this.startDate.setHours(0, 0, 0, 0);
 
     document.getElementById('agenda-prev').onclick = () => this.shiftDays(-7);
     document.getElementById('agenda-next').onclick = () => this.shiftDays(7);
     document.getElementById('agenda-today-btn').onclick = () => {
-      this.init(); // reset to current week
+      this.init(); // reset to today
       this.render();
     };
 
@@ -36,12 +33,30 @@ const Agenda = {
     document.addEventListener('mouseup', (e) => this._mouseUp(e));
   },
 
+  // Estado colapsado por día (localStorage)
+  _isCollapsed(dateStr) {
+    const today = new Date().toLocaleDateString('sv-SE');
+    if (dateStr === today) return false; // hoy siempre expandido por defecto
+    try {
+      const data = JSON.parse(localStorage.getItem('agendaCollapsedDays') || '{}');
+      return !!data[dateStr];
+    } catch { return false; }
+  },
+
+  _toggleCollapsed(dateStr) {
+    let data = {};
+    try { data = JSON.parse(localStorage.getItem('agendaCollapsedDays') || '{}'); } catch {}
+    data[dateStr] = !data[dateStr];
+    if (!data[dateStr]) delete data[dateStr];
+    localStorage.setItem('agendaCollapsedDays', JSON.stringify(data));
+  },
+
   render() {
     const container = document.getElementById('agenda-columns');
     if (!container) return;
 
-    // Layout horizontal: filas por día, tareas en línea
-    container.style.cssText = 'display:flex;flex-direction:column;gap:6px;overflow-y:auto;max-height:calc(100vh - 200px);';
+    // Layout vertical: filas por día crecen libremente
+    container.style.cssText = 'display:flex;flex-direction:column;gap:6px;overflow-y:auto;max-height:calc(100vh - 180px);padding-right:4px;';
 
     const today = storage._todayStr();
     let html = '';
@@ -56,28 +71,58 @@ const Agenda = {
       const dayNum  = d.getDate();
       const monthName = d.toLocaleDateString("es-MX", { month: "short" });
       const tasks   = storage.getTasksByDate(dateStr);
-      const pending = tasks.filter(t => !t.completed).length;
+      const pending   = tasks.filter(t => !t.completed).length;
+      const completed = tasks.filter(t => t.completed).length;
+      const highPri   = tasks.filter(t => t.priority === 'high' && !t.completed).length;
+      const collapsed = this._isCollapsed(dateStr);
+
+      // Resumen para modo colapsado
+      const summaryParts = [];
+      if (pending > 0)   summaryParts.push(`<span style="color:#f59e0b">${pending} pendiente${pending>1?'s':''}</span>`);
+      if (highPri > 0)   summaryParts.push(`<span style="color:#ef4444">${highPri} alta prioridad</span>`);
+      if (completed > 0) summaryParts.push(`<span style="color:#10b981">${completed} completada${completed>1?'s':''}</span>`);
+      const summaryText = summaryParts.length > 0 ? summaryParts.join(' · ') : '<span style="color:var(--muted)">Sin tareas</span>';
+
+      const collapseIcon = collapsed
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6,9 12,15 18,9"/></svg>';
 
       html += `
-        <div class="agenda-row ${isToday ? "agenda-row-today" : ""} ${isWeekend ? "agenda-row-weekend" : ""}" data-date="${dateStr}">
+        <div class="agenda-row ${isToday ? "agenda-row-today" : ""} ${isWeekend ? "agenda-row-weekend" : ""} ${collapsed ? "agenda-row-collapsed" : ""}" data-date="${dateStr}">
           <div class="agenda-row-label">
             <div class="agenda-row-dayname">${dayName}</div>
             <div class="agenda-row-daynum ${isToday ? "agenda-row-today-num" : ""}">${dayNum}</div>
             <div class="agenda-row-month">${monthName}</div>
             ${pending > 0 ? `<span class="agenda-row-badge">${pending}</span>` : ""}
+            <button class="agenda-row-toggle" data-toggle="${dateStr}" title="${collapsed ? 'Expandir' : 'Colapsar'}">${collapseIcon}</button>
           </div>
-          <div class="agenda-row-tasks" data-date="${dateStr}">
-            ${tasks.length === 0
-              ? '<span class="agenda-row-empty">Sin tareas</span>'
-              : tasks.map(t => this._renderRowCard(t)).join("")
-            }
-            <button class="agenda-row-add" onclick="app.selectedDate=\'${dateStr}\'; app.navigate(\'new-task\')" title="Nueva tarea">+</button>
-          </div>
+          ${collapsed
+            ? `<div class="agenda-row-summary" data-toggle="${dateStr}">
+                 <span style="font-size:0.85rem;color:var(--text)">${tasks.length} tarea${tasks.length!==1?'s':''}</span>
+                 <span style="font-size:0.78rem">${summaryText}</span>
+               </div>`
+            : `<div class="agenda-row-tasks" data-date="${dateStr}">
+                 ${tasks.length === 0
+                   ? '<span class="agenda-row-empty">Sin tareas</span>'
+                   : tasks.map(t => this._renderRowCard(t)).join("")
+                 }
+                 <button class="agenda-row-add" onclick="app.selectedDate='${dateStr}'; app.navigate('new-task')" title="Nueva tarea">+</button>
+               </div>`
+          }
         </div>
       `;
     }
 
     container.innerHTML = html;
+
+    // Bind toggle buttons
+    container.querySelectorAll('[data-toggle]').forEach(el => {
+      el.onclick = (e) => {
+        e.stopPropagation();
+        this._toggleCollapsed(el.dataset.toggle);
+        this.render();
+      };
+    });
 
     const endD = new Date(this.startDate);
     endD.setDate(endD.getDate() + this.daysVisible - 1);
@@ -88,6 +133,7 @@ const Agenda = {
 
     this._bindDragAndDrop();
   },
+
 
   _renderRowCard(task) {
     const pColor = UI.priorityColor(task.priority);
