@@ -90,14 +90,14 @@ const Tasks = {
             </button>
           </div>
         </div>
-        <button class="task-notes-btn ${task.description ? 'has-notes' : 'no-notes'}" data-action="show-notes" data-id="${task.id}" title="${task.description ? 'Ver / editar notas' : 'Agregar nota'}">
+        <button class="task-notes-btn ${(task.description || (task.attachments && task.attachments.length > 0)) ? 'has-notes' : 'no-notes'}" data-action="show-notes" data-id="${task.id}" title="${(task.description || (task.attachments && task.attachments.length > 0)) ? 'Ver / editar notas' : 'Agregar nota'}">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
             <polyline points="14,2 14,8 20,8"/>
             <line x1="16" y1="13" x2="8" y2="13"/>
             <line x1="16" y1="17" x2="8" y2="17"/>
           </svg>
-          ${task.description ? 'Notas' : '+ Nota'}
+          ${(task.description || (task.attachments && task.attachments.length > 0)) ? 'Notas' : '+ Nota'}
         </button>
         ${task.description ? `<div class="task-notes-content" id="notes-${task.id}" style="display:none">
           <p class="task-description">${this._escapeHTML(task.description)}</p>
