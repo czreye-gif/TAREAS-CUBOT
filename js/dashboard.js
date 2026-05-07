@@ -21,7 +21,6 @@ const Dashboard = {
 
   render() {
     this.renderHeader();
-    this.renderRatios();
     this.renderTaskLists();
   },
 
