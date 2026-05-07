@@ -33,22 +33,20 @@ const Agenda = {
     document.addEventListener('mouseup', (e) => this._mouseUp(e));
   },
 
-  // Estado colapsado por día (localStorage)
+  // Estado expandido por día (localStorage). Por defecto TODO está colapsado.
   _isCollapsed(dateStr) {
-    const today = new Date().toLocaleDateString('sv-SE');
-    if (dateStr === today) return false; // hoy siempre expandido por defecto
     try {
-      const data = JSON.parse(localStorage.getItem('agendaCollapsedDays') || '{}');
-      return !!data[dateStr];
-    } catch { return false; }
+      const data = JSON.parse(localStorage.getItem('agendaExpandedDays') || '{}');
+      return !data[dateStr]; // si NO está marcado como expandido → está colapsado
+    } catch { return true; }
   },
 
   _toggleCollapsed(dateStr) {
     let data = {};
-    try { data = JSON.parse(localStorage.getItem('agendaCollapsedDays') || '{}'); } catch {}
+    try { data = JSON.parse(localStorage.getItem('agendaExpandedDays') || '{}'); } catch {}
     data[dateStr] = !data[dateStr];
     if (!data[dateStr]) delete data[dateStr];
-    localStorage.setItem('agendaCollapsedDays', JSON.stringify(data));
+    localStorage.setItem('agendaExpandedDays', JSON.stringify(data));
   },
 
   render() {
