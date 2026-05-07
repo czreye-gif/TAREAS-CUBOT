@@ -41,6 +41,20 @@ const app = {
       Tasks.showNotes(btn.dataset.id);
     });
 
+    // ── Sidebar colapsable con persistencia ──
+    const sidebar = document.getElementById('sidebar');
+    const collapseBtn = document.getElementById('sidebar-collapse-btn');
+    if (sidebar && collapseBtn) {
+      // Restaurar estado
+      if (localStorage.getItem('sidebarCollapsed') === '1') {
+        sidebar.classList.add('collapsed');
+      }
+      collapseBtn.onclick = () => {
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed') ? '1' : '0');
+      };
+    }
+
     // Handle hash navigation
     window.addEventListener('hashchange', () => {
       const hash = location.hash.slice(1);
