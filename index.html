@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Panel de Tareas</title>
   <meta name="description" content="Gestor de tareas offline para tu día a día">
   <meta name="theme-color" content="#0a0a1a">
@@ -227,13 +227,15 @@
         <div class="dash-col">
           <h2 class="dash-section-title danger-text">⚠️ Urgente / Vencidas</h2>
           <div id="dash-urgent-list" class="task-list"></div>
-          <h2 class="dash-section-title primary-text" style="margin-top:16px">📍 Mi Día</h2>
-          <div id="dash-today-list" class="task-list drop-zone" data-zone="today"></div>
         </div>
         <div class="dash-col">
           <h2 class="dash-section-title secondary-text">➡️ Mañana <span style="font-size:0.75rem;font-weight:400;color:var(--muted);margin-left:8px">Arrastra para reorganizar</span></h2>
           <div id="dash-tomorrow-list" class="task-list drop-zone" data-zone="tomorrow"></div>
         </div>
+      </div>
+      <div style="margin-top:14px">
+        <h2 class="dash-section-title primary-text">📍 Mi Día</h2>
+        <div id="dash-today-list" class="task-list drop-zone" data-zone="today"></div>
       </div>
     </section>
 
