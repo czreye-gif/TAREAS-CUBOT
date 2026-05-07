@@ -81,10 +81,13 @@ const Dashboard = {
       return;
     }
 
-    // Helper: completadas al final
+    // Pendientes (más nuevas arriba) → completadas al final
     const sortCompletedLast = (a, b) => {
       if (a.completed !== b.completed) return a.completed ? 1 : -1;
-      return (a.timeStart || '').localeCompare(b.timeStart || '');
+      // Dentro del mismo grupo, las más nuevas arriba (createdAt desc)
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
     };
 
     urgentTasks = allTasks.filter(t =>
@@ -101,6 +104,59 @@ const Dashboard = {
     this._renderList('dash-tomorrow-list', tomorrowTasks, 'No hay tareas programadas para mañana.');
     this._renderActiveChips(null);
     this.bindEvents();
+  },
+
+  _renderFilteredResults(tasks) {
+    // Cuando hay filtros, mostrar todo en "Mi Día" y vaciar las otras
+    const urgentList   = document.getElementById('dash-urgent-list');
+    const todayList    = document.getElementById('dash-today-list');
+    const tomorrowList = document.getElementById('dash-tomorrow-list');
+
+    // Ordenar: completadas al final, más recientes arriba
+    const sorted = [...tasks].sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
+    });
+
+    if (urgentList)   urgentList.innerHTML   = '';
+    if (tomorrowList) tomorrowList.innerHTML = '';
+
+    if (todayList) {
+      if (sorted.length === 0) {
+        todayList.innerHTML = '<div class="tl-empty" style="text-align:left;padding-left:0">No se encontraron tareas con esos filtros.</div>';
+      } else {
+        todayList.innerHTML = sorted.map(t => {
+          try { return typeof Timeline !== 'undefined' ? Timeline._renderCard(t) : this._simpleCard(t); }
+          catch(e) { return this._simpleCard(t); }
+        }).join('');
+      }
+    }
+    this.bindEvents();
+  },
+
+  _renderList(containerId, tasks, emptyMsg) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (tasks.length === 0) {
+      el.innerHTML = `<div class="tl-empty" style="text-align:left;padding-left:0">${emptyMsg}</div>`;
+    } else {
+      el.innerHTML = tasks.map(t => {
+        try { return typeof Timeline !== 'undefined' ? Timeline._renderCard(t) : this._simpleCard(t); }
+        catch(e) { return this._simpleCard(t); }
+      }).join('');
+    }
+  },
+
+  _simpleCard(t) {
+    return `<div class="tl-card" data-task-id="${t.id}" style="padding:10px 14px;margin-bottom:8px;border-radius:10px;background:var(--surface,#1e1e2e);border:1px solid var(--border,#2a2a4a);">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:0.7rem;color:var(--muted)">${t.code||''}</span>
+        <span style="${t.completed?'text-decoration:line-through;color:var(--muted)':'color:var(--text,#fff)'}">${t.title}</span>
+        <span style="margin-left:auto;font-size:0.75rem;color:var(--muted,#888)">${t.date||''}</span>
+      </div>
+    </div>`;
   },
 
   _hasActiveFilters() {
@@ -151,17 +207,15 @@ const Dashboard = {
 
       // Búsqueda universal
       if (q) {
-        // Folio exacto
+        // Folio exacto: comparar en lowercase de ambos lados
         if (parsed?.type === 'folio') {
-          return (t.code || '').toLowerCase() === parsed.value;
+          if ((t.code || '').toLowerCase() === parsed.value) return true;
+          return false;
         }
         // Fecha exacta
-        if (parsed?.type === 'date') {
-          if (t.date === parsed.value) return true;
-          // Aún así permitir match por texto en otros campos si la fecha no coincide
-        }
+        if (parsed?.type === 'date' && t.date === parsed.value) return true;
 
-        // Buscar en TODOS los campos posibles
+        // Buscar en TODOS los campos (cualquier match es válido)
         const inTitle = (t.title || '').toLowerCase().includes(q);
         const inDesc  = (t.description || '').toLowerCase().includes(q);
         const inCode  = (t.code || '').toLowerCase().includes(q);
@@ -170,11 +224,11 @@ const Dashboard = {
           const tag = storage.getTag(tid);
           return tag && tag.name.toLowerCase().includes(q);
         });
-        // Buscar en fecha en formato legible
+        // Fecha en formato legible
         let inDateText = false;
         if (t.date) {
           try {
-            const dateLong = new Date(t.date + 'T12:00:00').toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric', weekday:'long' }).toLowerCase();
+            const dateLong  = new Date(t.date + 'T12:00:00').toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric', weekday:'long' }).toLowerCase();
             const dateShort = new Date(t.date + 'T12:00:00').toLocaleDateString('es-MX', { day:'numeric', month:'short' }).toLowerCase();
             inDateText = dateLong.includes(q) || dateShort.includes(q);
           } catch {}
