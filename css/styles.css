@@ -1640,3 +1640,28 @@ body {
   color: var(--text, #fff) !important;
 }
 #sidebar { position: relative; }
+
+/* ── Botón de colapso del sidebar ── */
+#sidebar-collapse-btn:hover {
+  background: rgba(99,102,241,0.3) !important;
+  transform: translateY(-1px);
+}
+#sidebar-collapse-btn:active { transform: translateY(0); }
+
+/* En modo colapsado: solo ícono, sin texto */
+#sidebar.collapsed #sidebar-collapse-btn {
+  padding: 14px 0 !important;
+  width: auto;
+  margin: 0 8px 10px !important;
+}
+#sidebar.collapsed .sb-collapse-label {
+  display: none !important;
+}
+#sidebar.collapsed #sb-icon-collapse {
+  transform: rotate(180deg);
+}
+
+/* Sidebar footer con padding adecuado en colapsado */
+#sidebar.collapsed .sidebar-footer {
+  padding: 8px 0 !important;
+}
