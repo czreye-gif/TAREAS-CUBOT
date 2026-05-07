@@ -1586,3 +1586,19 @@ body {
 .agenda-row-card, .agenda-row-card * {
   font-weight: 400 !important;
 }
+
+/* ── FORZAR sin negritas en TODAS las tarjetas (override total) ── */
+[class*="task-card"], [class*="task-card"] *,
+[class*="tl-card"], [class*="tl-card"] *,
+[class*="agenda-row"], [class*="agenda-row"] *,
+.task-title, .tl-card-title, .agenda-row-title,
+.task-meta, .tl-card-meta,
+.tag-pill-card, .tag-pill, .tag-pill-sm, .tag-pill-xs,
+[class*="tag-pill"],
+.task-card h4, .task-card h3, .task-card span, .task-card div,
+.tl-card span, .tl-card div, .tl-card h4,
+.task-notes-btn, .tl-notes-btn,
+.task-action-btn,
+#dash-urgent-list *, #dash-today-list *, #dash-tomorrow-list * {
+  font-weight: 400 !important;
+}
