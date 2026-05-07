@@ -1579,3 +1579,10 @@ body {
 }
 
 /* ── Viewport meta fix para tablet ── */
+
+/* ── Sin negritas en tarjetas de tareas ── */
+.task-card, .task-card *,
+.tl-card, .tl-card *,
+.agenda-row-card, .agenda-row-card * {
+  font-weight: 400 !important;
+}
