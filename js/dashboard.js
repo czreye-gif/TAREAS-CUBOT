@@ -136,7 +136,7 @@ const Dashboard = {
   init() {
     this._bindSearch();
     this.setupDragAndDrop();
-    this._initSideCal();
+    try { this._initSideCal(); } catch(e) { console.error('SideCal:', e); }
     this.render();
   },
 
@@ -147,17 +147,7 @@ const Dashboard = {
 
   // ── Cabecera con saludo y fecha ────────────────────────────
   renderHeader() {
-    const d    = new Date();
-    const hour = d.getHours();
-    let greeting = 'Buenos días';
-    if (hour >= 12 && hour < 19) greeting = 'Buenas tardes';
-    if (hour >= 19)               greeting = 'Buenas noches';
-
-    const fechaLarga = d.toLocaleDateString('es-MX', {
-      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-    });
-    const subtitle = document.getElementById('today-greeting');
-    if (subtitle) subtitle.textContent = `${greeting}, hoy es ${fechaLarga}`;
+    // Saludo eliminado — el calendario lateral lo reemplaza
   },
 
   // ── KPIs / ratios ──────────────────────────────────────────
