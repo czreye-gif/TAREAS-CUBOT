@@ -7,13 +7,15 @@ const Dashboard = {
   // ── Estado de filtros ──────────────────────────────────────
   filters: {
     query:    '',   // búsqueda universal
-    shortcut: null  // 'today' | 'tomorrow' | 'week' | null
+    shortcut: null, // 'today' | 'tomorrow' | 'week' | null
+    date:     null  // fecha seleccionada en mini calendario
   },
 
   // ── Inicialización ─────────────────────────────────────────
   init() {
     this._bindSearch();
     this.setupDragAndDrop();
+    this.initMiniCalendar();
     this.render();
   },
 
@@ -70,7 +72,7 @@ const Dashboard = {
     const todayDate    = storage._todayStr();
     const tomorrowDate = new Date(Date.now() + 86400000).toLocaleDateString('sv-SE');
     const allTasks     = storage.getAllTasks();
-    const hasFilters   = this._hasActiveFilters();
+    const hasFilters   = this._hasActiveFilters() || this.filters.date;
 
     let urgentTasks, todayTasks, tomorrowTasks;
 
@@ -202,6 +204,9 @@ const Dashboard = {
     return tasks.filter(t => {
       // Exclude completed tasks from Dashboard views and searches
       if (t.completed) return false;
+
+      // Filtro de fecha exacta del mini calendario
+      if (this.filters.date && t.date !== this.filters.date) return false;
 
       // Shortcut de fecha
       if (shortcut === 'today'    && t.date !== today)    return false;
@@ -500,6 +505,101 @@ const Dashboard = {
       UI.toast(`Tarea movida a ${zoneName === 'today' ? 'Hoy' : 'Mañana'}`, 'success');
       this.render();
     }
+  },
+
+  // ── Mini Calendario Lateral ────────────────────────────────
+  vcCurrentDate: new Date(),
+  vcSelectedDate: new Date(),
+  monthNames: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+  dayNamesShort: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+
+  initMiniCalendar() {
+    this.goToToday(true); // Inicializa sin forzar re-render completo
+  },
+
+  renderMiniCalendar() {
+    const year = this.vcCurrentDate.getFullYear();
+    const month = this.vcCurrentDate.getMonth();
+
+    const monthEl = document.getElementById('vc-month-name');
+    const yearEl = document.getElementById('vc-year-label');
+    if (monthEl) monthEl.textContent = this.monthNames[month];
+    if (yearEl) yearEl.textContent = year;
+
+    const listContainer = document.getElementById('vc-days-list');
+    if (!listContainer) return;
+    listContainer.innerHTML = '';
+
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+
+    for (let i = 1; i <= lastDay; i++) {
+        const dateObj = new Date(year, month, i);
+        const dayIndex = dateObj.getDay();
+        const isWeekend = dayIndex === 0 || dayIndex === 6;
+
+        const row = document.createElement('div');
+        row.className = `vc-day-row ${isWeekend ? 'vc-weekend' : ''}`;
+        
+        if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+            row.classList.add('today');
+        }
+
+        if (i === this.vcSelectedDate.getDate() && month === this.vcSelectedDate.getMonth() && year === this.vcSelectedDate.getFullYear()) {
+            row.classList.add('selected');
+        }
+
+        row.innerHTML = `
+            <span class="vc-day-name ${isWeekend ? '' : 'text-gray-400'}">${this.dayNamesShort[dayIndex]}</span>
+            <span class="vc-day-number">${i}</span>
+        `;
+
+        row.onclick = () => this.selectDate(year, month, i);
+        listContainer.appendChild(row);
+    }
+    this.updateMiniFooter();
+  },
+
+  selectDate(year, month, day) {
+    this.vcSelectedDate = new Date(year, month, day);
+    // Convertir a YYYY-MM-DD para el filtro
+    const dStr = String(day).padStart(2, '0');
+    const mStr = String(month + 1).padStart(2, '0');
+    this.filters.date = `${year}-${mStr}-${dStr}`;
+    
+    this.renderMiniCalendar();
+    this.render(); // Re-render dashboard
+  },
+
+  updateMiniFooter() {
+    const footerEl = document.getElementById('vc-selected-date-mini');
+    if (!footerEl) return;
+    const d = this.vcSelectedDate.getDate().toString().padStart(2, '0');
+    const m = (this.vcSelectedDate.getMonth() + 1).toString().padStart(2, '0');
+    const y = this.vcSelectedDate.getFullYear().toString().slice(-2);
+    footerEl.textContent = `${d}/${m}/${y}`;
+  },
+
+  changeMonth(offset) {
+    this.vcCurrentDate.setMonth(this.vcCurrentDate.getMonth() + offset);
+    this.renderMiniCalendar();
+  },
+
+  goToToday(isInit = false) {
+    this.vcCurrentDate = new Date();
+    this.vcSelectedDate = new Date();
+    this.filters.date = null; // Quitar filtro de fecha
+    
+    this.renderMiniCalendar();
+    
+    if (!isInit) {
+      this.render(); // Re-render dashboard
+    }
+
+    setTimeout(() => {
+        const todayEl = document.querySelector('.vc-day-row.today');
+        if (todayEl) todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
   }
 };
 
