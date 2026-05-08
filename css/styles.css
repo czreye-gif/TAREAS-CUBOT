@@ -1845,6 +1845,13 @@ body {
 }
 
 /* ---- Vertical Mini Calendar ---- */
+.dashboard-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
 .dashboard-layout {
   display: flex;
   gap: 20px;
@@ -1929,5 +1936,46 @@ body {
 
 @media (max-width: 900px) {
   .dashboard-layout { flex-direction: column; }
-  .dashboard-side { display: none; /* Hide on small screens for now */ }
+  .dashboard-side { 
+    width: 100%; 
+    display: block; 
+    margin-bottom: 16px; 
+  }
+  .vertical-calendar {
+    width: 100%; 
+    height: auto; 
+    flex-direction: row; 
+    align-items: center;
+    position: static; 
+    padding: 0; 
+  }
+  .vc-header { 
+    flex: 0 0 140px; 
+    border-bottom: none; 
+    border-right: 1px solid var(--border); 
+    padding: 8px 12px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .vc-days-list { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: row; 
+    overflow-x: auto; 
+    overflow-y: hidden;
+    scroll-snap-type: x proximity;
+  }
+  .vc-day-row { 
+    padding: 8px 16px; 
+    border-bottom: none; 
+    border-right: 1px solid var(--border); 
+    min-width: 60px;
+    scroll-snap-align: start;
+  }
+  .vc-day-row.selected {
+    border-left: none;
+    border-bottom: 3px solid var(--primary);
+  }
+  .vc-footer { display: none; }
 }
