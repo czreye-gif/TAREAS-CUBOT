@@ -38,6 +38,7 @@ class TaskStorage {
       if (cloudTasks.length > 0 || snapshot.metadata.fromCache === false) {
         this.data.tasks = cloudTasks;
         this._saveLocal();
+        if (typeof app !== 'undefined') app.refreshCurrentView();
       }
     });
 
@@ -86,7 +87,8 @@ class TaskStorage {
         { id: 'tag-interno', name: 'Interno', color: '#10b981' }
       ],
       settings: { theme: 'dark' },
-      taskCodeCounter: 0
+      taskCodeCounter: 0,
+      noteCodeCounter: 0
     };
   }
 
@@ -117,7 +119,11 @@ class TaskStorage {
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
   }
 
-  _nextCode() {
+  _nextCode(isNote = false) {
+    if (isNote) {
+      this.data.noteCodeCounter = (this.data.noteCodeCounter || 0) + 1;
+      return 'N-' + String(this.data.noteCodeCounter).padStart(4, '0');
+    }
     this.data.taskCodeCounter = (this.data.taskCodeCounter || 0) + 1;
     return 'T-' + String(this.data.taskCodeCounter).padStart(4, '0');
   }
@@ -129,9 +135,11 @@ class TaskStorage {
   // ---- CRUD Tareas ----
 
   createTask(d) {
+    const isNote = d.type === 'note';
     const task = {
       id: this._id(),
-      code: this._nextCode(),
+      code: this._nextCode(isNote),
+      type: d.type || 'task',
       title: d.title || '',
       description: d.description || '',
       date: d.date || this._todayStr(),
@@ -187,7 +195,7 @@ class TaskStorage {
 
   getTasksByDate(dateStr) {
     return this.data.tasks
-      .filter(t => t.date === dateStr)
+      .filter(t => t.date === dateStr && t.type !== 'note')
       .sort((a, b) => {
         if (a.completed !== b.completed) return a.completed ? 1 : -1;
         return (a.timeStart || '').localeCompare(b.timeStart || '');

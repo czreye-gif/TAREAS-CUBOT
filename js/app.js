@@ -8,119 +8,145 @@ const app = {
   alarmInterval: null,
 
   init() {
-    this.bindNavigation();
-    this.bindSidebar();
-    this.bindExportImport();
-    this.bindFilters();
-    Tasks.initForm();
-    Calendar.init();
-    Agenda.init();
-    Timeline.init();
-    if (typeof Dashboard !== 'undefined') Dashboard.init();
-    UI.initDragAndDrop();
+    console.log("App: Iniciando...");
+    
+    // 1. Vincular Tema (Lo primero para evitar saltos de color)
+    this.bindTheme();
+
+    // 2. Vincular Sidebar y Navegación
+    try { this.bindSidebar(); } catch(e) { console.error("App: Error bindSidebar", e); }
+    try { this.bindNavigation(); } catch(e) { console.error("App: Error bindNavigation", e); }
+    try { this.bindExportImport(); } catch(e) { console.error("App: Error bindExportImport", e); }
+    try { this.bindFilters(); } catch(e) { console.error("App: Error bindFilters", e); }
+    
+    // 3. Inicializar módulos externos
+    try { if (typeof Tasks !== 'undefined') Tasks.initForm(); } catch(e) { console.error("App: Error Tasks.initForm", e); }
+    try { if (typeof Calendar !== 'undefined') Calendar.init(); } catch(e) { console.error("App: Error Calendar.init", e); }
+    try { if (typeof Agenda !== 'undefined') Agenda.init(); } catch(e) { console.error("App: Error Agenda.init", e); }
+    try { if (typeof Timeline !== 'undefined') Timeline.init(); } catch(e) { console.error("App: Error Timeline.init", e); }
+    try { if (typeof Dashboard !== 'undefined') Dashboard.init(); } catch(e) { console.error("App: Error Dashboard.init", e); }
+    try { if (typeof UI !== 'undefined') UI.initDragAndDrop(); } catch(e) { console.error("App: Error UI.initDragAndDrop", e); }
+    
+    // 4. Inicializar Editor y Notas
+    try {
+      if (typeof RichEditor !== 'undefined') {
+        RichEditor.init('#task-description', '#main-editor-toolbar');
+      }
+    } catch(e) { console.error("App: Error RichEditor.init", e); }
+    try { if (typeof Notes !== 'undefined') Notes.init(); } catch(e) { console.error("App: Error Notes.init", e); }
+
+    // 5. Configuración final
     this.navigate('today');
     this.startAlarmChecker();
     this.requestNotificationPermission();
 
-    // Doble clic en cualquier tarjeta de tarea → editar
+    // 6. Eventos globales
+    this.bindGlobalEvents();
+
+    // 7. Sidebar colapsado por defecto
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.add('collapsed');
+
+    console.log("App: Lista y operativa.");
+  },
+
+  bindTheme() {
+    const themeBtn = document.getElementById('btn-theme-toggle');
+    const iconSun = document.getElementById('icon-theme-sun');
+    const iconMoon = document.getElementById('icon-theme-moon');
+    const themeLabel = document.getElementById('theme-label');
+
+    const applyTheme = (theme) => {
+      const isLight = theme === 'light';
+      const root = document.documentElement;
+      if (isLight) {
+        root.classList.add('light-theme');
+        if (iconSun) iconSun.style.display = 'none';
+        if (iconMoon) iconMoon.style.display = 'block';
+        if (themeLabel) themeLabel.textContent = 'Modo Noche';
+      } else {
+        root.classList.remove('light-theme');
+        if (iconSun) iconSun.style.display = 'block';
+        if (iconMoon) iconMoon.style.display = 'none';
+        if (themeLabel) themeLabel.textContent = 'Modo Día';
+      }
+      localStorage.setItem('theme', theme);
+    };
+
+    if (themeBtn) {
+      themeBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const isLight = document.documentElement.classList.contains('light-theme');
+        const next = isLight ? 'dark' : 'light';
+        applyTheme(next);
+        if (typeof UI !== 'undefined' && UI.toast) {
+          UI.toast(`Modo ${next === 'light' ? 'Día' : 'Noche'} activado`, 'info');
+        }
+      };
+    }
+
+    // Carga inicial
+    const saved = localStorage.getItem('theme') || 'dark';
+    applyTheme(saved);
+  },
+
+  bindGlobalEvents() {
     document.addEventListener('dblclick', (e) => {
       const card = e.target.closest('[data-task-id]');
-      if (!card) return;
-      // Evitar conflicto si hicieron doble clic en un botón de acción
-      if (e.target.closest('[data-action], button')) return;
+      if (!card || e.target.closest('[data-action], button')) return;
       const taskId = card.dataset.taskId;
-      if (taskId) Tasks.editTask(taskId);
+      if (taskId && typeof Tasks !== 'undefined') Tasks.editTask(taskId);
     });
 
-    // Clic en ícono de notas → abrir nota (global, cubre todas las vistas)
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-action="show-notes"]');
       if (!btn) return;
       e.stopPropagation();
       e.preventDefault();
-      Tasks.showNotes(btn.dataset.id);
+      if (typeof Tasks !== 'undefined') Tasks.showNotes(btn.dataset.id);
     });
-
-    // ── Sidebar colapsable con persistencia ──
-    const sidebar = document.getElementById('sidebar');
-    const collapseBtn = document.getElementById('sidebar-collapse-btn');
-    if (sidebar && collapseBtn) {
-      // Restaurar estado (Contraído por defecto)
-      if (localStorage.getItem('sidebarCollapsed') !== '0') {
-        sidebar.classList.add('collapsed');
-      }
-      collapseBtn.onclick = () => {
-        sidebar.classList.toggle('collapsed');
-        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed') ? '1' : '0');
-      };
-    }
-
-    // ── Theme Toggle (Claro / Oscuro) ──
-    const themeBtn = document.getElementById('btn-theme-toggle');
-    if (themeBtn) {
-      const iconSun = document.getElementById('icon-theme-sun');
-      const iconMoon = document.getElementById('icon-theme-moon');
-      const themeLabel = document.getElementById('theme-label');
-      
-      const setTheme = (isLight) => {
-        if (isLight) {
-          document.documentElement.setAttribute('data-theme', 'light');
-          iconSun.style.display = 'none';
-          iconMoon.style.display = 'block';
-          themeLabel.textContent = 'Modo Noche';
-        } else {
-          document.documentElement.removeAttribute('data-theme');
-          iconSun.style.display = 'block';
-          iconMoon.style.display = 'none';
-          themeLabel.textContent = 'Modo Día';
-        }
-      };
-
-      // Restaurar tema (Oscuro por defecto)
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'light') {
-        setTheme(true);
-      }
-
-      themeBtn.onclick = () => {
-        const isLightNow = document.documentElement.getAttribute('data-theme') === 'light';
-        setTheme(!isLightNow);
-        localStorage.setItem('theme', !isLightNow ? 'light' : 'dark');
-      };
-    }
-
-    // Handle hash navigation
+    
     window.addEventListener('hashchange', () => {
       const hash = location.hash.slice(1);
       if (hash) this.navigate(hash, true);
     });
   },
 
-  // ---- Navegación ----
-
   bindNavigation() {
     document.querySelectorAll('[data-view]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const view = btn.dataset.view;
         this.navigate(view);
-        // Close mobile sidebar
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebar-overlay').classList.remove('show');
+        // Cerrar sidebar móvil
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (sidebar) sidebar.classList.remove('open');
+        if (overlay) overlay.classList.remove('show');
       });
     });
+
+    const fab = document.getElementById('fab-new-task');
+    if (fab) {
+      fab.onclick = () => {
+        if (this.currentView === 'notes') {
+          if (typeof Notes !== 'undefined') Notes.createNewNote();
+        } else {
+          this.navigate('new-task');
+        }
+      };
+    }
   },
 
   bindSidebar() {
     const toggle = document.getElementById('menu-toggle');
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
-    if (toggle) {
+    if (toggle && sidebar && overlay) {
       toggle.onclick = () => {
         sidebar.classList.toggle('open');
         overlay.classList.toggle('show');
       };
-    }
-    if (overlay) {
       overlay.onclick = () => {
         sidebar.classList.remove('open');
         overlay.classList.remove('show');
@@ -129,25 +155,19 @@ const app = {
   },
 
   bindExportImport() {
-    document.getElementById('btn-export').onclick = () => {
-      storage.exportJSON();
-      UI.toast('Archivo exportado correctamente', 'success');
-    };
-
-    document.getElementById('btn-import').onclick = () => {
-      document.getElementById('import-file').click();
-    };
-
-    document.getElementById('import-file').onchange = async (e) => {
+    const btnExp = document.getElementById('btn-export');
+    const btnImp = document.getElementById('btn-import');
+    const inpFile = document.getElementById('import-file');
+    if (btnExp) btnExp.onclick = () => { storage.exportJSON(); UI.toast('Exportado', 'success'); };
+    if (btnImp) btnImp.onclick = () => inpFile.click();
+    if (inpFile) inpFile.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       try {
         await storage.importJSON(file);
-        UI.toast('Datos importados correctamente', 'success');
+        UI.toast('Importado', 'success');
         this.refreshCurrentView();
-      } catch (err) {
-        UI.toast(err.message || 'Error al importar', 'error');
-      }
+      } catch (err) { UI.toast('Error', 'error'); }
       e.target.value = '';
     };
   },
@@ -164,301 +184,56 @@ const app = {
   },
 
   navigate(view, fromHash = false) {
-    if (view === 'day' && !this.selectedDate) {
-      this.selectedDate = storage._todayStr();
-    }
-
-    // Handle new-task: reset form
+    if (view === 'day' && !this.selectedDate) this.selectedDate = storage._todayStr();
     if (view === 'new-task') {
       Tasks.resetForm();
-      const dateInput = document.getElementById('task-date');
-      if (dateInput) dateInput.value = storage._todayStr();
+      const di = document.getElementById('task-date');
+      if (di) di.value = storage._todayStr();
     }
-
     this.currentView = view;
     if (!fromHash) location.hash = view;
-
-    // Update views
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    const viewEl = document.getElementById(`view-${view}`);
-    if (viewEl) {
-      viewEl.classList.add('active');
-      viewEl.style.animation = 'fadeSlideIn 0.3s ease';
-    }
-
-    // Update nav buttons
-    document.querySelectorAll('.nav-btn[data-view]').forEach(b => {
-      b.classList.toggle('active', b.dataset.view === view);
-    });
-
-    // Update mobile title
-    const titles = {
-      'today': 'Hoy',
-      'calendar': 'Calendario',
-      'agenda': 'Agenda',
-      'day': 'Detalle del Día',
-      'new-task': 'Nueva Tarea',
-      'tags': 'Etiquetas',
-      'completed': 'Tareas Terminadas'
-    };
-    const mobileTitle = document.getElementById('mobile-title');
-    if (mobileTitle) mobileTitle.textContent = titles[view] || 'Tareas';
-
-    // Render view content
+    const ve = document.getElementById(`view-${view}`);
+    if (ve) ve.classList.add('active');
+    document.querySelectorAll('.nav-btn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+    const titles = { 'today':'Hoy','calendar':'Calendario','agenda':'Agenda','day':'Detalle','new-task':'Nueva Tarea','tags':'Etiquetas','completed':'Terminadas','notes':'Notas' };
+    const mt = document.getElementById('mobile-title');
+    if (mt) mt.textContent = titles[view] || 'Tareas';
     this.renderView(view);
   },
 
   renderView(view) {
     switch (view) {
-      case 'today':
-        this.renderToday();
-        break;
-      case 'calendar':
-        Calendar.render();
-        break;
-      case 'month-list':
-        Timeline.render();
-        break;
-      case 'agenda':
-        Agenda.render();
-        break;
-      case 'day':
-        this.renderDayDetail();
-        break;
-      case 'new-task':
-        Tasks.initForm();
-        break;
-      case 'tags':
-        this.renderTagsView();
-        break;
-      case 'completed':
-        Tasks.renderCompletedTasks('completed-tasks-list');
-        break;
+      case 'today': this.renderToday(); break;
+      case 'calendar': Calendar.render(); break;
+      case 'month-list': Timeline.render(); break;
+      case 'agenda': Agenda.render(); break;
+      case 'day': this.renderDayDetail(); break;
+      case 'new-task': Tasks.initForm(); break;
+      case 'tags': this.renderTagsView(); break;
+      case 'completed': Tasks.renderCompletedTasks('completed-tasks-list'); break;
+      case 'notes': if (typeof Notes !== 'undefined') Notes.render(); break;
     }
   },
 
-  renderToday() {
-    if (typeof Dashboard !== 'undefined') {
-      Dashboard.render();
-    }
-  },
-
+  renderToday() { if (typeof Dashboard !== 'undefined') Dashboard.render(); },
   renderDayDetail() {
-    const dateStr = this.selectedDate || storage._todayStr();
-    const titleEl = document.getElementById('day-date-title');
-    if (titleEl) titleEl.textContent = UI.formatDateLong(dateStr);
-
-    Tasks.renderStats('day-stats', dateStr);
-    Tasks.renderTaskList('day-tasks', dateStr);
-
-    // Update back/forward navigation
-    const prevBtn = document.getElementById('day-prev');
-    const nextBtn = document.getElementById('day-next');
-    if (prevBtn) {
-      prevBtn.onclick = () => {
-        const d = new Date(this.selectedDate + 'T12:00:00');
-        d.setDate(d.getDate() - 1);
-        this.selectedDate = d.toISOString().split('T')[0];
-        this.renderDayDetail();
-      };
-    }
-    if (nextBtn) {
-      nextBtn.onclick = () => {
-        const d = new Date(this.selectedDate + 'T12:00:00');
-        d.setDate(d.getDate() + 1);
-        this.selectedDate = d.toISOString().split('T')[0];
-        this.renderDayDetail();
-      };
-    }
+    const ds = this.selectedDate || storage._todayStr();
+    const te = document.getElementById('day-date-title');
+    if (te) te.textContent = UI.formatDateLong(ds);
+    Tasks.renderStats('day-stats', ds);
+    Tasks.renderTaskList('day-tasks', ds);
+    const pb = document.getElementById('day-prev');
+    const nb = document.getElementById('day-next');
+    if (pb) pb.onclick = () => { const d = new Date(this.selectedDate + 'T12:00:00'); d.setDate(d.getDate()-1); this.selectedDate = d.toISOString().split('T')[0]; this.renderDayDetail(); };
+    if (nb) nb.onclick = () => { const d = new Date(this.selectedDate + 'T12:00:00'); d.setDate(d.getDate()+1); this.selectedDate = d.toISOString().split('T')[0]; this.renderDayDetail(); };
   },
-
-  refreshCurrentView() {
-    this.renderView(this.currentView);
-  },
-
-  _getGreeting() {
-    const hour = new Date().getHours();
-    if (hour < 12) return '¡Buenos días! ☀️';
-    if (hour < 18) return '¡Buenas tardes! 🌤️';
-    return '¡Buenas noches! 🌙';
-  },
-
-  // ---- Gestión de Etiquetas ----
-
-  _tagColors: [
-    '#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#10b981',
-    '#14b8a6','#06b6d4','#0ea5e9','#3b82f6','#6366f1','#8b5cf6','#a855f7',
-    '#d946ef','#ec4899','#f43f5e','#fb7185','#64748b','#78716c'
-  ],
-
-  renderTagsView(searchQuery = '') {
-    const list = document.getElementById('tags-list');
-    const countEl = document.getElementById('tags-count');
-    let tags = storage.getAllTags().sort((a, b) => a.name.localeCompare(b.name, 'es'));
-    if (!list) return;
-
-    if (countEl) countEl.textContent = tags.length;
-
-    // Filter by search
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      tags = tags.filter(t => t.name.toLowerCase().includes(q));
-    }
-
-    if (tags.length === 0) {
-      list.innerHTML = searchQuery
-        ? '<p style="color:var(--muted);font-size:0.85rem">No se encontraron etiquetas.</p>'
-        : '<p style="color:var(--muted);font-size:0.85rem">No hay etiquetas creadas aún.</p>';
-    } else {
-      list.innerHTML = tags.map(tag => `
-        <div class="tag-manage-item" data-id="${tag.id}">
-          <span class="tag-pill" style="background:${tag.color}">${this._escTag(tag.name)}</span>
-          <div class="tag-manage-actions">
-            <input type="text" class="tag-edit-name" value="${this._escTag(tag.name)}" style="width:120px">
-            <input type="color" class="tag-edit-color" value="${tag.color}">
-            <button class="btn-tag-save" title="Guardar">💾</button>
-            <button class="btn-tag-delete" title="Eliminar">🗑️</button>
-          </div>
-        </div>
-      `).join('');
-
-      list.querySelectorAll('.tag-manage-item').forEach(item => {
-        const id = item.dataset.id;
-        item.querySelector('.btn-tag-save').onclick = () => {
-          const name = item.querySelector('.tag-edit-name').value.trim();
-          const color = item.querySelector('.tag-edit-color').value;
-          if (name) {
-            storage.updateTag(id, { name, color });
-            UI.toast('Etiqueta actualizada', 'success');
-            this.renderTagsView(document.getElementById('tags-search')?.value || '');
-          }
-        };
-        item.querySelector('.btn-tag-delete').onclick = async () => {
-          const ok = await UI.confirm('Eliminar etiqueta', '¿Eliminar esta etiqueta de todas las tareas?');
-          if (ok) {
-            storage.deleteTag(id);
-            UI.toast('Etiqueta eliminada', 'success');
-            this.renderTagsView(document.getElementById('tags-search')?.value || '');
-          }
-        };
-      });
-    }
-
-    // Create single tag
-    const createBtn = document.getElementById('tag-create-btn');
-    if (createBtn) {
-      createBtn.onclick = () => {
-        const name = document.getElementById('tag-name-input').value.trim();
-        const color = document.getElementById('tag-color-input').value;
-        if (!name) { UI.toast('Escribe un nombre', 'warning'); return; }
-        storage.createTag(name, color);
-        document.getElementById('tag-name-input').value = '';
-        UI.toast('Etiqueta creada', 'success');
-        this.renderTagsView();
-      };
-    }
-
-    // Bulk import
-    const bulkBtn = document.getElementById('tag-bulk-btn');
-    if (bulkBtn) {
-      bulkBtn.onclick = () => this._bulkImportTags();
-    }
-
-    // Search
-    const searchInput = document.getElementById('tags-search');
-    if (searchInput) {
-      searchInput.oninput = () => {
-        this.renderTagsView(searchInput.value);
-      };
-    }
-  },
-
-  _bulkImportTags() {
-    const textarea = document.getElementById('tag-bulk-input');
-    const status = document.getElementById('tag-bulk-status');
-    if (!textarea) return;
-    const raw = textarea.value.trim();
-    if (!raw) { UI.toast('Pega tus etiquetas en el área de texto', 'warning'); return; }
-
-    // Parse: split by newlines, then by commas if single line
-    let lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
-    // If only 1 line with commas and no color codes, split by comma
-    if (lines.length === 1 && lines[0].includes(',') && !lines[0].includes('#')) {
-      lines = lines[0].split(',').map(l => l.trim()).filter(Boolean);
-    }
-
-    const existing = storage.getAllTags().map(t => t.name.toLowerCase());
-    let created = 0, skipped = 0;
-
-    lines.forEach((line, i) => {
-      let name, color;
-      // Check for "name, #color" format
-      const colorMatch = line.match(/^(.+?),\s*(#[0-9a-fA-F]{3,8})\s*$/);
-      if (colorMatch) {
-        name = colorMatch[1].trim();
-        color = colorMatch[2];
-      } else {
-        name = line.replace(/,\s*$/, '').trim();
-        color = this._tagColors[i % this._tagColors.length];
-      }
-
-      if (!name) return;
-      if (existing.includes(name.toLowerCase())) {
-        skipped++;
-        return;
-      }
-
-      storage.createTag(name, color);
-      existing.push(name.toLowerCase());
-      created++;
-    });
-
-    textarea.value = '';
-    if (status) status.textContent = `✅ ${created} creadas${skipped > 0 ? `, ${skipped} duplicadas omitidas` : ''}`;
-    UI.toast(`${created} etiquetas importadas`, 'success');
-    this.renderTagsView();
-  },
-
-  _escTag(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; },
-
-  // ---- Alarmas / Notificaciones ----
-
-  requestNotificationPermission() {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-  },
-
-  startAlarmChecker() {
-    // Check every 30 seconds
-    this.alarmInterval = setInterval(() => this.checkAlarms(), 30000);
-    this.checkAlarms();
-  },
-
-  checkAlarms() {
-    const alarms = storage.getPendingAlarms();
-    alarms.forEach(task => {
-      this.showNotification(task);
-      // Mark alarm as fired by clearing it
-      storage.updateTask(task.id, { alarm: null });
-    });
-  },
-
-  showNotification(task) {
-    // In-app toast
-    UI.toast(`🔔 ${task.title}`, 'warning', 6000);
-
-    // Browser notification
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('⏰ Recordatorio de Tarea', {
-        body: task.title + (task.description ? '\n' + task.description : ''),
-        icon: 'icons/icon-192.png',
-        tag: task.id,
-        vibrate: [200, 100, 200]
-      });
-    }
-  }
+  refreshCurrentView() { this.renderView(this.currentView); },
+  renderTagsView(q = '') { if (typeof Tasks !== 'undefined') Tasks.renderTagsView?.(q); },
+  requestNotificationPermission() { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); },
+  startAlarmChecker() { this.alarmInterval = setInterval(() => this.checkAlarms(), 30000); this.checkAlarms(); },
+  checkAlarms() { const al = storage.getPendingAlarms(); al.forEach(t => { this.showNotification(t); storage.updateTask(t.id, { alarm: null }); }); },
+  showNotification(t) { UI.toast(`🔔 ${t.title}`, 'warning', 6000); if ('Notification' in window && Notification.permission === 'granted') { new Notification('⏰ Recordatorio', { body: t.title, icon: 'icons/icon-192.png' }); } }
 };
 
-// ---- Start app when DOM ready ----
 document.addEventListener('DOMContentLoaded', () => app.init());

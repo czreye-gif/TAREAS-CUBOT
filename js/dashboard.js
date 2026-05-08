@@ -43,11 +43,11 @@ const Dashboard = {
   renderRatios() {
     const todayDate = storage._todayStr();
     const allTasks  = storage.getAllTasks();
-    const todayTasks = allTasks.filter(t => t.date === todayDate);
+    const todayTasks = allTasks.filter(t => t.date === todayDate && t.type !== 'note');
 
     const totalToday     = todayTasks.length;
     const completedToday = todayTasks.filter(t => t.completed).length;
-    const overdueTasks   = allTasks.filter(t => t.date && t.date < todayDate && !t.completed);
+    const overdueTasks   = allTasks.filter(t => t.date && t.date < todayDate && !t.completed && t.type !== 'note');
     const highPriority   = todayTasks.filter(t => t.priority === 'high' && !t.completed);
 
     const progress = totalToday === 0 ? 0 : Math.round((completedToday / totalToday) * 100);
@@ -93,13 +93,15 @@ const Dashboard = {
     };
 
     urgentTasks = allTasks.filter(t =>
-      (t.date && t.date < todayDate && !t.completed) ||
-      (t.date === todayDate && t.priority === 'high' && !t.completed)
+      t.type !== 'note' && (
+        (t.date && t.date < todayDate && !t.completed) ||
+        (t.date === todayDate && t.priority === 'high' && !t.completed)
+      )
     ).sort(sortCompletedLast);
     todayTasks = allTasks.filter(t =>
-      t.date === todayDate && t.priority !== 'high' && !t.completed
+      t.type !== 'note' && t.date === todayDate && t.priority !== 'high' && !t.completed
     ).sort(sortCompletedLast);
-    tomorrowTasks = allTasks.filter(t => t.date === tomorrowDate && !t.completed).sort(sortCompletedLast);
+    tomorrowTasks = allTasks.filter(t => t.type !== 'note' && t.date === tomorrowDate && !t.completed).sort(sortCompletedLast);
 
     this._renderList('dash-urgent-list',   urgentTasks,   'No hay tareas urgentes ni vencidas. 🎉');
     this._renderList('dash-today-list',    todayTasks,    'No hay más tareas para hoy.');
@@ -202,6 +204,9 @@ const Dashboard = {
     const q        = (query || '').toLowerCase().trim();
 
     return tasks.filter(t => {
+      // Exclude independent notes from Dashboard (they belong in Notes Library)
+      if (t.type === 'note') return false;
+      
       // Exclude completed tasks from Dashboard views and searches
       if (t.completed) return false;
 
@@ -561,6 +566,12 @@ const Dashboard = {
   },
 
   selectDate(year, month, day) {
+    const today = new Date();
+    if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
+        this.goToToday();
+        return;
+    }
+    
     this.vcSelectedDate = new Date(year, month, day);
     // Convertir a YYYY-MM-DD para el filtro
     const dStr = String(day).padStart(2, '0');

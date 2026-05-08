@@ -67,18 +67,13 @@ const Tasks = {
     const totalSubs = hasSubtasks ? task.subtasks.length : 0;
     const progressPct = totalSubs > 0 ? Math.round((completedSubs / totalSubs) * 100) : 0;
 
-    const alarmBadge = task.alarm ? `<span class="badge badge-alarm" title="Alarma: ${new Date(task.alarm).toLocaleString('es-MX')}">🔔</span>` : '';
-    const deadlineBadge = task.deadline ? `<span class="badge badge-deadline" title="Fecha límite: ${task.deadline}">📅 ${UI.formatDateShort(task.deadline)}</span>` : '';
     const codeBadge = `<span class="badge badge-code" title="Código de tarea">${task.code || '---'}</span>`;
     const tagPills = (task.tags || []).map(tid => {
       const tag = storage.getTag(tid);
       return tag ? `<span class="tag-pill-card"><span style="width:7px;height:7px;border-radius:50%;background:${tag.color};display:inline-block;flex-shrink:0"></span>${this._escapeHTML(tag.name)}</span>` : '';
     }).join('');
 
-    const isOverdue = !task.completed && (
-      (task.deadline && task.deadline < storage._todayStr()) ||
-      (task.date < storage._todayStr())
-    );
+    const isOverdue = !task.completed && (task.date < storage._todayStr());
 
     return `
       <div class="task-card ${task.completed ? 'completed' : ''} ${isOverdue ? 'overdue' : ''} priority-${task.priority}"
@@ -98,7 +93,6 @@ const Tasks = {
             <div class="task-meta">
               ${codeBadge}
               <span class="task-priority-dot" style="background:${UI.priorityColor(task.priority)}" title="${UI.priorityLabel(task.priority)}"></span>
-              ${alarmBadge}${deadlineBadge}
             </div>
           </div>
           <div class="task-actions">
@@ -194,16 +188,47 @@ const Tasks = {
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px';
 
     const box = document.createElement('div');
-    box.style.cssText = 'background:#1e1e2e;border-radius:14px;padding:24px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.7);display:flex;flex-direction:column;gap:14px';
+    box.style.cssText = 'background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;position:relative';
 
     box.innerHTML = `
-      <h3 style="margin:0;font-size:1rem;color:#e2e8f0">📋 Notas — ${this._escapeHTML(task.title)}</h3>
+      <h3 style="margin:0;font-size:1rem;color:var(--text)">📋 Notas — ${this._escapeHTML(task.title)}</h3>
 
-      <textarea id="note-ta" placeholder="Escribe las notas de esta tarea..." style="
-        width:100%;min-height:110px;resize:vertical;padding:12px;
-        background:#16213e;border:1px solid #6366f1;border-radius:8px;
-        color:#e2e8f0;font-size:0.9rem;line-height:1.6;font-family:inherit;
-        outline:none;box-sizing:border-box">${this._escapeHTML(task.description || '')}</textarea>
+      <div class="rt-editor-container" id="modal-editor-container">
+        <div class="rt-toolbar" id="modal-editor-toolbar">
+          <button type="button" class="rt-btn" data-command="bold" title="Negrita"><b>B</b></button>
+          <button type="button" class="rt-btn" data-command="italic" title="Cursiva"><i>I</i></button>
+          <button type="button" class="rt-btn" data-command="underline" title="Subrayado"><u>U</u></button>
+          <div class="rt-divider"></div>
+          <button type="button" class="rt-btn" data-command="insertUnorderedList" title="Lista con viñetas">•</button>
+          <button type="button" class="rt-btn" data-command="insertOrderedList" title="Lista numerada">1.</button>
+          <div class="rt-divider"></div>
+          <button type="button" class="rt-btn" data-command="insertTable" title="Insertar Tabla">▦</button>
+          <button type="button" class="rt-btn" data-command="insertDateTime" title="Insertar Fecha y Hora">⌚</button>
+          <button type="button" class="rt-btn rt-table-row-btn" data-command="addTableRow" title="Añadir fila" style="display:none; color:var(--primary)">+ Fila</button>
+          <button type="button" class="rt-btn rt-table-row-btn" data-command="removeTableRow" title="Eliminar fila" style="display:none; color:var(--danger)">- Fila</button>
+          <button type="button" class="rt-btn rt-expand-btn" title="Expandir" style="margin-left:auto; background:var(--primary); color:white; width:auto; padding:0 8px; font-weight:700">⤢ EXPANDIR</button>
+          <button type="button" class="rt-btn rt-convert-btn" title="Convertir en Tarea" style="background:var(--accent); color:white; width:auto; padding:0 8px; font-weight:700; margin-left:8px; display:none">➔ CONVERTIR A TAREA</button>
+        </div>
+
+        <div id="note-ta" class="postit-note rt-editor ${task.type === 'note' ? 'postit-pink' : ''}" contenteditable="true" style="
+          width:100%;min-height:150px;max-height:400px;overflow-y:auto;resize:vertical;padding:12px;
+          border-radius:8px;
+          font-size:0.9rem;line-height:1.6;
+          outline:none;box-sizing:border-box" 
+          data-task-id="${task.id}"
+          data-type="${task.type || 'task'}"
+          data-folio="${task.code}">${task.description || ''}</div>
+      </div>
+
+      <div id="modal-tags-section" style="margin-top:4px">
+        <div style="font-size:0.75rem; color:var(--muted); font-weight:700; margin-bottom:6px">ETIQUETAS:</div>
+        <div id="modal-tags-container" style="display:flex; flex-wrap:wrap; gap:6px; align-items:center">
+          <!-- Chips de etiquetas -->
+        </div>
+        <div id="modal-tag-selector" style="display:none; margin-top:8px; padding:12px; background:var(--bg2); border:1px solid var(--border); border-radius:10px; flex-wrap:wrap; gap:8px">
+           <!-- Selector de etiquetas disponibles -->
+        </div>
+      </div>
 
       <div id="att-list" style="display:flex;flex-direction:column;gap:8px"></div>
 
@@ -211,10 +236,10 @@ const Tasks = {
         <label id="clip-btn" style="
           flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
           padding:12px;border-radius:10px;cursor:pointer;
-          border:2px solid #6366f1;background:rgba(99,102,241,0.15);
-          color:#a5b4fc;font-size:0.85rem;font-weight:600;
+          border:2px solid var(--primary);background:var(--success-bg);
+          color:var(--text);font-size:0.85rem;font-weight:600;
           transition:all .15s">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
           </svg>
           Adjuntar archivo
@@ -224,8 +249,8 @@ const Tasks = {
         <div id="paste-zone" style="
           flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
           padding:12px;border-radius:10px;cursor:pointer;
-          border:2px dashed #4b5563;background:rgba(75,85,99,0.1);
-          color:#9ca3af;font-size:0.85rem;font-weight:600;
+          border:2px dashed var(--border);background:var(--bg2);
+          color:var(--muted);font-size:0.85rem;font-weight:600;
           transition:all .15s;text-align:center">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
             <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
@@ -243,6 +268,77 @@ const Tasks = {
 
     overlay.appendChild(box);
     document.body.appendChild(overlay);
+
+    // Initialize rich editor for modal
+    RichEditor.init('#note-ta', '#modal-editor-toolbar');
+
+    // ── Lógica de Etiquetas en Modal ─────────────────────────
+    let modalTags = [...(task.tags || [])];
+    const tagsContainer = box.querySelector('#modal-tags-container');
+    const tagSelector = box.querySelector('#modal-tag-selector');
+    const editorEl = box.querySelector('#note-ta');
+
+    const renderModalTags = () => {
+      // Sincronizar con hashtags en el texto antes de renderizar
+      const extracted = RichEditor.extractTags(editorEl.innerHTML);
+      extracted.forEach(tid => {
+        if (!modalTags.includes(tid)) modalTags.push(tid);
+      });
+
+      tagsContainer.innerHTML = modalTags.map(tid => {
+        const tag = storage.getTag(tid);
+        if (!tag) return '';
+        return `
+          <span style="background:${tag.color}; color:white; padding:4px 10px; border-radius:6px; font-size:0.75rem; display:flex; align-items:center; gap:6px; font-weight:600">
+            ${tag.name}
+            <span class="remove-modal-tag" data-id="${tag.id}" style="cursor:pointer; font-weight:bold; font-size:1rem; line-height:1">×</span>
+          </span>
+        `;
+      }).join('') + `
+        <button id="btn-add-modal-tag" style="background:transparent; border:1px dashed var(--muted); color:var(--muted); padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer">+ Etiqueta</button>
+      `;
+
+      tagsContainer.querySelectorAll('.remove-modal-tag').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.id;
+          const idx = modalTags.indexOf(id);
+          if (idx > -1) modalTags.splice(idx, 1);
+          renderModalTags();
+        };
+      });
+
+      tagsContainer.querySelector('#btn-add-modal-tag').onclick = () => {
+        const allTags = storage.getAllTags();
+        tagSelector.style.display = (tagSelector.style.display === 'flex') ? 'none' : 'flex';
+        tagSelector.innerHTML = allTags.map(tag => {
+          const isSelected = modalTags.includes(tag.id);
+          return `
+            <div class="tag-selector-item" data-id="${tag.id}" style="background:${tag.color}; opacity:${isSelected ? '0.3' : '1'}; color:white; padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer; font-weight:600">
+              ${tag.name}
+            </div>
+          `;
+        }).join('') + `<button id="btn-close-selector" style="background:var(--border); border:none; color:var(--text); padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer">Cerrar</button>`;
+
+        tagSelector.querySelectorAll('.tag-selector-item').forEach(item => {
+          item.onclick = () => {
+            const id = item.dataset.id;
+            if (!modalTags.includes(id)) {
+              modalTags.push(id);
+              tagSelector.style.display = 'none';
+              renderModalTags();
+            }
+          };
+        });
+        tagSelector.querySelector('#btn-close-selector').onclick = () => tagSelector.style.display = 'none';
+      };
+    };
+    renderModalTags();
+
+    // Sincronización automática al escribir
+    editorEl.addEventListener('input', () => {
+      renderModalTags();
+    });
 
     // ── Render adjuntos ──────────────────────────────────────
     const attList = box.querySelector('#att-list');
@@ -329,8 +425,21 @@ const Tasks = {
     // ── Botones ──────────────────────────────────────────────
     box.querySelector('#note-cancel').onclick = () => overlay.remove();
     box.querySelector('#note-save').onclick = () => {
-      const text = box.querySelector('#note-ta').value;
-      storage.updateTask(id, { description: text, attachments: [...attachments] });
+      const editorEl = box.querySelector('#note-ta');
+      const htmlContent = editorEl.innerHTML;
+      
+      // Sincronización final antes de guardar
+      const extracted = RichEditor.extractTags(htmlContent);
+      extracted.forEach(tid => {
+        if (!modalTags.includes(tid)) modalTags.push(tid);
+      });
+
+      storage.updateTask(id, { 
+        description: htmlContent, 
+        attachments: [...attachments],
+        tags: modalTags
+      });
+      
       UI.toast('Nota guardada', 'success');
       overlay.remove();
       app.refreshCurrentView();
@@ -404,6 +513,32 @@ const Tasks = {
   deleteSubtask(taskId, subId) {
     storage.deleteSubtask(taskId, subId);
     app.refreshCurrentView();
+  },
+
+  convertNoteToTask(noteId) {
+    const note = storage.getTask(noteId);
+    if (!note) return;
+    
+    // Cerrar cualquier modal abierto
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) modal.remove();
+    
+    // Navegar a nueva tarea
+    app.navigate('new-task');
+    
+    // Pre-rellenar el formulario con el contenido de la nota
+    setTimeout(() => {
+      const descEl = document.getElementById('task-description');
+      descEl.innerHTML = note.description || '';
+      descEl.dataset.folio = note.code; // Para que sepa cuál era
+      descEl.dataset.type = 'note';
+      descEl.dataset.convertId = note.id; // ID para la transformación final
+      
+      // Reiniciar el toolbar del editor para que detecte el cambio de tipo
+      RichEditor.init('#task-description', '#main-editor-toolbar');
+      
+      UI.toast('Nota cargada. Define el título y fecha para convertirla en tarea.', 'info');
+    }, 200);
   },
 
   // ---- Formulario de creación / edición ----
@@ -766,22 +901,14 @@ const Tasks = {
     if (!form) return;
     form.dataset.editId = task.id;
     document.getElementById('task-title').value = task.title || '';
-    document.getElementById('task-description').value = task.description || '';
-    document.getElementById('task-date').value = task.date || '';
-    document.getElementById('task-priority').value = task.priority || 'medium';
-    document.getElementById('task-deadline').value = task.deadline || '';
-    document.getElementById('task-alarm').value = task.alarm ? task.alarm.slice(0, 16) : '';
-
-    // Recurrence
-    const recType = document.getElementById('task-recurrence');
-    const recUntil = document.getElementById('task-rec-until');
-    if (task.recurrence) {
-      recType.value = task.recurrence.type;
-      recUntil.value = task.recurrence.until || '';
-    } else {
-      recType.value = 'none';
-      recUntil.value = '';
-    }
+    document.getElementById('task-priority').value = task.priority || 'C';
+    const descEl = document.getElementById('task-description');
+    descEl.dataset.folio = task.code || '';
+    descEl.dataset.type = task.type || 'task';
+    descEl.dataset.taskId = task.id;
+    descEl.innerHTML = task.description || '';
+    // Re-init toolbar
+    RichEditor.init('#task-description', '#main-editor-toolbar');
 
     // Subtasks
     const list = document.getElementById('form-subtask-list');
@@ -813,8 +940,13 @@ const Tasks = {
   resetForm() {
     const form = document.getElementById('task-form');
     if (!form) return;
-    form.reset();
-    form.dataset.editId = '';
+    const descEl = document.getElementById('task-description');
+    descEl.innerHTML = '';
+    descEl.dataset.folio = '';
+    descEl.dataset.type = 'task';
+    descEl.dataset.convertId = '';
+    // Re-init toolbar
+    RichEditor.init('#task-description', '#main-editor-toolbar');
     document.getElementById('task-date').value = storage._todayStr();
     document.getElementById('form-subtask-list').innerHTML = '';
     document.getElementById('form-title').textContent = 'Nueva Tarea';
@@ -842,67 +974,51 @@ const Tasks = {
       completed: false
     }));
 
-    const recType = document.getElementById('task-recurrence').value;
-    const recurrence = recType !== 'none' ? {
-      type: recType,
-      until: document.getElementById('task-rec-until').value || null
-    } : null;
-
-    const alarmVal = document.getElementById('task-alarm').value;
-
-    // Collect selected tags
-    const selectedTags = this._formSelectedTags || [];
+    // Collect selected tags + extracted tags from rich editor
+    let selectedTags = [...(this._formSelectedTags || [])];
+    const editorHtml = document.getElementById('task-description').innerHTML;
+    const extractedTags = RichEditor.extractTags(editorHtml);
+    
+    // Merge without duplicates
+    extractedTags.forEach(tid => {
+      if (!selectedTags.includes(tid)) selectedTags.push(tid);
+    });
 
     const taskData = {
       title,
-      description: document.getElementById('task-description').value.trim(),
+      description: editorHtml.trim(),
       date: document.getElementById('task-date').value,
       priority: document.getElementById('task-priority').value,
-      deadline: document.getElementById('task-deadline').value || null,
-      alarm: alarmVal ? new Date(alarmVal).toISOString() : null,
-      recurrence,
       tags: selectedTags,
       subtasks,
       attachments: this._formAttachments || []
     };
 
     const editId = form.dataset.editId;
+    const convertId = document.getElementById('task-description').dataset.convertId;
+
     if (editId) {
       storage.updateTask(editId, taskData);
       UI.toast('Tarea actualizada', 'success');
-    } else {
-      // Handle recurrence - create multiple tasks
-      if (recurrence) {
-        this._createRecurringTasks(taskData);
-      } else {
-        storage.createTask(taskData);
+    } else if (convertId) {
+      // INNOVACIÓN: Convertir nota independiente en tarea
+      const note = storage.getTask(convertId);
+      if (note) {
+        const newCode = storage._nextCode(false); // Siguiente T-XXXX
+        storage.updateTask(convertId, {
+          ...taskData,
+          type: 'task',
+          code: newCode
+        });
+        UI.toast(`¡Nota ${note.code} convertida en Tarea ${newCode}!`, 'success');
       }
+    } else {
+      storage.createTask(taskData);
       UI.toast('Tarea creada', 'success');
     }
 
     this.resetForm();
     app.navigate('today');
-  },
-
-  _createRecurringTasks(taskData) {
-    const startDate = new Date(taskData.date + 'T12:00:00');
-    const endDate = taskData.recurrence.until
-      ? new Date(taskData.recurrence.until + 'T12:00:00')
-      : new Date(startDate.getFullYear(), 11, 31); // End of year
-
-    let current = new Date(startDate);
-    while (current <= endDate) {
-      const dateStr = current.toISOString().split('T')[0];
-      const data = { ...taskData, date: dateStr, recurrence: null };
-      data.subtasks = taskData.subtasks.map(s => ({ ...s, id: storage._id() }));
-      storage.createTask(data);
-
-      switch (taskData.recurrence.type) {
-        case 'daily': current.setDate(current.getDate() + 1); break;
-        case 'weekly': current.setDate(current.getDate() + 7); break;
-        case 'monthly': current.setMonth(current.getMonth() + 1); break;
-      }
-    }
   },
 
   // ---- Stats Cards ----
@@ -938,6 +1054,118 @@ const Tasks = {
   },
 
   // ---- Utilidades ----
+
+  renderTagsView(searchQuery = '') {
+    const list = document.getElementById('tags-list');
+    const countEl = document.getElementById('tags-count');
+    let tags = storage.getAllTags().sort((a, b) => a.name.localeCompare(b.name, 'es'));
+    if (!list) return;
+
+    if (countEl) countEl.textContent = tags.length;
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      tags = tags.filter(t => t.name.toLowerCase().includes(q));
+    }
+
+    if (tags.length === 0) {
+      list.innerHTML = `<p style="color:var(--muted);font-size:0.85rem">No se encontraron etiquetas.</p>`;
+    } else {
+      list.innerHTML = tags.map(tag => `
+        <div class="tag-manage-item" data-id="${tag.id}" style="display:flex; align-items:center; justify-content:space-between; background:var(--surface2); padding:10px; border-radius:10px; margin-bottom:8px; border:1px solid var(--border)">
+          <div style="display:flex; align-items:center; gap:10px">
+            <span style="width:14px; height:14px; border-radius:50%; background:${tag.color}"></span>
+            <span style="font-weight:600; font-size:0.9rem">${this._escapeHTML(tag.name)}</span>
+          </div>
+          <div style="display:flex; gap:8px">
+            <button class="btn-tag-delete" data-id="${tag.id}" style="background:transparent; border:none; cursor:pointer; font-size:1.1rem" title="Eliminar">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('.btn-tag-delete').forEach(btn => {
+        btn.onclick = async () => {
+          const ok = await UI.confirm('Eliminar etiqueta', '¿Eliminar de todas las tareas?');
+          if (ok) {
+            storage.deleteTag(btn.dataset.id);
+            UI.toast('Etiqueta eliminada', 'success');
+            this.renderTagsView(document.getElementById('tags-search')?.value || '');
+          }
+        };
+      });
+    }
+
+    // Bindeo de botones (solo si no están bindeados)
+    const createBtn = document.getElementById('tag-create-btn');
+    if (createBtn && !createBtn._bound) {
+      createBtn.onclick = () => {
+        const name = document.getElementById('tag-name-input').value.trim();
+        const color = document.getElementById('tag-color-input').value;
+        if (!name) { UI.toast('Escribe un nombre', 'warning'); return; }
+        storage.createTag(name, color);
+        document.getElementById('tag-name-input').value = '';
+        UI.toast('Etiqueta creada', 'success');
+        this.renderTagsView();
+      };
+      createBtn._bound = true;
+    }
+
+    const bulkBtn = document.getElementById('tag-bulk-btn');
+    if (bulkBtn && !bulkBtn._bound) {
+      bulkBtn.onclick = () => this._bulkImportTags();
+      bulkBtn._bound = true;
+    }
+
+    const searchInput = document.getElementById('tags-search');
+    if (searchInput && !searchInput._bound) {
+      searchInput.oninput = () => this.renderTagsView(searchInput.value);
+      searchInput._bound = true;
+    }
+  },
+
+  _bulkImportTags() {
+    const textarea = document.getElementById('tag-bulk-input');
+    const status = document.getElementById('tag-bulk-status');
+    if (!textarea) return;
+    const raw = textarea.value.trim();
+    if (!raw) { UI.toast('Pega tus etiquetas primero', 'warning'); return; }
+
+    let lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length === 1 && lines[0].includes(',') && !lines[0].includes('#')) {
+      lines = lines[0].split(',').map(l => l.trim()).filter(Boolean);
+    }
+
+    const existing = storage.getAllTags().map(t => t.name.toLowerCase());
+    const tagColors = [
+      '#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#10b981',
+      '#14b8a6','#06b6d4','#0ea5e9','#3b82f6','#6366f1','#8b5cf6','#a855f7'
+    ];
+    let created = 0, skipped = 0;
+
+    lines.forEach((line, i) => {
+      let name, color;
+      const colorMatch = line.match(/^(.+?),\s*(#[0-9a-fA-F]{3,8})\s*$/);
+      if (colorMatch) {
+        name = colorMatch[1].trim();
+        color = colorMatch[2];
+      } else {
+        name = line.replace(/,\s*$/, '').trim();
+        color = tagColors[i % tagColors.length];
+      }
+
+      if (!name) return;
+      if (existing.includes(name.toLowerCase())) { skipped++; return; }
+
+      storage.createTag(name, color);
+      existing.push(name.toLowerCase());
+      created++;
+    });
+
+    textarea.value = '';
+    if (status) status.textContent = `✅ ${created} creadas${skipped > 0 ? `, ${skipped} duplicadas` : ''}`;
+    UI.toast(`${created} etiquetas importadas`, 'success');
+    this.renderTagsView();
+  },
 
   _escapeHTML(str) {
     const div = document.createElement('div');

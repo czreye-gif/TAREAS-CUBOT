@@ -38,6 +38,15 @@ const UI = {
     });
   },
 
+  formatTime(isoStr) {
+    if (!isoStr) return '';
+    try {
+      return new Date(isoStr).toLocaleTimeString('es-MX', {
+        hour: '2-digit', minute: '2-digit'
+      });
+    } catch { return ''; }
+  },
+
   // ─── 2. CATEGORÍAS Y PRIORIDADES ──────────────────────────────────────────
 
   categoryIcon(cat) {
@@ -46,11 +55,25 @@ const UI = {
   },
 
   priorityColor(p) {
-    return { low: '#22c55e', medium: '#f59e0b', high: '#ef4444' }[p] || '#f59e0b';
+    const map = { 
+      'A': '#ef4444', 'high': '#ef4444', 
+      'B': '#f59e0b', 'medium': '#f59e0b', 
+      'C': '#eab308', 'low': '#eab308', 
+      'D': '#3b82f6', 
+      'E': '#9ca3af' 
+    };
+    return map[p] || '#eab308';
   },
 
   priorityLabel(p) {
-    return { low: 'Baja', medium: 'Media', high: 'Alta' }[p] || 'Media';
+    const map = { 
+      'A': 'A (Muy Alta)', 'high': 'A (Muy Alta)', 
+      'B': 'B (Media)', 'medium': 'B (Media)', 
+      'C': 'C (Baja)', 'low': 'C (Baja)', 
+      'D': 'D (Delegar)', 
+      'E': 'E (Eliminar)' 
+    };
+    return map[p] || 'C (Baja)';
   },
 
   // ─── 3. TOAST ─────────────────────────────────────────────────────────────
