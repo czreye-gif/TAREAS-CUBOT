@@ -12,76 +12,55 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
   <aside id="sidebar">
-    <div class="sidebar-header">
+    <div class="sidebar-header" style="justify-content:center;padding:16px 8px">
       <div class="logo">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
         </svg>
       </div>
-      <span class="logo-text">Tareas</span>
     </div>
     <nav class="sidebar-nav">
-      <button class="nav-btn active" data-view="today" id="nav-today">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <button class="nav-btn active" data-view="today" id="nav-today" title="Hoy" style="justify-content:center;padding:14px 0">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/>
         </svg>
-        <span>Hoy</span>
       </button>
-      <button class="nav-btn" data-view="calendar" id="nav-calendar">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <button class="nav-btn" data-view="calendar" id="nav-calendar" title="Calendario" style="justify-content:center;padding:14px 0">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
         </svg>
-        <span>Calendario</span>
       </button>
-      <button class="nav-btn" data-view="agenda" id="nav-agenda">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <button class="nav-btn" data-view="agenda" id="nav-agenda" title="Agenda" style="justify-content:center;padding:14px 0">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/>
         </svg>
-        <span>Agenda</span>
       </button>
-      <button class="nav-btn" data-view="new-task" id="nav-new-task">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <button class="nav-btn" data-view="new-task" id="nav-new-task" title="Nueva Tarea" style="justify-content:center;padding:14px 0">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
         </svg>
-        <span>Nueva Tarea</span>
       </button>
-      <button class="nav-btn" data-view="tags" id="nav-tags">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <button class="nav-btn" data-view="tags" id="nav-tags" title="Etiquetas" style="justify-content:center;padding:14px 0">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
         </svg>
-        <span>Etiquetas</span>
       </button>
     </nav>
     <div class="sidebar-footer">
-      <button id="sidebar-collapse-btn" title="Contraer/expandir menú" style="
-        width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
-        padding:14px;margin-bottom:10px;
-        background:rgba(99,102,241,0.15);
-        border:2px solid var(--primary,#6366f1);
-        border-radius:10px;color:var(--primary-light,#a5b4fc);
-        cursor:pointer;font-size:0.85rem;font-weight:600;
-        transition:all .15s">
-        <svg id="sb-icon-collapse" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <polyline points="15,18 9,12 15,6"/>
-        </svg>
-        <span class="sb-collapse-label">Contraer menú</span>
-      </button>
-      <button class="nav-btn" id="btn-export">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <button class="nav-btn" id="btn-export" title="Exportar" style="justify-content:center;padding:12px 0">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
-        <span>Exportar</span>
       </button>
-      <button class="nav-btn" id="btn-import">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <button class="nav-btn" id="btn-import" title="Importar" style="justify-content:center;padding:12px 0">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/>
         </svg>
-        <span>Importar</span>
       </button>
       <input type="file" id="import-file" accept=".json" style="display:none">
     </div>
@@ -118,91 +97,95 @@
   <main id="main-content">
 
     <section id="view-today" class="view active">
-      <div class="view-header dashboard-header">
-        <div class="header-titles">
-          <h1 class="view-title">Hoy</h1>
-          <p id="today-greeting" class="view-subtitle">Cargando...</p>
-        </div>
-      </div>
+      <div id="today-layout" style="display:flex;gap:0;height:100%;overflow:hidden">
 
-      <div id="dashboard-search-container" style="margin-bottom:16px">
+        <!-- ── Mini calendario lateral ── -->
+        <div id="side-cal" style="
+          width:110px;flex-shrink:0;
+          background:var(--surface,#1e1e2e);
+          border-right:1px solid var(--border,#2a2a4a);
+          display:flex;flex-direction:column;
+          height:100%;overflow:hidden">
 
-        <!-- Barra única de búsqueda universal -->
-        <div style="display:flex;gap:10px;margin-bottom:10px;position:relative">
-          <div id="sbox-universal" style="display:flex;align-items:center;gap:10px;background:var(--surface-2,#1a1a2e);border:1px solid var(--border,#2a2a4a);border-radius:10px;padding:10px 14px;flex:1;box-sizing:border-box;min-width:0">
-            <svg style="flex-shrink:0;opacity:.6;display:block" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="dashboard-search" placeholder="Busca lo que sea: título, etiqueta, folio (T-0001), fecha, notas..." style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text,#fff);font-size:0.9rem;padding:0;margin:0;display:block">
-            <button id="clear-text" title="Limpiar" style="display:none;background:none;border:none;color:var(--muted,#888);cursor:pointer;font-size:1.2rem;padding:0;line-height:1;flex-shrink:0">×</button>
+          <!-- Cabecera -->
+          <div style="padding:10px 8px 6px;background:var(--surface,#1e1e2e);border-bottom:1px solid var(--border,#2a2a4a);flex-shrink:0;z-index:1">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <button id="sc-prev" style="background:none;border:none;color:var(--muted,#888);cursor:pointer;padding:4px;border-radius:6px;display:flex;align-items:center;justify-content:center">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 19l-7-7 7-7"/></svg>
+              </button>
+              <div style="text-align:center">
+                <div id="sc-month-label" style="font-size:0.7rem;font-weight:700;color:var(--text,#fff);text-transform:uppercase;letter-spacing:.3px"></div>
+                <div id="sc-year-label" style="font-size:0.62rem;font-weight:700;color:var(--primary-light,#818cf8)"></div>
+              </div>
+              <button id="sc-next" style="background:none;border:none;color:var(--muted,#888);cursor:pointer;padding:4px;border-radius:6px;display:flex;align-items:center;justify-content:center">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+            <button id="sc-today-btn" style="
+              width:100%;padding:4px;border-radius:6px;
+              background:var(--surface-2,#16213e);border:1px solid var(--border,#2a2a4a);
+              color:var(--muted,#888);font-size:0.6rem;font-weight:800;
+              letter-spacing:.8px;text-transform:uppercase;cursor:pointer">HOY</button>
+          </div>
+
+          <!-- Lista de días — scroll solo aquí -->
+          <div id="sc-days" style="flex:1;overflow-y:auto;overflow-x:hidden;min-height:0;scrollbar-width:none">
+          </div>
+
+          <!-- Footer con fecha seleccionada -->
+          <div style="padding:6px;background:var(--surface-2,#16213e);border-top:1px solid var(--border,#2a2a4a);text-align:center;flex-shrink:0">
+            <span id="sc-selected-label" style="font-size:0.62rem;font-weight:700;color:var(--muted,#888)">--/--/--</span>
           </div>
         </div>
 
-        <!-- Atajos de fecha + chips activos -->
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button class="dsh-btn" data-shortcut="today">Hoy</button>
-            <button class="dsh-btn" data-shortcut="tomorrow">Mañana</button>
-            <button class="dsh-btn" data-shortcut="week">Esta semana</button>
-            <button class="dsh-btn" data-shortcut="all">Todo</button>
+        <!-- ── Contenido principal ── -->
+        <div id="today-main" style="flex:1;overflow-y:auto;padding:16px 20px;min-width:0">
+
+          <div id="dashboard-search-container" style="margin-bottom:14px">
+            <div style="display:flex;gap:10px;margin-bottom:10px;position:relative">
+              <div id="sbox-universal" style="display:flex;align-items:center;gap:10px;background:var(--surface-2,#1a1a2e);border:1px solid var(--border,#2a2a4a);border-radius:10px;padding:10px 14px;flex:1;box-sizing:border-box;min-width:0">
+                <svg style="flex-shrink:0;opacity:.6;display:block" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="dashboard-search" placeholder="Busca lo que sea: título, etiqueta, folio (T-0001), fecha, notas..." style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text,#fff);font-size:0.9rem;padding:0;margin:0;display:block">
+                <button id="clear-text" title="Limpiar" style="display:none;background:none;border:none;color:var(--muted,#888);cursor:pointer;font-size:1.2rem;padding:0;line-height:1;flex-shrink:0">×</button>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="dsh-btn" data-shortcut="today">Hoy</button>
+                <button class="dsh-btn" data-shortcut="tomorrow">Mañana</button>
+                <button class="dsh-btn" data-shortcut="week">Esta semana</button>
+                <button class="dsh-btn" data-shortcut="all">Todo</button>
+              </div>
+              <div id="search-active-chips" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
+              <span id="search-results-count" style="display:none;font-size:0.78rem;color:var(--muted,#888)"></span>
+              <button id="search-clear-all" style="display:none;padding:4px 12px;border-radius:20px;border:1px solid #ef444455;background:transparent;color:#ef4444;cursor:pointer;font-size:0.78rem">✕ Limpiar</button>
+            </div>
+            <style>
+              .dsh-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border,#2a2a4a);background:transparent;color:var(--muted,#888);cursor:pointer;font-size:0.78rem;transition:all .15s}
+              .dsh-btn:hover,.dsh-btn.active{background:var(--primary,#6366f1);border-color:var(--primary,#6366f1);color:#fff}
+              .active-filter-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:500}
+              #sbox-universal:focus-within{border-color:var(--primary,#6366f1)!important}
+            </style>
           </div>
-          <div id="search-active-chips" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
-          <span id="search-results-count" style="display:none;font-size:0.78rem;color:var(--muted,#888)"></span>
-          <button id="search-clear-all" style="display:none;padding:4px 12px;border-radius:20px;border:1px solid #ef444455;background:transparent;color:#ef4444;cursor:pointer;font-size:0.78rem">✕ Limpiar</button>
-        </div>
 
-        <style>
-          .dsh-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border,#2a2a4a);background:transparent;color:var(--muted,#888);cursor:pointer;font-size:0.78rem;transition:all .15s}
-          .dsh-btn:hover,.dsh-btn.active{background:var(--primary,#6366f1);border-color:var(--primary,#6366f1);color:#fff}
-          .active-filter-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:500}
-          #sbox-universal:focus-within{border-color:var(--primary,#6366f1)!important}
-        </style>
+          <div style="margin-bottom:12px">
+            <h2 class="dash-section-title danger-text">⚠️ Urgente / Vencidas</h2>
+            <div id="dash-urgent-list" class="task-list"></div>
+          </div>
 
-        <style>
-          .dashboard-search-container { margin-bottom: 16px; }
-          .search-row { display:flex; gap:10px; margin-bottom:10px; }
-          .search-box { display:flex; align-items:center; gap:8px; background:var(--surface-2,#1a1a2e); border:1px solid var(--border,#2a2a4a); border-radius:10px; padding:8px 14px; transition:border-color .2s; }
-          .search-box:focus-within { border-color:var(--primary,#6366f1); }
-          .search-box svg { color:var(--muted,#666); flex-shrink:0; min-width:18px; }
-          .sb-input { background:transparent; border:none; outline:none; color:var(--text,#fff); font-size:0.9rem; flex:1; min-width:0; padding:0; margin:0; width:100%; }
-          .sb-input::placeholder { color:var(--muted,#666); }
-          .sb-input[type="date"] { color-scheme:dark; }
-          .search-box-text { flex:1; }
-          .search-box-date { flex:0 0 auto; min-width:180px; }
-          .search-box-date input[type="date"] { color-scheme:dark; }
-          .search-clear-btn { background:none; border:none; color:var(--muted,#666); cursor:pointer; font-size:1.1rem; padding:0 2px; line-height:1; flex-shrink:0; }
-          .search-clear-btn:hover { color:var(--text,#fff); }
-          .search-quick-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-          .search-date-shortcuts { display:flex; gap:6px; flex-wrap:wrap; }
-          .date-shortcut-btn { padding:4px 12px; border-radius:20px; border:1px solid var(--border,#2a2a4a); background:transparent; color:var(--muted,#888); cursor:pointer; font-size:0.78rem; transition:all .15s; }
-          .date-shortcut-btn:hover, .date-shortcut-btn.active { background:var(--primary,#6366f1); border-color:var(--primary,#6366f1); color:#fff; }
-          .search-active-chips { display:flex; gap:6px; flex-wrap:wrap; flex:1; }
-          .active-filter-chip { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:0.78rem; font-weight:500; }
-          .search-results-count { font-size:0.78rem; color:var(--muted,#888); white-space:nowrap; }
-          .search-clear-all-btn { padding:4px 12px; border-radius:20px; border:1px solid #ef444455; background:transparent; color:#ef4444; cursor:pointer; font-size:0.78rem; white-space:nowrap; }
-          .search-clear-all-btn:hover { background:#ef444420; }
-          .tag-search-dropdown { position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--surface,#1e1e2e); border:1px solid var(--border,#2a2a4a); border-radius:10px; z-index:1000; max-height:200px; overflow-y:auto; display:none; box-shadow:0 8px 24px rgba(0,0,0,0.4); }
-          .tag-search-dropdown.show { display:block; }
-          .tag-drop-item { display:flex; align-items:center; gap:8px; padding:8px 14px; cursor:pointer; transition:background .15s; font-size:0.88rem; color:var(--text,#fff); }
-          .tag-drop-item:hover { background:var(--surface-2,#2a2a3e); }
-          .tag-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-          .tag-drop-check { margin-left:auto; color:var(--primary,#6366f1); }
-        </style>
-      </div>
+          <div class="dashboard-columns">
+            <div class="dash-col">
+              <h2 class="dash-section-title primary-text">📍 Mi Día</h2>
+              <div id="dash-today-list" class="task-list drop-zone" data-zone="today"></div>
+            </div>
+            <div class="dash-col">
+              <h2 class="dash-section-title secondary-text">➡️ Mañana <span style="font-size:0.75rem;font-weight:400;color:var(--muted);margin-left:8px">Arrastra para reorganizar</span></h2>
+              <div id="dash-tomorrow-list" class="task-list drop-zone" data-zone="tomorrow"></div>
+            </div>
+          </div>
 
-      <div style="margin-bottom:14px">
-        <h2 class="dash-section-title danger-text">⚠️ Urgente / Vencidas</h2>
-        <div id="dash-urgent-list" class="task-list"></div>
-      </div>
-
-      <div class="dashboard-columns">
-        <div class="dash-col">
-          <h2 class="dash-section-title primary-text">📍 Mi Día</h2>
-          <div id="dash-today-list" class="task-list drop-zone" data-zone="today"></div>
-        </div>
-        <div class="dash-col">
-          <h2 class="dash-section-title secondary-text">➡️ Mañana <span style="font-size:0.75rem;font-weight:400;color:var(--muted);margin-left:8px">Arrastra para reorganizar</span></h2>
-          <div id="dash-tomorrow-list" class="task-list drop-zone" data-zone="tomorrow"></div>
-        </div>
-      </div>
+        </div><!-- /today-main -->
+      </div><!-- /today-layout -->
     </section>
 
     <section id="view-month-list" class="view">
@@ -314,30 +297,11 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label for="task-time-start">Hora inicio</label>
-              <input type="time" id="task-time-start" class="input-field">
-            </div>
-            <div class="form-group">
-              <label for="task-time-end">Hora fin</label>
-              <input type="time" id="task-time-end" class="input-field">
-            </div>
-          </div>
-          <div class="form-row-3">
-            <div class="form-group">
               <label for="task-priority">Prioridad</label>
               <select id="task-priority" class="input-field">
                 <option value="low">🟢 Baja</option>
                 <option value="medium" selected>🟡 Media</option>
                 <option value="high">🔴 Alta</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="task-category">Categoría</label>
-              <select id="task-category" class="input-field">
-                <option value="trabajo">💼 Trabajo</option>
-                <option value="personal">👤 Personal</option>
-                <option value="salud">❤️ Salud</option>
-                <option value="otro" selected>📌 Otro</option>
               </select>
             </div>
             <div class="form-group">
@@ -374,7 +338,7 @@
           <div class="form-actions">
             <button type="submit" id="form-submit-btn" class="btn btn-primary">Crear Tarea</button>
             <button type="button" class="btn btn-secondary" onclick="Tasks.resetForm()">Limpiar</button>
-            <button type="button" class="btn btn-secondary" style="border:1px solid #ef444455;color:#ef4444" onclick="Tasks.cancelForm()">Cancelar</button>
+            <button type="button" id="form-cancel-btn" class="btn btn-secondary" style="border:1px solid #ef444455;color:#ef4444">Cancelar</button>
           </div>
         </form>
       </div>
@@ -436,14 +400,35 @@
 
     </main>
 
-  <script src="js/storage.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/tasks.js"></script>
-  <script src="js/calendar.js"></script>
-  <script src="js/agenda.js"></script>
-  <script src="js/timeline.js"></script>
-  <script src="js/dashboard.js"></script>
-  <script src="js/app.js"></script>
+  <script src="storage.js"></script>
+  <script>window._loaded = window._loaded||{}; window._loaded.storage = typeof storage !== 'undefined';</script>
+  <script src="ui.js"></script>
+  <script>window._loaded.ui = typeof UI !== 'undefined';</script>
+  <script src="tasks.js"></script>
+  <script>window._loaded.tasks = typeof Tasks !== 'undefined';</script>
+  <script src="calendar.js"></script>
+  <script>window._loaded.calendar = typeof Calendar !== 'undefined';</script>
+  <script src="agenda.js"></script>
+  <script>window._loaded.agenda = typeof Agenda !== 'undefined';</script>
+  <script src="timeline.js"></script>
+  <script>window._loaded.timeline = typeof Timeline !== 'undefined';</script>
+  <script src="dashboard.js"></script>
+  <script>window._loaded.dashboard = typeof Dashboard !== 'undefined';</script>
+  <script src="app.js"></script>
+  <script>window._loaded.app = typeof app !== 'undefined';</script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const missing = Object.entries(window._loaded).filter(([k,v])=>!v).map(([k])=>k);
+      if (missing.length > 0) {
+        const div = document.createElement('div');
+        div.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ef4444;color:#fff;padding:12px;z-index:99999;font-family:monospace;font-size:14px';
+        div.textContent = '❌ Archivos no cargados: ' + missing.join(', ');
+        document.body.appendChild(div);
+      } else {
+        console.log('✅ Todos los archivos cargados:', window._loaded);
+      }
+    });
+  </script>
 
   <script>
     (function() {
