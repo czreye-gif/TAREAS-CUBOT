@@ -125,8 +125,10 @@
   <main id="main-content">
 
     <section id="view-today" class="view active">
-      <div class="view-header dashboard-header">
-        <div class="header-titles">
+      <div class="dashboard-layout">
+        <div class="dashboard-main">
+          <div class="view-header dashboard-header">
+            <div class="header-titles">
           <h1 class="view-title">Hoy</h1>
           <p id="today-greeting" class="view-subtitle">Cargando...</p>
         </div>
@@ -208,6 +210,35 @@
         <div class="dash-col">
           <h2 class="dash-section-title secondary-text">➡️ Mañana <span style="font-size:0.75rem;font-weight:400;color:var(--muted);margin-left:8px">Arrastra para reorganizar</span></h2>
           <div id="dash-tomorrow-list" class="task-list drop-zone" data-zone="tomorrow"></div>
+        </div>
+      </div>
+        </div> <!-- End dashboard-main -->
+        <div class="dashboard-side">
+          <div class="vertical-calendar">
+            <div class="vc-header">
+              <div class="vc-header-top">
+                <button onclick="Dashboard.changeMonth(-1)" class="vc-nav-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <div class="vc-month-label">
+                  <div id="vc-month-name" class="vc-month-name">Mes</div>
+                  <div id="vc-year-label" class="vc-year-name">2024</div>
+                </div>
+                <button onclick="Dashboard.changeMonth(1)" class="vc-nav-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+              <button onclick="Dashboard.goToToday()" class="vc-today-btn" id="vc-btn-today">Volver a Hoy</button>
+            </div>
+            <div id="vc-days-list" class="vc-days-list"></div>
+            <div class="vc-footer">
+              <p id="vc-selected-date-mini" class="vc-selected-date">--/--/--</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
