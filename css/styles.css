@@ -701,12 +701,51 @@ select.input-field { appearance: none; background-image: url("data:image/svg+xml
 
 /* ---- Responsive: Phone ---- */
 @media (max-width: 500px) {
-  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  #main-content { padding: 75px 16px 24px; }
+  .view-header { margin-bottom: 16px; }
+  .view-title { font-size: 1.35rem; }
+  
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
   .stat-card { padding: 12px; }
-  .stat-value { font-size: 1.3rem; }
+  .stat-value { font-size: 1.35rem; }
+  .stat-label { font-size: 0.65rem; }
+  
   .task-card { padding: 12px; }
   .calendar-container { padding: 14px; }
-  .form-container { padding: 18px; }
+  .form-container { padding: 16px; }
+  
+  .dashboard-columns { gap: 16px; }
+  .dashboard-ratios { gap: 12px; margin-bottom: 20px; }
+  .ratio-card { padding: 12px; gap: 12px; flex-direction: column; text-align: center; justify-content: center; align-items: center; }
+  .ratio-circle { width: 64px; height: 64px; }
+  .ratio-title { font-size: 0.95rem; }
+  .ratio-info { align-items: center; }
+  
+  #fab-new-task { width: 50px !important; height: 50px !important; bottom: 20px !important; right: 20px !important; font-size: 1.6rem !important; }
+  
+  /* Timeline Horizontal Cards on Dashboard */
+  #dash-urgent-list .tl-card, #dash-today-list .tl-card, #dash-tomorrow-list .tl-card {
+    padding: 10px 12px; gap: 8px; border-radius: 8px;
+  }
+  #dash-urgent-list .tl-card-title, #dash-today-list .tl-card-title, #dash-tomorrow-list .tl-card-title {
+    font-size: 0.85rem;
+  }
+  .tag-pill-card, .tag-pill {
+    font-size: 0.75rem !important;
+    padding: 3px 8px 3px 6px !important;
+  }
+  
+  /* Quick Search & Filter Chips */
+  .dsh-btn, .date-shortcut-btn { padding: 5px 12px !important; font-size: 0.75rem !important; }
+  #sbox-universal { padding: 8px 12px !important; }
+  #dashboard-search { font-size: 0.85rem !important; }
+
+  /* Agenda */
+  .agenda-row-label { padding: 8px 6px !important; min-width: 50px !important; }
+  .agenda-row-daynum { font-size: 1.1rem !important; }
+  .agenda-row-summary { padding: 12px 14px !important; }
+  .agenda-row-tasks { padding: 6px 8px !important; }
+  .agenda-row-title { font-size: 0.78rem !important; }
 }
 
 /* ---- Dashboard HOY ---- */
