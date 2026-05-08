@@ -34,6 +34,37 @@
   --transition: 0.25s cubic-bezier(.4,0,.2,1);
 }
 
+/* ---- Light Theme Variables ---- */
+:root[data-theme="light"] {
+  --bg: #f8fafc;
+  --bg2: #f1f5f9;
+  --surface: #ffffff;
+  --surface2: #f8fafc;
+  --card: #ffffff;
+  --border: rgba(99, 102, 241, 0.2);
+  --border2: rgba(139, 92, 246, 0.25);
+  
+  --primary: #4f46e5;
+  --primary-light: #6366f1;
+  --secondary: #7c3aed;
+  --accent: #8b5cf6;
+  
+  --success: #059669;
+  --success-bg: rgba(16, 185, 129, 0.15);
+  --warning: #d97706;
+  --warning-bg: rgba(245, 158, 11, 0.15);
+  --danger: #dc2626;
+  --danger-bg: rgba(239, 68, 68, 0.12);
+  
+  --text: #0f172a;
+  --text2: #334155;
+  --muted: #64748b;
+  
+  --shadow: 0 4px 20px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+  --glass: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(99, 102, 241, 0.15);
+}
+
 /* ---- Reset ---- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
