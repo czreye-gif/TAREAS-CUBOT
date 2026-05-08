@@ -1,14 +1,80 @@
 // ============================================================
-// storage.js — Capa de datos (localStorage + JSON export/import)
+// storage.js — Capa de datos (Híbrida: LocalStorage + Firebase)
 // ============================================================
+
+// 1. Configuración de tu base de datos czr-tareas
+const firebaseConfig = {
+  apiKey: "AIzaSyBG8gh7lTAPE9I9kBXKKcjADM4X0OeigvM",
+  authDomain: "czr-tareas.firebaseapp.com",
+  projectId: "czr-tareas",
+  storageBucket: "czr-tareas.firebasestorage.app",
+  messagingSenderId: "786109551717",
+  appId: "1:786109551717:web:0a5a5899a9ca780210a28c"
+};
+
+// Inicializar Firebase
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
 
 class TaskStorage {
   constructor() {
     this.STORAGE_KEY = 'taskpanel_data';
-    this.data = this._load();
+    // 1. Cargar cache local inmediatamente (para que tu UI actual no se rompa)
+    this.data = this._loadLocal();
+    
+    // 2. Sincronizar silenciosamente con Firebase en segundo plano
+    this._initFirebaseSync();
   }
 
-  // ---- Persistencia ----
+  // ---- Sincronización Firebase ----
+
+  _initFirebaseSync() {
+    // Escucha cambios en las tareas en la nube y las refleja en local
+    db.collection("tareas").onSnapshot(snapshot => {
+      const cloudTasks = [];
+      snapshot.forEach(doc => cloudTasks.push(doc.data()));
+      if (cloudTasks.length > 0 || snapshot.metadata.fromCache === false) {
+        this.data.tasks = cloudTasks;
+        this._saveLocal();
+      }
+    });
+
+    // Escucha cambios en las etiquetas
+    db.collection("etiquetas").onSnapshot(snapshot => {
+      const cloudTags = [];
+      snapshot.forEach(doc => cloudTags.push(doc.data()));
+      if (cloudTags.length > 0) {
+        this.data.tags = cloudTags;
+        this._saveLocal();
+      } else {
+        // Si la nube está vacía (primera vez), subimos las etiquetas por defecto
+        this.data.tags.forEach(t => db.collection("etiquetas").doc(t.id).set(t));
+      }
+    });
+
+    // Escucha cambios en configuraciones (metadata)
+    db.collection("metadata").doc("main").onSnapshot(doc => {
+      if (doc.exists) {
+        const meta = doc.data();
+        this.data.settings = meta.settings || this.data.settings;
+        this.data.taskCodeCounter = meta.taskCodeCounter || this.data.taskCodeCounter;
+        this._saveLocal();
+      } else {
+        this._updateMeta();
+      }
+    });
+  }
+
+  _updateMeta() {
+    db.collection("metadata").doc("main").set({
+      settings: this.data.settings,
+      taskCodeCounter: this.data.taskCodeCounter
+    }).catch(e => console.error("Error guardando meta:", e));
+  }
+
+  // ---- Persistencia Local ----
 
   _getDefault() {
     return {
@@ -24,7 +90,7 @@ class TaskStorage {
     };
   }
 
-  _load() {
+  _loadLocal() {
     try {
       const raw = localStorage.getItem(this.STORAGE_KEY);
       if (raw) {
@@ -32,16 +98,16 @@ class TaskStorage {
         if (parsed && Array.isArray(parsed.tasks)) return parsed;
       }
     } catch (e) {
-      console.error('Error cargando datos:', e);
+      console.error('Error cargando datos locales:', e);
     }
     return this._getDefault();
   }
 
-  _save() {
+  _saveLocal() {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.data));
     } catch (e) {
-      console.error('Error guardando datos:', e);
+      console.error('Error guardando datos locales:', e);
     }
   }
 
@@ -75,10 +141,10 @@ class TaskStorage {
       category: d.category || 'otro',
       completed: false,
       createdAt: new Date().toISOString(),
-      alarm: d.alarm || null,       // ISO datetime string
-      deadline: d.deadline || null, // date string YYYY-MM-DD
-      recurrence: d.recurrence || null, // {type:'daily'|'weekly'|'monthly', until:'YYYY-MM-DD'}
-      tags: d.tags || [], // array of tag IDs
+      alarm: d.alarm || null,       
+      deadline: d.deadline || null, 
+      recurrence: d.recurrence || null, 
+      tags: d.tags || [], 
       subtasks: (d.subtasks || []).map(s => ({
         id: this._id(),
         title: typeof s === 'string' ? s : s.title,
@@ -86,22 +152,33 @@ class TaskStorage {
       })),
       attachments: d.attachments || []
     };
+    
+    // 1. Guardar en memoria y local
     this.data.tasks.push(task);
-    this._save();
+    this._saveLocal();
+    
+    // 2. Guardar en Nube (Firebase)
+    db.collection("tareas").doc(task.id).set(task).catch(console.error);
+    this._updateMeta(); 
+    
     return task;
   }
 
   updateTask(id, updates) {
     const i = this.data.tasks.findIndex(t => t.id === id);
     if (i === -1) return null;
+    
     this.data.tasks[i] = { ...this.data.tasks[i], ...updates };
-    this._save();
+    this._saveLocal();
+    
+    db.collection("tareas").doc(id).set(this.data.tasks[i]).catch(console.error);
     return this.data.tasks[i];
   }
 
   deleteTask(id) {
     this.data.tasks = this.data.tasks.filter(t => t.id !== id);
-    this._save();
+    this._saveLocal();
+    db.collection("tareas").doc(id).delete().catch(console.error);
   }
 
   getTask(id) {
@@ -144,7 +221,9 @@ class TaskStorage {
     const sub = { id: this._id(), title, completed: false };
     t.subtasks = t.subtasks || [];
     t.subtasks.push(sub);
-    this._save();
+    this._saveLocal();
+    
+    db.collection("tareas").doc(taskId).set(t).catch(console.error);
     return sub;
   }
 
@@ -154,7 +233,9 @@ class TaskStorage {
     const s = (t.subtasks || []).find(s => s.id === subId);
     if (!s) return null;
     s.completed = !s.completed;
-    this._save();
+    this._saveLocal();
+    
+    db.collection("tareas").doc(taskId).set(t).catch(console.error);
     return s;
   }
 
@@ -162,7 +243,9 @@ class TaskStorage {
     const t = this.getTask(taskId);
     if (!t) return;
     t.subtasks = (t.subtasks || []).filter(s => s.id !== subId);
-    this._save();
+    this._saveLocal();
+    
+    db.collection("tareas").doc(taskId).set(t).catch(console.error);
   }
 
   // ---- Etiquetas (Tags) ----
@@ -180,7 +263,9 @@ class TaskStorage {
     if (!this.data.tags) this.data.tags = [];
     const tag = { id: this._id(), name, color };
     this.data.tags.push(tag);
-    this._save();
+    this._saveLocal();
+    
+    db.collection("etiquetas").doc(tag.id).set(tag).catch(console.error);
     return tag;
   }
 
@@ -189,17 +274,25 @@ class TaskStorage {
     if (!tag) return null;
     if (updates.name !== undefined) tag.name = updates.name;
     if (updates.color !== undefined) tag.color = updates.color;
-    this._save();
+    this._saveLocal();
+    
+    db.collection("etiquetas").doc(id).set(tag).catch(console.error);
     return tag;
   }
 
   deleteTag(id) {
     this.data.tags = (this.data.tags || []).filter(t => t.id !== id);
-    // Remove tag from all tasks
+    
+    // Remove tag from all tasks and sync to Firebase
     this.data.tasks.forEach(t => {
-      if (t.tags) t.tags = t.tags.filter(tid => tid !== id);
+      if (t.tags && t.tags.includes(id)) {
+        t.tags = t.tags.filter(tid => tid !== id);
+        db.collection("tareas").doc(t.id).set(t).catch(console.error);
+      }
     });
-    this._save();
+    
+    this._saveLocal();
+    db.collection("etiquetas").doc(id).delete().catch(console.error);
   }
 
   getTagsForTask(taskId) {
@@ -288,8 +381,27 @@ class TaskStorage {
           const imported = JSON.parse(e.target.result);
           if (imported && Array.isArray(imported.tasks)) {
             this.data = imported;
-            this._save();
-            resolve(imported);
+            this._saveLocal();
+
+            // Subir todo masivamente a Firebase (Sincronización)
+            const promises = [];
+            imported.tasks.forEach(t => promises.push(db.collection("tareas").doc(t.id).set(t)));
+            if (imported.tags) {
+               imported.tags.forEach(t => promises.push(db.collection("etiquetas").doc(t.id).set(t)));
+            }
+            promises.push(db.collection("metadata").doc("main").set({ 
+               settings: imported.settings, 
+               taskCodeCounter: imported.taskCodeCounter 
+            }));
+
+            Promise.all(promises).then(() => {
+               console.log("Importación sincronizada con la nube correctamente");
+               resolve(imported);
+            }).catch(err => {
+               console.error("Error al subir a la nube:", err);
+               resolve(imported); // Resolvemos igual porque ya se guardó localmente
+            });
+            
           } else {
             reject(new Error('Formato de archivo inválido'));
           }
