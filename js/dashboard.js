@@ -433,8 +433,16 @@ const Dashboard = {
 
     // Re-inicializar drop zones (por si se re-renderizó)
     document.querySelectorAll('.drop-zone').forEach(zone => {
-      zone.ondragover = (e) => { e.preventDefault(); zone.classList.add('dash-drop-hover'); };
-      zone.ondragleave = () => zone.classList.remove('dash-drop-hover');
+      zone.ondragover = (e) => {
+        e.preventDefault();
+        zone.classList.add('dash-drop-hover');
+      };
+      zone.ondragleave = (e) => {
+        // Solo quitar el hover si realmente salimos de la zona
+        // (no si solo cruzamos sobre una tarjeta hija)
+        if (e.relatedTarget && zone.contains(e.relatedTarget)) return;
+        zone.classList.remove('dash-drop-hover');
+      };
       zone.ondrop = (e) => {
         e.preventDefault();
         zone.classList.remove('dash-drop-hover');
@@ -444,18 +452,32 @@ const Dashboard = {
     });
   },
 
-  // ── Drag & drop ───────────────────────────────────────────
+  // ── Drag & drop con pistas de aterrizaje ──────────────────
   setupDragAndDrop() {
     document.addEventListener('dragstart', e => {
       const card = e.target.closest('.tl-card');
       if (!card || !card.dataset.taskId) return;
+      // Solo aplicar al dashboard (no afectar timeline/agenda)
+      if (!card.closest('#view-today')) return;
+
       e.dataTransfer.setData('text/plain', card.dataset.taskId);
       e.dataTransfer.effectAllowed = 'move';
       card.classList.add('dragging');
+
+      // ✈ Encender pistas de aterrizaje en TODAS las drop-zones del dashboard
+      document.querySelectorAll('#view-today .drop-zone').forEach(z => {
+        z.classList.add('dash-drag-active');
+      });
     });
+
     document.addEventListener('dragend', e => {
       const card = e.target.closest('.tl-card');
       if (card) card.classList.remove('dragging');
+
+      // Apagar pistas de aterrizaje (drop o cancel)
+      document.querySelectorAll('#view-today .drop-zone').forEach(z => {
+        z.classList.remove('dash-drag-active', 'dash-drop-hover');
+      });
     });
   },
 
