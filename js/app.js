@@ -55,6 +55,40 @@ const app = {
       };
     }
 
+    // ── Theme Toggle (Claro / Oscuro) ──
+    const themeBtn = document.getElementById('btn-theme-toggle');
+    if (themeBtn) {
+      const iconSun = document.getElementById('icon-theme-sun');
+      const iconMoon = document.getElementById('icon-theme-moon');
+      const themeLabel = document.getElementById('theme-label');
+      
+      const setTheme = (isLight) => {
+        if (isLight) {
+          document.documentElement.setAttribute('data-theme', 'light');
+          iconSun.style.display = 'none';
+          iconMoon.style.display = 'block';
+          themeLabel.textContent = 'Modo Noche';
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+          iconSun.style.display = 'block';
+          iconMoon.style.display = 'none';
+          themeLabel.textContent = 'Modo Día';
+        }
+      };
+
+      // Restaurar tema (Oscuro por defecto)
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'light') {
+        setTheme(true);
+      }
+
+      themeBtn.onclick = () => {
+        const isLightNow = document.documentElement.getAttribute('data-theme') === 'light';
+        setTheme(!isLightNow);
+        localStorage.setItem('theme', !isLightNow ? 'light' : 'dark');
+      };
+    }
+
     // Handle hash navigation
     window.addEventListener('hashchange', () => {
       const hash = location.hash.slice(1);
