@@ -45,8 +45,8 @@ const app = {
     const sidebar = document.getElementById('sidebar');
     const collapseBtn = document.getElementById('sidebar-collapse-btn');
     if (sidebar && collapseBtn) {
-      // Restaurar estado
-      if (localStorage.getItem('sidebarCollapsed') === '1') {
+      // Restaurar estado (Contraído por defecto)
+      if (localStorage.getItem('sidebarCollapsed') !== '0') {
         sidebar.classList.add('collapsed');
       }
       collapseBtn.onclick = () => {
