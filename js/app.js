@@ -12,12 +12,12 @@ const app = {
     this.bindSidebar();
     this.bindExportImport();
     this.bindFilters();
-    try { Tasks.initForm(); }    catch(e) { console.error('Tasks.initForm:', e); }
-    try { Calendar.init(); }     catch(e) { console.error('Calendar.init:', e); }
-    try { Agenda.init(); }       catch(e) { console.error('Agenda.init:', e); }
-    try { Timeline.init(); }     catch(e) { console.error('Timeline.init:', e); }
-    try { if (typeof Dashboard !== 'undefined') Dashboard.init(); } catch(e) { console.error('Dashboard.init:', e); }
-    try { UI.initDragAndDrop(); } catch(e) { console.error('DragDrop:', e); }
+    Tasks.initForm();
+    Calendar.init();
+    Agenda.init();
+    Timeline.init();
+    if (typeof Dashboard !== 'undefined') Dashboard.init();
+    UI.initDragAndDrop();
     this.navigate('today');
     this.startAlarmChecker();
     this.requestNotificationPermission();
@@ -41,6 +41,19 @@ const app = {
       Tasks.showNotes(btn.dataset.id);
     });
 
+    // ── Sidebar colapsable con persistencia ──
+    const sidebar = document.getElementById('sidebar');
+    const collapseBtn = document.getElementById('sidebar-collapse-btn');
+    if (sidebar && collapseBtn) {
+      // Restaurar estado
+      if (localStorage.getItem('sidebarCollapsed') === '1') {
+        sidebar.classList.add('collapsed');
+      }
+      collapseBtn.onclick = () => {
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed') ? '1' : '0');
+      };
+    }
 
     // Handle hash navigation
     window.addEventListener('hashchange', () => {
@@ -172,7 +185,6 @@ const app = {
         Timeline.render();
         break;
       case 'agenda':
-        Agenda._expandedDays = {}; // Resetear: todos los días colapsados al entrar
         Agenda.render();
         break;
       case 'day':

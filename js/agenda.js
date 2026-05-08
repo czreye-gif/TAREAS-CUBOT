@@ -10,9 +10,6 @@ const Agenda = {
   ghost: null,
 
   init() {
-    // Resetear estado: todos los días arrancan colapsados al entrar
-    this._expandedDays = {};
-
     // Start from TODAY, not Monday of current week
     this.startDate = new Date();
     this.startDate.setHours(0, 0, 0, 0);
@@ -36,19 +33,22 @@ const Agenda = {
     document.addEventListener('mouseup', (e) => this._mouseUp(e));
   },
 
-  // Estado expandido por día — solo en memoria, se resetea al entrar a Agenda
-  _expandedDays: {},
-
+  // Estado colapsado por día (localStorage)
   _isCollapsed(dateStr) {
-    return !this._expandedDays[dateStr]; // por defecto TODO colapsado
+    const today = new Date().toLocaleDateString('sv-SE');
+    if (dateStr === today) return false; // hoy siempre expandido por defecto
+    try {
+      const data = JSON.parse(localStorage.getItem('agendaCollapsedDays') || '{}');
+      return !!data[dateStr];
+    } catch { return false; }
   },
 
   _toggleCollapsed(dateStr) {
-    if (this._expandedDays[dateStr]) {
-      delete this._expandedDays[dateStr];
-    } else {
-      this._expandedDays[dateStr] = true;
-    }
+    let data = {};
+    try { data = JSON.parse(localStorage.getItem('agendaCollapsedDays') || '{}'); } catch {}
+    data[dateStr] = !data[dateStr];
+    if (!data[dateStr]) delete data[dateStr];
+    localStorage.setItem('agendaCollapsedDays', JSON.stringify(data));
   },
 
   render() {
