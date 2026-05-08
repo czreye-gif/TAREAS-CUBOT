@@ -164,7 +164,8 @@ const app = {
       'agenda': 'Agenda',
       'day': 'Detalle del Día',
       'new-task': 'Nueva Tarea',
-      'tags': 'Etiquetas'
+      'tags': 'Etiquetas',
+      'completed': 'Tareas Terminadas'
     };
     const mobileTitle = document.getElementById('mobile-title');
     if (mobileTitle) mobileTitle.textContent = titles[view] || 'Tareas';
@@ -195,6 +196,9 @@ const app = {
         break;
       case 'tags':
         this.renderTagsView();
+        break;
+      case 'completed':
+        Tasks.renderCompletedTasks('completed-tasks-list');
         break;
     }
   },

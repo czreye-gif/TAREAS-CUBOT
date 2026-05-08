@@ -95,9 +95,9 @@ const Dashboard = {
       (t.date === todayDate && t.priority === 'high' && !t.completed)
     ).sort(sortCompletedLast);
     todayTasks = allTasks.filter(t =>
-      t.date === todayDate && !(t.priority === 'high' && !t.completed)
+      t.date === todayDate && t.priority !== 'high' && !t.completed
     ).sort(sortCompletedLast);
-    tomorrowTasks = allTasks.filter(t => t.date === tomorrowDate).sort(sortCompletedLast);
+    tomorrowTasks = allTasks.filter(t => t.date === tomorrowDate && !t.completed).sort(sortCompletedLast);
 
     this._renderList('dash-urgent-list',   urgentTasks,   'No hay tareas urgentes ni vencidas. 🎉');
     this._renderList('dash-today-list',    todayTasks,    'No hay más tareas para hoy.');
@@ -200,6 +200,9 @@ const Dashboard = {
     const q        = (query || '').toLowerCase().trim();
 
     return tasks.filter(t => {
+      // Exclude completed tasks from Dashboard views and searches
+      if (t.completed) return false;
+
       // Shortcut de fecha
       if (shortcut === 'today'    && t.date !== today)    return false;
       if (shortcut === 'tomorrow' && t.date !== tomorrow) return false;

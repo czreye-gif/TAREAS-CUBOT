@@ -34,6 +34,32 @@ const Tasks = {
     this._bindTaskEvents(container);
   },
 
+  renderCompletedTasks(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    // Fetch all completed tasks globally
+    const allTasks = storage.getAllTasks();
+    const completedTasks = allTasks.filter(t => t.completed).sort((a, b) => {
+      // Sort by date descending (newest first)
+      return (b.date || '').localeCompare(a.date || '');
+    });
+
+    if (completedTasks.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🎉</div>
+          <h3>No hay tareas terminadas</h3>
+          <p>Tus tareas completadas aparecerán aquí.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = completedTasks.map(task => this._renderTaskCard(task)).join('');
+    this._bindTaskEvents(container);
+  },
+
   _renderTaskCard(task, options = {}) {
     const subtasksHTML = this._renderSubtasks(task);
     const hasSubtasks = task.subtasks && task.subtasks.length > 0;
