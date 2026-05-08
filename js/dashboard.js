@@ -445,7 +445,12 @@ const Dashboard = {
       };
       zone.ondrop = (e) => {
         e.preventDefault();
-        zone.classList.remove('dash-drop-hover');
+        
+        // Limpieza de estados visuales inmediata para prevenir bugs si el DOM se regenera y no dispara dragend
+        document.querySelectorAll('.drop-zone').forEach(z => {
+          z.classList.remove('dash-drag-active', 'dash-drop-hover', 'drag-over');
+        });
+
         const taskId = e.dataTransfer.getData('text/plain');
         if (taskId) this.handleDrop(taskId, zone.dataset.zone);
       };
@@ -474,9 +479,9 @@ const Dashboard = {
       const card = e.target.closest('.tl-card');
       if (card) card.classList.remove('dragging');
 
-      // Apagar pistas de aterrizaje (drop o cancel)
-      document.querySelectorAll('#view-today .drop-zone').forEach(z => {
-        z.classList.remove('dash-drag-active', 'dash-drop-hover');
+      // Apagar pistas de aterrizaje en todas las zonas por si acaso
+      document.querySelectorAll('.drop-zone').forEach(z => {
+        z.classList.remove('dash-drag-active', 'dash-drop-hover', 'drag-over');
       });
     });
   },

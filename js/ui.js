@@ -188,6 +188,9 @@ const UI = {
     document.addEventListener('dragend', (e) => {
       const card = e.target.closest('[data-task-id]');
       if (card) card.classList.remove('dragging');
+      document.querySelectorAll('.drop-zone').forEach(z => {
+        z.classList.remove('dash-drag-active', 'dash-drop-hover', 'drag-over');
+      });
     });
 
     document.querySelectorAll('.drop-zone').forEach(zone => {
@@ -198,7 +201,9 @@ const UI = {
       zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
       zone.addEventListener('drop', (e) => {
         e.preventDefault();
-        zone.classList.remove('drag-over');
+        document.querySelectorAll('.drop-zone').forEach(z => {
+          z.classList.remove('dash-drag-active', 'dash-drop-hover', 'drag-over');
+        });
         const taskId = e.dataTransfer.getData('text/plain');
         const zoneType = zone.dataset.zone;
         if (!taskId || !zoneType) return;
