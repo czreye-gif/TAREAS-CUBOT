@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Panel de Tareas</title>
+  <meta name="description" content="Gestor de tareas offline para tu día a día">
+  <meta name="theme-color" content="#0a0a1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/dashboard-dnd-pista.css">
+</head>
+<body>
+
+  <aside id="sidebar" class="collapsed">
+    <div class="sidebar-header">
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+        </svg>
+      </div>
+      <span class="logo-text">Tareas</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-view="today" id="nav-today">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/>
+        </svg>
+        <span>Hoy</span>
+      </button>
+      <button class="nav-btn" data-view="completed" id="nav-completed">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>Terminadas</span>
+      </button>
+      <button class="nav-btn" data-view="notes" id="nav-notes">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+        </svg>
+        <span>Notas</span>
+      </button>
+      <button class="nav-btn" data-view="tags" id="nav-tags">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+        </svg>
+        <span>Etiquetas</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="nav-btn" id="btn-theme-toggle">
+        <svg id="icon-theme-sun" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg id="icon-theme-moon" style="display:none" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <span id="theme-label">Modo Día</span>
+      </button>
+
+      <button class="nav-btn" id="btn-export">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>Exportar</span>
+      </button>
+      <button class="nav-btn" id="btn-import">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span>Importar</span>
+      </button>
+      <input type="file" id="import-file" accept=".json" style="display:none">
+    </div>
+  </aside>
+
+  <header id="mobile-header">
+    <button id="menu-toggle" aria-label="Menú">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <h1 id="mobile-title">Hoy</h1>
+    <button id="mobile-add" data-view="new-task" aria-label="Nueva tarea">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </header>
+  <div id="sidebar-overlay"></div>
+
+  <!-- Botón flotante: Nueva Tarea / Nueva Nota -->
+  <button id="fab-new-task" title="Nueva Tarea"
+    style="position:fixed;bottom:28px;right:28px;z-index:500;
+           width:56px;height:56px;border-radius:50%;
+           background:linear-gradient(135deg,#6366f1,#8b5cf6);
+           color:#fff;font-size:1.8rem;line-height:1;
+           box-shadow:0 4px 20px rgba(99,102,241,0.5);
+           border:none;cursor:pointer;
+           display:flex;align-items:center;justify-content:center;
+           transition:transform .2s,box-shadow .2s">
+    +
+  </button>
+  <style>
+    #fab-new-task:hover { transform:scale(1.12); box-shadow:0 6px 28px rgba(99,102,241,0.7); }
+    #fab-new-task:active { transform:scale(0.95); }
+  </style>
+
+  <main id="main-content">
+
+    <section id="view-today" class="view active">
+      <div class="dashboard-layout">
+        <div class="dashboard-main">
+          <div class="view-header dashboard-header">
+            <div class="header-titles">
+          <h1 class="view-title">Hoy</h1>
+          <p id="today-greeting" class="view-subtitle">Cargando...</p>
+        </div>
+      </div>
+
+      <div id="dashboard-search-container" style="margin-bottom:16px">
+
+        <!-- Barra única de búsqueda universal -->
+        <div style="display:flex;gap:10px;margin-bottom:10px;position:relative">
+          <div id="sbox-universal" style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;flex:1;box-sizing:border-box;min-width:0">
+            <svg style="flex-shrink:0;opacity:.6;display:block;color:var(--muted)" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="dashboard-search" placeholder="Busca lo que sea: título, etiqueta, folio (T-0001), fecha, notas..." style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text);font-size:0.9rem;padding:0;margin:0;display:block">
+            <button id="clear-text" title="Limpiar" style="display:none;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:0;line-height:1;flex-shrink:0">×</button>
+          </div>
+        </div>
+
+        <!-- Atajos de fecha + chips activos -->
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+
+          <div id="search-active-chips" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
+          <span id="search-results-count" style="display:none;font-size:0.78rem;color:var(--muted,#888)"></span>
+          <button id="search-clear-all" style="display:none;padding:4px 12px;border-radius:20px;border:1px solid #ef444455;background:transparent;color:#ef4444;cursor:pointer;font-size:0.78rem">✕ Limpiar</button>
+        </div>
+
+        <style>
+          .dsh-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:0.78rem;transition:all .15s}
+          .dsh-btn:hover,.dsh-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+          .active-filter-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:500}
+          #sbox-universal:focus-within{border-color:var(--primary)!important}
+        </style>
+
+        <style>
+          .dashboard-search-container { margin-bottom: 16px; }
+          .search-row { display:flex; gap:10px; margin-bottom:10px; }
+          .search-box { display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:8px 14px; transition:border-color .2s; }
+          .search-box:focus-within { border-color:var(--primary); }
+          .search-box svg { color:var(--muted); flex-shrink:0; min-width:18px; }
+          .sb-input { background:transparent; border:none; outline:none; color:var(--text); font-size:0.9rem; flex:1; min-width:0; padding:0; margin:0; width:100%; }
+          .sb-input::placeholder { color:var(--muted); }
+          .sb-input[type="date"] { color-scheme: light dark; }
+          .search-box-text { flex:1; }
+          .search-box-date { flex:0 0 auto; min-width:180px; }
+          .search-box-date input[type="date"] { color-scheme: light dark; }
+          .search-clear-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem; padding:0 2px; line-height:1; flex-shrink:0; }
+          .search-clear-btn:hover { color:var(--text); }
+          .search-quick-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+          .search-date-shortcuts { display:flex; gap:6px; flex-wrap:wrap; }
+          .date-shortcut-btn { padding:4px 12px; border-radius:20px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; font-size:0.78rem; transition:all .15s; }
+          .date-shortcut-btn:hover, .date-shortcut-btn.active { background:var(--primary); border-color:var(--primary); color:#fff; }
+          .search-active-chips { display:flex; gap:6px; flex-wrap:wrap; flex:1; }
+          .active-filter-chip { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:0.78rem; font-weight:500; }
+          .search-results-count { font-size:0.78rem; color:var(--muted); white-space:nowrap; }
+          .search-clear-all-btn { padding:4px 12px; border-radius:20px; border:1px solid rgba(239, 68, 68, 0.3); background:transparent; color:var(--danger); cursor:pointer; font-size:0.78rem; white-space:nowrap; }
+          .search-clear-all-btn:hover { background:var(--danger-bg); }
+          .tag-search-dropdown { position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--surface); border:1px solid var(--border); border-radius:10px; z-index:1000; max-height:200px; overflow-y:auto; display:none; box-shadow:var(--shadow); }
+          .tag-search-dropdown.show { display:block; }
+          .tag-drop-item { display:flex; align-items:center; gap:8px; padding:8px 14px; cursor:pointer; transition:background .15s; font-size:0.88rem; color:var(--text); }
+          .tag-drop-item:hover { background:var(--surface2); }
+          .tag-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+          .tag-drop-check { margin-left:auto; color:var(--primary); }
+        </style>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <h2 class="dash-section-title danger-text">⚠️ Urgente / Vencidas</h2>
+        <div id="dash-urgent-list" class="task-list"></div>
+      </div>
+
+      <div class="dashboard-columns">
+        <div class="dash-col">
+          <h2 class="dash-section-title primary-text">📍 Mi Día</h2>
+          <div id="dash-today-list" class="task-list drop-zone" data-zone="today"></div>
+        </div>
+        <div class="dash-col">
+          <h2 class="dash-section-title secondary-text">➡️ Mañana <span style="font-size:0.75rem;font-weight:400;color:var(--muted);margin-left:8px">Arrastra para reorganizar</span></h2>
+          <div id="dash-tomorrow-list" class="task-list drop-zone" data-zone="tomorrow"></div>
+        </div>
+      </div>
+        </div> <!-- End dashboard-main -->
+        <div class="dashboard-side">
+          <div class="vertical-calendar">
+            <div class="vc-header">
+              <div class="vc-header-top">
+                <button onclick="Dashboard.changeMonth(-1)" class="vc-nav-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <div class="vc-month-label">
+                  <div id="vc-month-name" class="vc-month-name">Mes</div>
+                  <div id="vc-year-label" class="vc-year-name">2024</div>
+                </div>
+                <button onclick="Dashboard.changeMonth(1)" class="vc-nav-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div id="vc-days-list" class="vc-days-list"></div>
+            <div class="vc-footer">
+              <p id="vc-selected-date-mini" class="vc-selected-date">--/--/--</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-completed" class="view">
+      <div class="view-header">
+        <h1 class="view-title">Tareas Terminadas</h1>
+      </div>
+      <div id="completed-tasks-list" class="task-list"></div>
+    </section>
+
+    <section id="view-month-list" class="view">
+      <div class="view-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <h1 class="view-title">Línea de Timeline Mensual</h1>
+        <div class="cal-view-toggle" style="display:flex; gap:8px;">
+          <button class="btn btn-secondary" onclick="app.navigate('calendar')">Ver Grid</button>
+          <button class="btn btn-primary">Ver Lista</button>
+        </div>
+      </div>
+      <div class="timeline-nav">
+        <button id="tl-prev" class="cal-nav-btn" aria-label="Mes anterior">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </button>
+        <h2 id="tl-month-title" class="cal-title"></h2>
+        <button id="tl-next" class="cal-nav-btn" aria-label="Mes siguiente">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,6 15,12 9,18"/></svg>
+        </button>
+        <button id="tl-today-btn" class="cal-today-btn">Ir a Hoy</button>
+      </div>
+      <div id="timeline-container" class="timeline-container"></div>
+    </section>
+
+    <section id="view-calendar" class="view">
+      <div class="view-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <h1 class="view-title">Calendario</h1>
+        <div class="cal-view-toggle" style="display:flex; gap:8px;">
+          <button class="btn btn-primary">Ver Grid</button>
+          <button class="btn btn-secondary" onclick="app.navigate('month-list')">Ver Lista</button>
+        </div>
+      </div>
+      <div class="calendar-container">
+        <div class="calendar-nav">
+          <button id="cal-prev" class="cal-nav-btn" aria-label="Mes anterior">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+          </button>
+          <h2 id="cal-month-title" class="cal-title"></h2>
+          <button id="cal-next" class="cal-nav-btn" aria-label="Mes siguiente">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,6 15,12 9,18"/></svg>
+          </button>
+          <button id="cal-today-btn" class="cal-today-btn">Hoy</button>
+        </div>
+        <div class="calendar-grid">
+          <div class="cal-day-header">Lun</div>
+          <div class="cal-day-header">Mar</div>
+          <div class="cal-day-header">Mié</div>
+          <div class="cal-day-header">Jue</div>
+          <div class="cal-day-header">Vie</div>
+          <div class="cal-day-header">Sáb</div>
+          <div class="cal-day-header">Dom</div>
+          <div id="cal-days" class="cal-days-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-new-task" class="view">
+      <div class="view-header">
+        <h1 class="view-title" id="form-title">Nueva Tarea</h1>
+      </div>
+      <div class="form-container">
+        <form id="task-form" autocomplete="off">
+          <div class="form-layout-split">
+            <!-- Columna Principal -->
+            <div class="form-main">
+              <div class="form-group">
+                <label for="task-title">Título *</label>
+                <input type="text" id="task-title" class="input-field" placeholder="¿Qué necesitas hacer?" required>
+                <div id="form-tags-selected" style="min-height:20px;display:flex;flex-wrap:wrap;gap:6px;padding:8px 0 2px">
+                  <span style="color:var(--muted,#888);font-size:0.8rem;font-style:italic">Sin etiquetas asignadas</span>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="task-date">Fecha a realizar</label>
+                  <input type="date" id="task-date" class="input-field" required>
+                </div>
+                <div class="form-group">
+                  <label for="task-priority">Prioridad (Método ABCDE)</label>
+                  <select id="task-priority" class="input-field">
+                    <option value="A">🔴 A (Muy Alta - Consecuencias graves)</option>
+                    <option value="B">🟠 B (Media - Debería hacerse)</option>
+                    <option value="C" selected>🟡 C (Baja - Agradable hacer)</option>
+                    <option value="D">🔵 D (Delegar - Otros pueden hacerla)</option>
+                    <option value="E">⚪ E (Eliminar - Prescindible)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Subtareas</label>
+                <div id="form-subtask-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;"></div>
+                <div style="display:flex;gap:8px;">
+                  <input type="text" id="form-subtask-input" class="input-field" placeholder="Nueva subtarea..." style="flex:1">
+                  <button type="button" id="form-add-subtask" class="btn btn-secondary">+ Agregar</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Notas (Post-it)</label>
+                <div class="rt-editor-container" id="main-editor-container">
+                  <div class="rt-toolbar" id="main-editor-toolbar">
+                    <button type="button" class="rt-btn" data-command="bold" title="Negrita"><b>B</b></button>
+                    <button type="button" class="rt-btn" data-command="italic" title="Cursiva"><i>I</i></button>
+                    <button type="button" class="rt-btn" data-command="underline" title="Subrayado"><u>U</u></button>
+                    <div class="rt-divider"></div>
+                    <button type="button" class="rt-btn" data-command="insertUnorderedList" title="Lista con viñetas">•</button>
+                    <button type="button" class="rt-btn" data-command="insertOrderedList" title="Lista numerada">1.</button>
+                    <div class="rt-divider"></div>
+                    <button type="button" class="rt-btn" data-command="insertTable" title="Insertar Tabla">▦</button>
+                    <button type="button" class="rt-btn" data-command="insertDateTime" title="Insertar Fecha y Hora">⌚</button>
+                    <button type="button" class="rt-btn rt-table-row-btn" data-command="addTableRow" title="Añadir fila" style="display:none; color:var(--primary)">+ Fila</button>
+                    <button type="button" class="rt-btn rt-table-row-btn" data-command="removeTableRow" title="Eliminar fila" style="display:none; color:var(--danger)">- Fila</button>
+                    <button type="button" class="rt-btn rt-expand-btn" title="Expandir a pantalla completa" style="margin-left:auto; background:var(--primary); color:white; width:auto; padding:0 12px; font-weight:700">⤢ EXPANDIR</button>
+                    <button type="button" class="rt-btn rt-convert-btn" title="Convertir en Tarea" style="background:var(--accent,#8b5cf6); color:white; width:auto; padding:0 12px; font-weight:700; margin-left:8px; display:none">➔ CONVERTIR A TAREA</button>
+                  </div>
+                  <div id="task-description" class="input-field postit-note rt-editor" contenteditable="true" placeholder="Escribe aquí las notas de esta tarea..."></div>
+                </div>
+
+                <div id="form-att-list" style="display:flex;flex-direction:column;gap:8px;margin-top:10px"></div>
+                <div style="display:flex;gap:10px;margin-top:10px">
+                  <label id="form-clip-btn" style="
+                    flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+                    padding:10px;border-radius:10px;cursor:pointer;
+                    border:2px solid var(--primary);background:rgba(99,102,241,0.12);
+                    color:var(--primary);font-size:0.82rem;font-weight:600;transition:all .15s"
+                    onmouseover="this.style.background='rgba(99,102,241,0.25)'"
+                    onmouseout="this.style.background='rgba(99,102,241,0.12)'">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+                    </svg>
+                    Adjunto
+                    <input id="form-att-input" type="file" accept="image/*,application/pdf,.pdf" multiple style="display:none">
+                  </label>
+                  <div id="form-paste-zone" style="
+                    flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+                    padding:10px;border-radius:10px;cursor:pointer;
+                    border:2px dashed var(--muted);background:rgba(75,85,99,0.1);
+                    color:var(--muted);font-size:0.82rem;font-weight:600;transition:all .15s">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
+                    </svg>
+                    Pegar
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Columna de Botones (Sidebar) -->
+            <div class="form-sidebar">
+              <button type="submit" id="form-submit-btn" class="btn btn-primary" style="height:60px; font-size:1.1rem">CREAR TAREA</button>
+              <button type="button" class="btn btn-secondary" onclick="Tasks.resetForm()">LIMPIAR</button>
+              <button type="button" id="form-cancel-btn" class="btn btn-secondary" style="border:1px solid #ef444455;color:#ef4444">CANCELAR</button>
+              
+              <div style="margin-top:auto; padding:15px; border-radius:10px; background:rgba(99,102,241,0.05); border:1px solid var(--border)">
+                <p style="font-size:0.75rem; color:var(--muted); margin:0">💡 Tips: Usa <strong>#hashtags</strong> en la nota para categorizar.</p>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="view-agenda" class="view">
+      <div class="view-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <h1 class="view-title">Agenda Semanal</h1>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button id="agenda-prev" class="cal-nav-btn" aria-label="Semana anterior">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+          </button>
+          <span id="agenda-range-label" style="font-size:0.9rem;color:var(--muted,#888);min-width:160px;text-align:center"></span>
+          <button id="agenda-next" class="cal-nav-btn" aria-label="Semana siguiente">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,6 15,12 9,18"/></svg>
+          </button>
+          <button id="agenda-today-btn" class="cal-today-btn">Hoy</button>
+        </div>
+      </div>
+      <div id="agenda-columns" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:16px;min-height:400px"></div>
+    </section>
+
+    <section id="view-day" class="view">
+      <div class="view-header" style="display:flex;align-items:center;gap:16px;">
+        <button id="day-prev" class="cal-nav-btn" aria-label="Día anterior">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </button>
+        <h1 class="view-title" id="day-date-title">Detalle del Día</h1>
+        <button id="day-next" class="cal-nav-btn" aria-label="Día siguiente">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,6 15,12 9,18"/></svg>
+        </button>
+      </div>
+      <div id="day-stats" style="display:none"></div>
+      <div id="day-tasks" class="task-list"></div>
+    </section>
+
+    <section id="view-tags" class="view">
+      <div class="view-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <h1 class="view-title">Etiquetas <span id="tags-count" style="font-size:0.85rem;color:var(--muted,#888);font-weight:400;margin-left:8px">0</span></h1>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <input type="text" id="tags-search" class="input-field" placeholder="Buscar etiqueta..." style="flex:1">
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+        <input type="text" id="tag-name-input" class="input-field" placeholder="Nombre de etiqueta" style="flex:1;min-width:140px">
+        <input type="color" id="tag-color-input" value="#6366f1" style="width:44px;height:42px;border-radius:8px;border:none;cursor:pointer;background:none;">
+        <button id="tag-create-btn" class="btn btn-primary">+ Crear</button>
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="font-size:0.85rem;color:var(--muted,#888);display:block;margin-bottom:6px">Importar múltiples (una por línea o separadas por coma):</label>
+        <textarea id="tag-bulk-input" class="input-field" rows="3" placeholder="Urgente&#10;Cliente X&#10;Revisión, #f59e0b"></textarea>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+          <button id="tag-bulk-btn" class="btn btn-secondary">Importar etiquetas</button>
+          <span id="tag-bulk-status" style="font-size:0.8rem;color:var(--muted,#888)"></span>
+        </div>
+      </div>
+      <div id="tags-list"></div>
+    </section>
+
+    <!-- Nueva Vista: Panel de Notas -->
+    <section id="view-notes" class="view">
+      <div class="view-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+        <h1 class="view-title">Biblioteca de Notas</h1>
+        <div style="font-size:0.85rem;color:var(--muted)">Todas las notas de tus tareas vinculadas</div>
+      </div>
+
+      <div class="notes-filters" style="display:flex;flex-direction:column;gap:12px;background:var(--surface2);padding:20px;border-radius:14px;border:1px solid var(--border);margin-bottom:24px">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="flex:2;min-width:250px;position:relative">
+            <input type="text" id="notes-search-input" class="input-field" placeholder="Buscar por palabra clave, folio o contenido..." style="padding-left:40px">
+            <svg style="position:absolute;left:12px;top:11px;color:var(--muted)" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <div style="flex:1;min-width:150px">
+            <select id="notes-type-filter" class="input-field" style="width:100%">
+              <option value="all">📁 Todas las notas</option>
+              <option value="note">📝 Independientes</option>
+              <option value="task">📋 De Tareas</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:150px">
+            <input type="date" id="notes-date-filter" class="input-field" style="width:100%">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:0.8rem;color:var(--muted)">Etiquetas:</span>
+          <div id="notes-tag-filters" style="display:flex;gap:6px;flex-wrap:wrap">
+            <!-- Píldoras de etiquetas para filtrar -->
+          </div>
+        </div>
+      </div>
+
+      <div id="notes-grid" class="notes-grid">
+        <!-- Tarjetas de notas renderizadas aquí -->
+      </div>
+    </section>
+
+    </main>
+
+  <!-- Scripts de Firebase (Agregados para la conexión a la nube) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <script src="js/storage.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/notes.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/agenda.js"></script>
+  <script src="js/timeline.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    (function() {
+      // 1. Función para obtener fecha local real (Formato YYYY-MM-DD)
+      function getHoyLocal() {
+        const d = new Date();
+        // sv-SE es el estándar para YYYY-MM-DD sin problemas de UTC
+        return d.toLocaleDateString('sv-SE');
+      }
+
+      // 2. Corregir Inputs de Fecha al cargar
+      function corregirFechasUI() {
+        const hoy = getHoyLocal();
+        const inputFecha = document.getElementById('task-date');
+        const inputDeadline = document.getElementById('task-deadline');
+        
+        if (inputFecha) inputFecha.value = hoy;
+        if (inputDeadline) inputDeadline.value = hoy;
+        
+        console.log("Sistema sincronizado con fecha local:", hoy);
+      }
+
+      // 3. Corregir Saludo Dinámico
+      function actualizarSaludo() {
+        const hora = new Date().getHours();
+        const saludoTxt = document.getElementById('today-greeting');
+        if (saludoTxt) {
+          if (hora < 12) saludoTxt.textContent = "Buenos días, César";
+          else if (hora < 19) saludoTxt.textContent = "Buenas tardes, César";
+          else saludoTxt.textContent = "Buenas noches, César";
+        }
+      }
+
+      // Ejecutar cuando el DOM esté listo y después de que carguen tus otros JS
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          corregirFechasUI();
+          // actualizarSaludo() eliminado: dashboard.renderHeader() ya muestra saludo + fecha correcta
+        }, 100); 
+      });
+
+      // Hook para cuando se abra la vista de "Nueva Tarea"
+      document.querySelectorAll('[data-view="new-task"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          setTimeout(corregirFechasUI, 50);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

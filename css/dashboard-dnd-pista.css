@@ -1,0 +1,85 @@
+/* ============================================================
+   dashboard-dnd-pista.css
+   Pistas de aterrizaje visuales para el drag & drop del Dashboard
+   (Mi Día / Mañana). Aditivo: no toca tu styles.css existente.
+
+   Cómo integrar — elige UNA de estas dos opciones:
+
+   OPCIÓN A) Enlazarlo desde index.html (recomendado, más limpio):
+     Coloca este archivo en /css/ y en index.html, después del link de
+     styles.css, agrega:
+       <link rel="stylesheet" href="css/dashboard-dnd-pista.css">
+
+   OPCIÓN B) Pegar el contenido al final de tu styles.css.
+   ============================================================ */
+
+
+/* ── Estado base: AMBAS columnas se "encienden" durante el drag ── */
+.drop-zone.dash-drag-active {
+  position: relative;
+  outline: 2px dashed rgba(99, 102, 241, 0.45);
+  outline-offset: -2px;
+  background: rgba(99, 102, 241, 0.06);
+  border-radius: var(--radius, 14px);
+  min-height: 200px;
+  transition: outline-color .18s ease,
+              background    .18s ease,
+              box-shadow    .18s ease,
+              min-height    .18s ease,
+              transform     .18s ease;
+}
+
+/* Cartelito flotante "✈ Soltar aquí" — visible durante todo el drag */
+.drop-zone.dash-drag-active::after {
+  content: "✈ Soltar aquí";
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  padding: 6px 16px;
+  background: rgba(99, 102, 241, 0.20);
+  color: var(--primary-light, #a5b4fc);
+  border: 1px solid rgba(99, 102, 241, 0.40);
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  pointer-events: none;
+  opacity: 0.7;
+  z-index: 5;
+  white-space: nowrap;
+  transition: all .18s ease;
+}
+
+
+/* ── Estado destino: la columna donde está el cursor — más resaltada ── */
+.drop-zone.dash-drag-active.dash-drop-hover {
+  outline: 3px solid var(--primary, #6366f1);
+  background: rgba(99, 102, 241, 0.18);
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.18),
+    0 10px 30px rgba(99, 102, 241, 0.28);
+  transform: translateY(-1px);
+}
+
+.drop-zone.dash-drag-active.dash-drop-hover::after {
+  background: linear-gradient(135deg, var(--primary, #6366f1), var(--secondary, #8b5cf6));
+  color: #fff;
+  border-color: transparent;
+  opacity: 1;
+  transform: translateX(-50%) scale(1.08);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.55);
+}
+
+
+/* ── Responsive: en móvil/tablet, hint y altura más compactos ── */
+@media (max-width: 900px) {
+  .drop-zone.dash-drag-active {
+    min-height: 160px;
+  }
+  .drop-zone.dash-drag-active::after {
+    bottom: 10px;
+    font-size: 0.72rem;
+    padding: 5px 12px;
+  }
+}
