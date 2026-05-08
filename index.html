@@ -17,7 +17,7 @@
 </head>
 <body>
 
-  <aside id="sidebar">
+  <aside id="sidebar" class="collapsed">
     <div class="sidebar-header">
       <div class="logo">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -33,29 +33,17 @@
         </svg>
         <span>Hoy</span>
       </button>
-      <button class="nav-btn" data-view="calendar" id="nav-calendar">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
-        <span>Calendario</span>
-      </button>
-      <button class="nav-btn" data-view="agenda" id="nav-agenda">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/>
-        </svg>
-        <span>Agenda</span>
-      </button>
       <button class="nav-btn" data-view="completed" id="nav-completed">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
         <span>Terminadas</span>
       </button>
-      <button class="nav-btn" data-view="new-task" id="nav-new-task">
+      <button class="nav-btn" data-view="notes" id="nav-notes">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
         </svg>
-        <span>Nueva Tarea</span>
+        <span>Notas</span>
       </button>
       <button class="nav-btn" data-view="tags" id="nav-tags">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -74,19 +62,7 @@
         </svg>
         <span id="theme-label">Modo Día</span>
       </button>
-      <button id="sidebar-collapse-btn" title="Contraer/expandir menú" style="
-        width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
-        padding:14px;margin-bottom:10px;
-        background:rgba(99,102,241,0.15);
-        border:2px solid var(--primary,#6366f1);
-        border-radius:10px;color:var(--primary-light,#a5b4fc);
-        cursor:pointer;font-size:0.85rem;font-weight:600;
-        transition:all .15s">
-        <svg id="sb-icon-collapse" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <polyline points="15,18 9,12 15,6"/>
-        </svg>
-        <span class="sb-collapse-label">Contraer menú</span>
-      </button>
+
       <button class="nav-btn" id="btn-export">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
@@ -114,8 +90,8 @@
   </header>
   <div id="sidebar-overlay"></div>
 
-  <!-- Botón flotante: Nueva Tarea -->
-  <button id="fab-new-task" onclick="app.navigate('new-task')" title="Nueva Tarea"
+  <!-- Botón flotante: Nueva Tarea / Nueva Nota -->
+  <button id="fab-new-task" title="Nueva Tarea"
     style="position:fixed;bottom:28px;right:28px;z-index:500;
            width:56px;height:56px;border-radius:50%;
            background:linear-gradient(135deg,#6366f1,#8b5cf6);
@@ -147,62 +123,57 @@
 
         <!-- Barra única de búsqueda universal -->
         <div style="display:flex;gap:10px;margin-bottom:10px;position:relative">
-          <div id="sbox-universal" style="display:flex;align-items:center;gap:10px;background:var(--surface-2,#1a1a2e);border:1px solid var(--border,#2a2a4a);border-radius:10px;padding:10px 14px;flex:1;box-sizing:border-box;min-width:0">
-            <svg style="flex-shrink:0;opacity:.6;display:block" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="dashboard-search" placeholder="Busca lo que sea: título, etiqueta, folio (T-0001), fecha, notas..." style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text,#fff);font-size:0.9rem;padding:0;margin:0;display:block">
-            <button id="clear-text" title="Limpiar" style="display:none;background:none;border:none;color:var(--muted,#888);cursor:pointer;font-size:1.2rem;padding:0;line-height:1;flex-shrink:0">×</button>
+          <div id="sbox-universal" style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;flex:1;box-sizing:border-box;min-width:0">
+            <svg style="flex-shrink:0;opacity:.6;display:block;color:var(--muted)" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="dashboard-search" placeholder="Busca lo que sea: título, etiqueta, folio (T-0001), fecha, notas..." style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text);font-size:0.9rem;padding:0;margin:0;display:block">
+            <button id="clear-text" title="Limpiar" style="display:none;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:0;line-height:1;flex-shrink:0">×</button>
           </div>
         </div>
 
         <!-- Atajos de fecha + chips activos -->
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button class="dsh-btn" data-shortcut="today">Hoy</button>
-            <button class="dsh-btn" data-shortcut="tomorrow">Mañana</button>
-            <button class="dsh-btn" data-shortcut="week">Esta semana</button>
-            <button class="dsh-btn" data-shortcut="all">Todo</button>
-          </div>
+
           <div id="search-active-chips" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
           <span id="search-results-count" style="display:none;font-size:0.78rem;color:var(--muted,#888)"></span>
           <button id="search-clear-all" style="display:none;padding:4px 12px;border-radius:20px;border:1px solid #ef444455;background:transparent;color:#ef4444;cursor:pointer;font-size:0.78rem">✕ Limpiar</button>
         </div>
 
         <style>
-          .dsh-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border,#2a2a4a);background:transparent;color:var(--muted,#888);cursor:pointer;font-size:0.78rem;transition:all .15s}
-          .dsh-btn:hover,.dsh-btn.active{background:var(--primary,#6366f1);border-color:var(--primary,#6366f1);color:#fff}
+          .dsh-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:0.78rem;transition:all .15s}
+          .dsh-btn:hover,.dsh-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
           .active-filter-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:500}
-          #sbox-universal:focus-within{border-color:var(--primary,#6366f1)!important}
+          #sbox-universal:focus-within{border-color:var(--primary)!important}
         </style>
 
         <style>
           .dashboard-search-container { margin-bottom: 16px; }
           .search-row { display:flex; gap:10px; margin-bottom:10px; }
-          .search-box { display:flex; align-items:center; gap:8px; background:var(--surface-2,#1a1a2e); border:1px solid var(--border,#2a2a4a); border-radius:10px; padding:8px 14px; transition:border-color .2s; }
-          .search-box:focus-within { border-color:var(--primary,#6366f1); }
-          .search-box svg { color:var(--muted,#666); flex-shrink:0; min-width:18px; }
-          .sb-input { background:transparent; border:none; outline:none; color:var(--text,#fff); font-size:0.9rem; flex:1; min-width:0; padding:0; margin:0; width:100%; }
-          .sb-input::placeholder { color:var(--muted,#666); }
-          .sb-input[type="date"] { color-scheme:dark; }
+          .search-box { display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:8px 14px; transition:border-color .2s; }
+          .search-box:focus-within { border-color:var(--primary); }
+          .search-box svg { color:var(--muted); flex-shrink:0; min-width:18px; }
+          .sb-input { background:transparent; border:none; outline:none; color:var(--text); font-size:0.9rem; flex:1; min-width:0; padding:0; margin:0; width:100%; }
+          .sb-input::placeholder { color:var(--muted); }
+          .sb-input[type="date"] { color-scheme: light dark; }
           .search-box-text { flex:1; }
           .search-box-date { flex:0 0 auto; min-width:180px; }
-          .search-box-date input[type="date"] { color-scheme:dark; }
-          .search-clear-btn { background:none; border:none; color:var(--muted,#666); cursor:pointer; font-size:1.1rem; padding:0 2px; line-height:1; flex-shrink:0; }
-          .search-clear-btn:hover { color:var(--text,#fff); }
+          .search-box-date input[type="date"] { color-scheme: light dark; }
+          .search-clear-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem; padding:0 2px; line-height:1; flex-shrink:0; }
+          .search-clear-btn:hover { color:var(--text); }
           .search-quick-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
           .search-date-shortcuts { display:flex; gap:6px; flex-wrap:wrap; }
-          .date-shortcut-btn { padding:4px 12px; border-radius:20px; border:1px solid var(--border,#2a2a4a); background:transparent; color:var(--muted,#888); cursor:pointer; font-size:0.78rem; transition:all .15s; }
-          .date-shortcut-btn:hover, .date-shortcut-btn.active { background:var(--primary,#6366f1); border-color:var(--primary,#6366f1); color:#fff; }
+          .date-shortcut-btn { padding:4px 12px; border-radius:20px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; font-size:0.78rem; transition:all .15s; }
+          .date-shortcut-btn:hover, .date-shortcut-btn.active { background:var(--primary); border-color:var(--primary); color:#fff; }
           .search-active-chips { display:flex; gap:6px; flex-wrap:wrap; flex:1; }
           .active-filter-chip { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:0.78rem; font-weight:500; }
-          .search-results-count { font-size:0.78rem; color:var(--muted,#888); white-space:nowrap; }
-          .search-clear-all-btn { padding:4px 12px; border-radius:20px; border:1px solid #ef444455; background:transparent; color:#ef4444; cursor:pointer; font-size:0.78rem; white-space:nowrap; }
-          .search-clear-all-btn:hover { background:#ef444420; }
-          .tag-search-dropdown { position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--surface,#1e1e2e); border:1px solid var(--border,#2a2a4a); border-radius:10px; z-index:1000; max-height:200px; overflow-y:auto; display:none; box-shadow:0 8px 24px rgba(0,0,0,0.4); }
+          .search-results-count { font-size:0.78rem; color:var(--muted); white-space:nowrap; }
+          .search-clear-all-btn { padding:4px 12px; border-radius:20px; border:1px solid rgba(239, 68, 68, 0.3); background:transparent; color:var(--danger); cursor:pointer; font-size:0.78rem; white-space:nowrap; }
+          .search-clear-all-btn:hover { background:var(--danger-bg); }
+          .tag-search-dropdown { position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--surface); border:1px solid var(--border); border-radius:10px; z-index:1000; max-height:200px; overflow-y:auto; display:none; box-shadow:var(--shadow); }
           .tag-search-dropdown.show { display:block; }
-          .tag-drop-item { display:flex; align-items:center; gap:8px; padding:8px 14px; cursor:pointer; transition:background .15s; font-size:0.88rem; color:var(--text,#fff); }
-          .tag-drop-item:hover { background:var(--surface-2,#2a2a3e); }
+          .tag-drop-item { display:flex; align-items:center; gap:8px; padding:8px 14px; cursor:pointer; transition:background .15s; font-size:0.88rem; color:var(--text); }
+          .tag-drop-item:hover { background:var(--surface2); }
           .tag-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-          .tag-drop-check { margin-left:auto; color:var(--primary,#6366f1); }
+          .tag-drop-check { margin-left:auto; color:var(--primary); }
         </style>
       </div>
 
@@ -241,7 +212,6 @@
                   </svg>
                 </button>
               </div>
-              <button onclick="Dashboard.goToToday()" class="vc-today-btn" id="vc-btn-today">Volver a Hoy</button>
             </div>
             <div id="vc-days-list" class="vc-days-list"></div>
             <div class="vc-footer">
@@ -318,98 +288,103 @@
       </div>
       <div class="form-container">
         <form id="task-form" autocomplete="off">
-          <div class="form-group">
-            <label for="task-title">Título *</label>
-            <input type="text" id="task-title" class="input-field" placeholder="¿Qué necesitas hacer?" required>
-            <div id="form-tags-selected" style="min-height:20px;display:flex;flex-wrap:wrap;gap:6px;padding:8px 0 2px">
-              <span style="color:var(--muted,#888);font-size:0.8rem;font-style:italic">Sin etiquetas asignadas</span>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="task-description">Notas</label>
-            <textarea id="task-description" class="input-field" placeholder="Escribe aquí las notas de esta tarea..." rows="3"></textarea>
-            <div id="form-att-list" style="display:flex;flex-direction:column;gap:8px;margin-top:10px"></div>
-            <div style="display:flex;gap:10px;margin-top:10px">
-              <label id="form-clip-btn" style="
-                flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
-                padding:10px;border-radius:10px;cursor:pointer;
-                border:2px solid #6366f1;background:rgba(99,102,241,0.12);
-                color:#a5b4fc;font-size:0.82rem;font-weight:600;transition:all .15s"
-                onmouseover="this.style.background='rgba(99,102,241,0.25)'"
-                onmouseout="this.style.background='rgba(99,102,241,0.12)'">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2">
-                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
-                </svg>
-                Adjuntar imagen o PDF
-                <input id="form-att-input" type="file" accept="image/*,application/pdf,.pdf" multiple style="display:none">
-              </label>
-              <div id="form-paste-zone" style="
-                flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
-                padding:10px;border-radius:10px;cursor:pointer;
-                border:2px dashed #4b5563;background:rgba(75,85,99,0.1);
-                color:#9ca3af;font-size:0.82rem;font-weight:600;transition:all .15s">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
-                  <rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
-                </svg>
-                Ctrl+V pegar imagen
+          <div class="form-layout-split">
+            <!-- Columna Principal -->
+            <div class="form-main">
+              <div class="form-group">
+                <label for="task-title">Título *</label>
+                <input type="text" id="task-title" class="input-field" placeholder="¿Qué necesitas hacer?" required>
+                <div id="form-tags-selected" style="min-height:20px;display:flex;flex-wrap:wrap;gap:6px;padding:8px 0 2px">
+                  <span style="color:var(--muted,#888);font-size:0.8rem;font-style:italic">Sin etiquetas asignadas</span>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="task-date">Fecha a realizar</label>
+                  <input type="date" id="task-date" class="input-field" required>
+                </div>
+                <div class="form-group">
+                  <label for="task-priority">Prioridad (Método ABCDE)</label>
+                  <select id="task-priority" class="input-field">
+                    <option value="A">🔴 A (Muy Alta - Consecuencias graves)</option>
+                    <option value="B">🟠 B (Media - Debería hacerse)</option>
+                    <option value="C" selected>🟡 C (Baja - Agradable hacer)</option>
+                    <option value="D">🔵 D (Delegar - Otros pueden hacerla)</option>
+                    <option value="E">⚪ E (Eliminar - Prescindible)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Subtareas</label>
+                <div id="form-subtask-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;"></div>
+                <div style="display:flex;gap:8px;">
+                  <input type="text" id="form-subtask-input" class="input-field" placeholder="Nueva subtarea..." style="flex:1">
+                  <button type="button" id="form-add-subtask" class="btn btn-secondary">+ Agregar</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Notas (Post-it)</label>
+                <div class="rt-editor-container" id="main-editor-container">
+                  <div class="rt-toolbar" id="main-editor-toolbar">
+                    <button type="button" class="rt-btn" data-command="bold" title="Negrita"><b>B</b></button>
+                    <button type="button" class="rt-btn" data-command="italic" title="Cursiva"><i>I</i></button>
+                    <button type="button" class="rt-btn" data-command="underline" title="Subrayado"><u>U</u></button>
+                    <div class="rt-divider"></div>
+                    <button type="button" class="rt-btn" data-command="insertUnorderedList" title="Lista con viñetas">•</button>
+                    <button type="button" class="rt-btn" data-command="insertOrderedList" title="Lista numerada">1.</button>
+                    <div class="rt-divider"></div>
+                    <button type="button" class="rt-btn" data-command="insertTable" title="Insertar Tabla">▦</button>
+                    <button type="button" class="rt-btn" data-command="insertDateTime" title="Insertar Fecha y Hora">⌚</button>
+                    <button type="button" class="rt-btn rt-table-row-btn" data-command="addTableRow" title="Añadir fila" style="display:none; color:var(--primary)">+ Fila</button>
+                    <button type="button" class="rt-btn rt-table-row-btn" data-command="removeTableRow" title="Eliminar fila" style="display:none; color:var(--danger)">- Fila</button>
+                    <button type="button" class="rt-btn rt-expand-btn" title="Expandir a pantalla completa" style="margin-left:auto; background:var(--primary); color:white; width:auto; padding:0 12px; font-weight:700">⤢ EXPANDIR</button>
+                    <button type="button" class="rt-btn rt-convert-btn" title="Convertir en Tarea" style="background:var(--accent,#8b5cf6); color:white; width:auto; padding:0 12px; font-weight:700; margin-left:8px; display:none">➔ CONVERTIR A TAREA</button>
+                  </div>
+                  <div id="task-description" class="input-field postit-note rt-editor" contenteditable="true" placeholder="Escribe aquí las notas de esta tarea..."></div>
+                </div>
+
+                <div id="form-att-list" style="display:flex;flex-direction:column;gap:8px;margin-top:10px"></div>
+                <div style="display:flex;gap:10px;margin-top:10px">
+                  <label id="form-clip-btn" style="
+                    flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+                    padding:10px;border-radius:10px;cursor:pointer;
+                    border:2px solid var(--primary);background:rgba(99,102,241,0.12);
+                    color:var(--primary);font-size:0.82rem;font-weight:600;transition:all .15s"
+                    onmouseover="this.style.background='rgba(99,102,241,0.25)'"
+                    onmouseout="this.style.background='rgba(99,102,241,0.12)'">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+                    </svg>
+                    Adjunto
+                    <input id="form-att-input" type="file" accept="image/*,application/pdf,.pdf" multiple style="display:none">
+                  </label>
+                  <div id="form-paste-zone" style="
+                    flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+                    padding:10px;border-radius:10px;cursor:pointer;
+                    border:2px dashed var(--muted);background:rgba(75,85,99,0.1);
+                    color:var(--muted);font-size:0.82rem;font-weight:600;transition:all .15s">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
+                    </svg>
+                    Pegar
+                  </div>
+                </div>
               </div>
             </div>
-            <div id="form-att-err" style="color:#ef4444;font-size:0.75rem;margin-top:6px;display:none"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="task-date">Fecha</label>
-              <input type="date" id="task-date" class="input-field">
+
+            <!-- Columna de Botones (Sidebar) -->
+            <div class="form-sidebar">
+              <button type="submit" id="form-submit-btn" class="btn btn-primary" style="height:60px; font-size:1.1rem">CREAR TAREA</button>
+              <button type="button" class="btn btn-secondary" onclick="Tasks.resetForm()">LIMPIAR</button>
+              <button type="button" id="form-cancel-btn" class="btn btn-secondary" style="border:1px solid #ef444455;color:#ef4444">CANCELAR</button>
+              
+              <div style="margin-top:auto; padding:15px; border-radius:10px; background:rgba(99,102,241,0.05); border:1px solid var(--border)">
+                <p style="font-size:0.75rem; color:var(--muted); margin:0">💡 Tips: Usa <strong>#hashtags</strong> en la nota para categorizar.</p>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="task-deadline">Fecha límite</label>
-              <input type="date" id="task-deadline" class="input-field">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="task-priority">Prioridad</label>
-              <select id="task-priority" class="input-field">
-                <option value="low">🟢 Baja</option>
-                <option value="medium" selected>🟡 Media</option>
-                <option value="high">🔴 Alta</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="task-recurrence">Repetir</label>
-              <select id="task-recurrence" class="input-field">
-                <option value="none">No repetir</option>
-                <option value="daily">Diario</option>
-                <option value="weekly">Semanal</option>
-                <option value="monthly">Mensual</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="task-alarm">Alarma</label>
-              <input type="datetime-local" id="task-alarm" class="input-field">
-            </div>
-            <div class="form-group">
-              <label for="task-rec-until">Repetir hasta</label>
-              <input type="date" id="task-rec-until" class="input-field">
-            </div>
-          </div>
-          <div class="form-group">
-            <p style="font-size:0.75rem;color:var(--muted,#888);margin:0">💡 Escribe <strong>#etiqueta</strong> en el título o descripción para asignar etiquetas.</p>
-          </div>
-          <div class="form-group">
-            <label>Subtareas</label>
-            <div id="form-subtask-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;"></div>
-            <div style="display:flex;gap:8px;">
-              <input type="text" id="form-subtask-input" class="input-field" placeholder="Nueva subtarea..." style="flex:1">
-              <button type="button" id="form-add-subtask" class="btn btn-secondary">+ Agregar</button>
-            </div>
-          </div>
-          <div class="form-actions">
-            <button type="submit" id="form-submit-btn" class="btn btn-primary">Crear Tarea</button>
-            <button type="button" class="btn btn-secondary" onclick="Tasks.resetForm()">Limpiar</button>
-            <button type="button" id="form-cancel-btn" class="btn btn-secondary" style="border:1px solid #ef444455;color:#ef4444">Cancelar</button>
           </div>
         </form>
       </div>
@@ -469,6 +444,43 @@
       <div id="tags-list"></div>
     </section>
 
+    <!-- Nueva Vista: Panel de Notas -->
+    <section id="view-notes" class="view">
+      <div class="view-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+        <h1 class="view-title">Biblioteca de Notas</h1>
+        <div style="font-size:0.85rem;color:var(--muted)">Todas las notas de tus tareas vinculadas</div>
+      </div>
+
+      <div class="notes-filters" style="display:flex;flex-direction:column;gap:12px;background:var(--surface2);padding:20px;border-radius:14px;border:1px solid var(--border);margin-bottom:24px">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="flex:2;min-width:250px;position:relative">
+            <input type="text" id="notes-search-input" class="input-field" placeholder="Buscar por palabra clave, folio o contenido..." style="padding-left:40px">
+            <svg style="position:absolute;left:12px;top:11px;color:var(--muted)" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <div style="flex:1;min-width:150px">
+            <select id="notes-type-filter" class="input-field" style="width:100%">
+              <option value="all">📁 Todas las notas</option>
+              <option value="note">📝 Independientes</option>
+              <option value="task">📋 De Tareas</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:150px">
+            <input type="date" id="notes-date-filter" class="input-field" style="width:100%">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:0.8rem;color:var(--muted)">Etiquetas:</span>
+          <div id="notes-tag-filters" style="display:flex;gap:6px;flex-wrap:wrap">
+            <!-- Píldoras de etiquetas para filtrar -->
+          </div>
+        </div>
+      </div>
+
+      <div id="notes-grid" class="notes-grid">
+        <!-- Tarjetas de notas renderizadas aquí -->
+      </div>
+    </section>
+
     </main>
 
   <!-- Scripts de Firebase (Agregados para la conexión a la nube) -->
@@ -477,7 +489,9 @@
 
   <script src="js/storage.js"></script>
   <script src="js/ui.js"></script>
+  <script src="js/editor.js"></script>
   <script src="js/tasks.js"></script>
+  <script src="js/notes.js"></script>
   <script src="js/calendar.js"></script>
   <script src="js/agenda.js"></script>
   <script src="js/timeline.js"></script>
