@@ -1876,6 +1876,11 @@ body {
 }
 #view-today {
   padding: 0 !important;
+  margin: 0 !important;
+}
+/* Otras vistas mantienen su padding */
+#view-calendar, #view-agenda, #view-month-list, #view-new-task, #view-day, #view-tags {
+  padding: 20px !important;
 }
 
 /* Calendario lateral: scrolleable 100% */
