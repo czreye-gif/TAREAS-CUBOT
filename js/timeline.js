@@ -125,7 +125,6 @@ const Timeline = {
           </div>
           <div class="tl-card-meta">
             ${task.timeStart ? `<span class="tl-card-time">${task.timeStart}${task.timeEnd ? '-' + task.timeEnd : ''}</span>` : ''}
-            ${hasSubs ? `<span class="tl-card-subs">📋 ${subsDone}/${subsTotal}</span>` : ''}
             ${task.alarm ? '<span class="tl-card-alarm">🔔</span>' : ''}
             <button class="tl-notes-btn ${(task.description || (task.attachments && task.attachments.length > 0)) ? 'has-notes' : 'no-notes'}" data-action="show-notes" data-id="${task.id}" title="${(task.description || (task.attachments && task.attachments.length > 0)) ? 'Ver/editar notas' : 'Agregar nota'}">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -138,6 +137,25 @@ const Timeline = {
             <span class="tl-card-priority" style="background:${pColor}" title="${UI.priorityLabel(task.priority)}">${UI.priorityLetter(task.priority)}</span>
             ${tagPills}
           </div>
+          ${hasSubs ? `
+            <div class="tl-subtask-section">
+              <div class="subtask-progress">
+                <div class="progress-bar"><div class="progress-fill" style="width:${Math.round((subsDone/subsTotal)*100)}%"></div></div>
+                <span class="progress-label">${subsDone}/${subsTotal}</span>
+              </div>
+              <div class="tl-subtask-list">
+                ${task.subtasks.map(sub => `
+                  <div class="subtask-item ${sub.completed ? 'completed' : ''}">
+                    <button class="subtask-check ${sub.completed ? 'checked' : ''}" 
+                            data-action="toggle-sub" data-task-id="${task.id}" data-sub-id="${sub.id}">
+                      ${sub.completed ? '✓' : ''}
+                    </button>
+                    <span class="subtask-title">${this._esc(sub.title)}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
         </div>
         <div class="tl-card-actions">
           <button data-action="delete" data-id="${task.id}" title="Eliminar">✕</button>

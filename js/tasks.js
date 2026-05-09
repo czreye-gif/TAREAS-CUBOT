@@ -882,7 +882,8 @@ const Tasks = {
     item.className = 'form-subtask-item';
     item.dataset.id = id;
     item.innerHTML = `
-      <span>${this._escapeHTML(title)}</span>
+      <input type="checkbox" class="form-subtask-check">
+      <span contenteditable="true" class="form-subtask-title">${this._escapeHTML(title)}</span>
       <button type="button" class="subtask-remove" onclick="this.parentElement.remove()">&times;</button>
     `;
     list.appendChild(item);
@@ -912,7 +913,8 @@ const Tasks = {
       item.className = 'form-subtask-item';
       item.dataset.id = sub.id;
       item.innerHTML = `
-        <span>${this._escapeHTML(sub.title)}</span>
+        <input type="checkbox" class="form-subtask-check" ${sub.completed ? 'checked' : ''}>
+        <span contenteditable="true" class="form-subtask-title">${this._escapeHTML(sub.title)}</span>
         <button type="button" class="subtask-remove" onclick="this.parentElement.remove()">&times;</button>
       `;
       list.appendChild(item);
@@ -990,8 +992,8 @@ const Tasks = {
     const subtaskEls = document.querySelectorAll('#form-subtask-list .form-subtask-item');
     const subtasks = Array.from(subtaskEls).map(el => ({
       id: el.dataset.id || storage._id(),
-      title: el.querySelector('span').textContent,
-      completed: false
+      title: (el.querySelector('.form-subtask-title')?.textContent || '').trim(),
+      completed: el.querySelector('.form-subtask-check')?.checked || false
     }));
 
     // Collect selected tags + extracted tags from rich editor

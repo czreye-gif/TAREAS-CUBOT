@@ -432,6 +432,7 @@ const Dashboard = {
           if (action === 'edit')       Tasks.editTask(id);
           if (action === 'delete')     Tasks.deleteTask(id);
           if (action === 'show-notes') Tasks.showNotes(id);
+          if (action === 'toggle-sub') Tasks.toggleSubtask(btn.dataset.taskId, btn.dataset.subId);
         };
       });
     });
