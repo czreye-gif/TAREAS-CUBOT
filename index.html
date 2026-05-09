@@ -339,7 +339,18 @@
                     <button type="button" class="rt-btn" data-command="insertOrderedList" title="Lista numerada">1.</button>
                     <div class="rt-divider"></div>
                     <button type="button" class="rt-btn" data-command="insertTable" title="Insertar Tabla">▦</button>
-                    <button type="button" class="rt-btn" data-command="insertDateTime" title="Insertar Fecha y Hora">⌚</button>
+                    <button type="button" class="rt-btn" data-command="insertDateTime" title="Insertar Fecha y Hora">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                      </svg>
+                    </button>
+                    <select class="rt-btn rt-font-select" title="Fuente de la nota" style="width:auto; padding:0 8px; font-size:0.7rem; font-weight:600; background:var(--bg2); border:1px solid var(--border)">
+                      <option value="'Roboto', sans-serif">Roboto</option>
+                      <option value="'Inter', sans-serif">Inter</option>
+                      <option value="'Montserrat', sans-serif">Montserrat</option>
+                      <option value="'Kalam', cursive">Manuscrita</option>
+                    </select>
                     <button type="button" class="rt-btn rt-table-row-btn" data-command="addTableRow" title="Añadir fila" style="display:none; color:var(--primary)">+ Fila</button>
                     <button type="button" class="rt-btn rt-table-row-btn" data-command="removeTableRow" title="Eliminar fila" style="display:none; color:var(--danger)">- Fila</button>
                     <button type="button" class="rt-btn rt-share-btn" title="Compartir nota" style="margin-left:auto; color:var(--primary)">
@@ -481,15 +492,6 @@
             <div id="notes-tag-filters" style="display:flex;gap:6px;flex-wrap:wrap">
               <!-- Píldoras de etiquetas para filtrar -->
             </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
-            <span style="font-size:0.8rem;color:var(--muted)">Tipografía:</span>
-            <select id="notes-font-selector" class="input-field" style="padding:4px 8px; font-size:0.75rem; height:auto; width:auto; background:var(--bg2)">
-              <option value="'Roboto', sans-serif">Roboto</option>
-              <option value="'Inter', sans-serif">Inter</option>
-              <option value="'Montserrat', sans-serif">Montserrat</option>
-              <option value="'Kalam', cursive">Manuscrita</option>
-            </select>
           </div>
         </div>
       </div>
