@@ -489,7 +489,7 @@ input:focus, select:focus, textarea:focus {
 
 /* Toggle button con anillo de progreso */
 .subtask-toggle-btn {
-  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   border: none; background: none; cursor: pointer;
   position: relative; padding: 0; margin-top: 1px;
