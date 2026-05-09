@@ -2260,9 +2260,9 @@ body {
 }
 .rt-focus-window {
   background: var(--surface);
-  width: 90%;
-  max-width: 860px;
-  height: 72vh;
+  width: 97%;
+  max-width: 960px;
+  height: 82vh;
   border-radius: 16px;
   display: flex;
   flex-direction: column;
