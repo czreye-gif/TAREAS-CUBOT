@@ -80,7 +80,9 @@ const Tasks = {
            data-task-id="${task.id}" data-draggable data-date="${task.date}">
         <div class="task-card-header">
           <div class="drag-handle" title="Arrastrar para reagendar">⠿</div>
-          <button class="task-check ${task.completed ? 'checked' : ''}" data-action="toggle" data-id="${task.id}">
+          <button class="task-check ${task.completed ? 'checked' : ''}" 
+                  style="${hasSubtasks ? 'display:none' : ''}"
+                  data-action="toggle" data-id="${task.id}">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
               ${task.completed ? '<polyline points="20,6 9,17 4,12"/>' : ''}
             </svg>
@@ -1006,8 +1008,20 @@ const Tasks = {
       if (!selectedTags.includes(tid)) selectedTags.push(tid);
     });
 
+    // La tarea se completa si tiene subtareas y todas están hechas.
+    // Si no tiene subtareas, mantenemos su estado previo (si existe).
+    const editId = form.dataset.editId;
+    let isCompleted = false;
+    if (subtasks.length > 0) {
+      isCompleted = subtasks.every(s => s.completed);
+    } else if (editId) {
+      const old = storage.getTask(editId);
+      isCompleted = old ? old.completed : false;
+    }
+    
     const taskData = {
       title,
+      completed: isCompleted,
       description: editorHtml.trim(),
       date: document.getElementById('task-date').value,
       priority: document.getElementById('task-priority').value,

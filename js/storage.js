@@ -241,8 +241,12 @@ class TaskStorage {
     const s = (t.subtasks || []).find(s => s.id === subId);
     if (!s) return null;
     s.completed = !s.completed;
+
+    // INNOVACIÓN: Autocompletar tarea si todas las subtareas están listas
+    const allDone = t.subtasks.every(st => st.completed);
+    t.completed = allDone;
+
     this._saveLocal();
-    
     db.collection("tareas").doc(taskId).set(t).catch(console.error);
     return s;
   }

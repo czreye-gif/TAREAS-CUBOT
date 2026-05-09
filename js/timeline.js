@@ -115,7 +115,9 @@ const Timeline = {
       <div class="tl-card ${task.completed ? 'tl-completed' : ''} priority-${task.priority}"
            data-task-id="${task.id}" data-date="${task.date}">
         <div class="tl-card-grip">⠿</div>
-        <button class="tl-card-check ${task.completed ? 'checked' : ''}" data-action="toggle" data-id="${task.id}">
+        <button class="tl-card-check ${task.completed ? 'checked' : ''}" 
+                style="${hasSubs ? 'display:none' : ''}"
+                data-action="toggle" data-id="${task.id}">
           ${task.completed ? '✓' : ''}
         </button>
         <div class="tl-card-body">
