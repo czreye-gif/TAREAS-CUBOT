@@ -111,70 +111,114 @@ const RichEditor = {
   },
 
   enterFocusMode(originalEditor, originalToolbar) {
-    const folio = originalEditor.dataset.folio || 'NUEVA';
+    const folio  = originalEditor.dataset.folio  || 'NUEVA';
     const taskId = originalEditor.dataset.taskId || '';
+    const font   = originalEditor.style.fontFamily || 'var(--font-notes)';
 
     const overlay = document.createElement('div');
     overlay.className = 'rt-focus-overlay';
     overlay.innerHTML = `
-      <div class="rt-focus-window">
-        <div class="rt-focus-header">
-          <span>📝 Nota Folio: ${folio}</span>
-          <div style="display:flex; gap:8px; align-items:center">
-            <button class="rt-share-focus" style="background:var(--primary); color:white; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; font-weight:600; font-size:0.85rem">Compartir</button>
-            <button class="rt-close-focus">Cerrar</button>
+      <div class="rt-focus-window" id="rt-focus-win">
+        <div class="rt-focus-header" id="rt-focus-hdr">
+          <span>📝 Nota: ${folio}</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="rt-calc-toggle" title="Calculadora de Retenciones">🧮 Calc</button>
+            ${taskId ? `<button class="rt-share-focus">Compartir</button>` : ''}
+            <button class="rt-close-focus">✕ Cerrar</button>
           </div>
         </div>
-        <div class="rt-toolbar" id="focus-toolbar">
-          ${originalToolbar.innerHTML}
+        <div class="rt-focus-body">
+          <div class="rt-note-pane">
+            <div class="rt-toolbar" id="focus-toolbar">${originalToolbar.innerHTML}</div>
+            <div class="rt-editor postit-note" contenteditable="true" id="focus-editor"
+                 data-task-id="${taskId}" data-folio="${folio}"
+                 style="font-family:${font}">${originalEditor.innerHTML}</div>
+          </div>
+          <div class="rt-calc-pane" id="rt-calc-pane" style="display:none">
+            ${typeof RetCalc !== 'undefined' ? RetCalc.render() : '<p style="padding:20px;color:var(--muted)">Calculadora no disponible</p>'}
+          </div>
         </div>
-        <div class="rt-editor postit-note" contenteditable="true" id="focus-editor"
-             data-task-id="${taskId}" data-folio="${folio}" style="font-family:${originalEditor.style.fontFamily || 'var(--font-notes)'}">
-          ${originalEditor.innerHTML}
-        </div>
-      </div>
-    `;
+      </div>`;
 
     document.body.appendChild(overlay);
-    const focusEditor  = overlay.querySelector('#focus-editor');
-    const focusToolbar = overlay.querySelector('#focus-toolbar');
-    const closeBtn     = overlay.querySelector('.rt-close-focus');
 
-    // Limpiar botones que no aplican dentro de la ventana flotante
-    focusToolbar.querySelectorAll('.rt-expand-btn, .rt-convert-btn').forEach(b => b.remove());
+    const win         = overlay.querySelector('#rt-focus-win');
+    const hdr         = overlay.querySelector('#rt-focus-hdr');
+    const focusEditor = overlay.querySelector('#focus-editor');
+    const focusTB     = overlay.querySelector('#focus-toolbar');
+    const calcPane    = overlay.querySelector('#rt-calc-pane');
+    const calcToggle  = overlay.querySelector('.rt-calc-toggle');
+    const closeBtn    = overlay.querySelector('.rt-close-focus');
+    const shareBtn    = overlay.querySelector('.rt-share-focus');
 
-    // Re-bind toolbar en modo focus (sin volver a crear el overlay)
+    // Clean focus-toolbar
+    focusTB.querySelectorAll('.rt-expand-btn,.rt-convert-btn').forEach(b => b.remove());
     this.init('#focus-editor', '#focus-toolbar');
 
-    // Focus en el editor flotante
+    // Init calculator
+    if (typeof RetCalc !== 'undefined' && calcPane) RetCalc.init(calcPane);
+
     setTimeout(() => focusEditor.focus(), 50);
 
-    // Cerrar y sincronizar contenido al original
+    // ── DRAG ─────────────────────────────────────────────────────
+    hdr.style.cursor = 'grab';
+    let dragging = false, sx, sy, sl, st;
+
+    const startDrag = (cx, cy) => {
+      const r = win.getBoundingClientRect();
+      dragging = true;
+      win.style.cssText += `;position:fixed;left:${r.left}px;top:${r.top}px;margin:0;transform:none`;
+      overlay.style.alignItems = 'flex-start';
+      overlay.style.justifyContent = 'flex-start';
+      sx = cx; sy = cy; sl = r.left; st = r.top;
+      hdr.style.cursor = 'grabbing';
+    };
+    const moveDrag = (cx, cy) => {
+      if (!dragging) return;
+      const ml = window.innerWidth  - win.offsetWidth;
+      const mt = window.innerHeight - 60;
+      win.style.left = Math.max(0, Math.min(ml, sl + cx - sx)) + 'px';
+      win.style.top  = Math.max(0, Math.min(mt, st + cy - sy)) + 'px';
+    };
+    const endDrag = () => { dragging = false; hdr.style.cursor = 'grab'; };
+
+    const onMD = e => { if (!e.target.closest('button')) { startDrag(e.clientX, e.clientY); e.preventDefault(); } };
+    const onMM = e => moveDrag(e.clientX, e.clientY);
+    const onTS = e => { if (!e.target.closest('button')) startDrag(e.touches[0].clientX, e.touches[0].clientY); };
+    const onTM = e => moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+
+    hdr.addEventListener('mousedown', onMD);
+    hdr.addEventListener('touchstart', onTS, { passive: true });
+    document.addEventListener('mousemove', onMM);
+    document.addEventListener('mouseup', endDrag);
+    document.addEventListener('touchmove', onTM, { passive: true });
+    document.addEventListener('touchend', endDrag);
+
+    // ── CALCULATOR TOGGLE ────────────────────────────────────────
+    if (calcToggle) {
+      calcToggle.addEventListener('click', () => {
+        const show = calcPane.style.display === 'none';
+        calcPane.style.display = show ? 'flex' : 'none';
+        calcToggle.classList.toggle('active', show);
+      });
+    }
+
+    // ── CLOSE ────────────────────────────────────────────────────
     const closeFn = () => {
       originalEditor.innerHTML = focusEditor.innerHTML;
-      // Sincronizar fuente elegida
-      const focusFontSelect = focusToolbar.querySelector('.rt-font-select');
-      if (focusFontSelect) originalEditor.style.fontFamily = focusFontSelect.value;
+      const fs = focusTB.querySelector('.rt-font-select');
+      if (fs) originalEditor.style.fontFamily = fs.value;
+      document.removeEventListener('mousemove', onMM);
+      document.removeEventListener('mouseup', endDrag);
+      document.removeEventListener('touchmove', onTM);
+      document.removeEventListener('touchend', endDrag);
       overlay.remove();
     };
 
     closeBtn.onclick = closeFn;
-    // Cerrar al hacer clic en el fondo oscuro
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) closeFn();
-    });
-
-    // Compartir desde la ventana flotante
-    const shareFocusBtn = overlay.querySelector('.rt-share-focus');
-    if (shareFocusBtn && taskId) {
-      shareFocusBtn.onclick = () => {
-        if (typeof Tasks !== 'undefined') Tasks.shareNote(taskId);
-      };
-    } else if (shareFocusBtn) {
-      shareFocusBtn.style.display = 'none';
-    }
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeFn(); });
+    if (shareBtn) shareBtn.onclick = () => { if (typeof Tasks !== 'undefined') Tasks.shareNote(taskId); };
   },
-
 
   insertTable(editor) {
     const tableHTML = `
