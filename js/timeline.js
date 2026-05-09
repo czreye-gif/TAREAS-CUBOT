@@ -91,10 +91,17 @@ const Timeline = {
       btn.onclick = (e) => {
         e.stopPropagation();
         const { action, id } = btn.dataset;
-        if (action === 'toggle') Tasks.toggleTask(id);
-        if (action === 'edit')   Tasks.editTask(id);
-        if (action === 'delete') Tasks.deleteTask(id);
-        if (action === 'show-notes') Tasks.showNotes(id);
+        try {
+          if (action === 'toggle')     Tasks.toggleTask(id);
+          if (action === 'edit')       Tasks.editTask(id);
+          if (action === 'delete')     Tasks.deleteTask(id);
+          if (action === 'show-notes') Tasks.showNotes(id);
+          if (action === 'toggle-sub') {
+            Tasks.toggleSubtask(btn.getAttribute('data-task-id'), btn.getAttribute('data-sub-id'));
+          }
+        } catch(err) {
+          console.error("Timeline: Error en acción", action, err);
+        }
       };
     });
   },

@@ -164,15 +164,23 @@ const Tasks = {
         e.stopPropagation();
         const action = btn.dataset.action;
         const id = btn.dataset.id;
-        switch (action) {
-          case 'toggle': this.toggleTask(id); break;
-          case 'edit': this.editTask(id); break;
-          case 'delete': this.deleteTask(id); break;
-          case 'reschedule': this.rescheduleTask(id); break;
-          case 'add-subtask': this.promptAddSubtask(id); break;
-          case 'toggle-sub': this.toggleSubtask(btn.dataset.taskId, btn.dataset.subId); break;
-          case 'delete-sub': this.deleteSubtask(btn.dataset.taskId, btn.dataset.subId); break;
-          case 'show-notes': this.showNotes(id); break;
+        try {
+          switch (action) {
+            case 'toggle': this.toggleTask(id); break;
+            case 'edit': this.editTask(id); break;
+            case 'delete': this.deleteTask(id); break;
+            case 'reschedule': this.rescheduleTask(id); break;
+            case 'add-subtask': this.promptAddSubtask(id); break;
+            case 'toggle-sub': 
+              this.toggleSubtask(btn.getAttribute('data-task-id'), btn.getAttribute('data-sub-id')); 
+              break;
+            case 'delete-sub': 
+              this.deleteSubtask(btn.getAttribute('data-task-id'), btn.getAttribute('data-sub-id')); 
+              break;
+            case 'show-notes': this.showNotes(id); break;
+          }
+        } catch(err) {
+          console.error("Tasks: Error en acción", action, err);
         }
       };
     });

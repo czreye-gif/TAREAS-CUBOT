@@ -243,7 +243,7 @@ class TaskStorage {
     s.completed = !s.completed;
 
     // INNOVACIÓN: Autocompletar tarea si todas las subtareas están listas
-    const allDone = t.subtasks.every(st => st.completed);
+    const allDone = (t.subtasks || []).length > 0 && (t.subtasks || []).every(st => st.completed);
     t.completed = allDone;
 
     this._saveLocal();
