@@ -81,17 +81,18 @@ const RetCalc = {
             <button class="calc-key calc-key-del" data-key="del">⌫</button>
           </div>
 
-          <div class="calc-results">
-            <div class="calc-res-divider"></div>
-            <div class="calc-res-row"><span>Subtotal/IVA</span><span id="cr-iva-combined">$0.00 / $0.00</span></div>
-            <div class="calc-res-row"><span>Retenciones</span><span id="cr-ret-combined" class="calc-danger">-$0.00</span></div>
-            <div class="calc-res-divider"></div>
-            <div class="calc-res-row calc-res-total"><span>TOTAL</span><span id="cr-total">$0.00</span></div>
+          <div class="calc-results" style="background:var(--surface); border:1px solid var(--border); padding:6px; border-radius:8px; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
+            <div class="calc-res-row"><span>Base</span><span id="cr-base" style="color:var(--text)">$0.00</span></div>
+            <div class="calc-res-row"><span>IVA</span><span id="cr-iva" style="color:var(--text)">$0.00</span></div>
+            <div class="calc-res-row"><span>Ret. ISR</span><span id="cr-isr" class="calc-danger">-$0.00</span></div>
+            <div class="calc-res-row"><span>Ret. IVA</span><span id="cr-riva" class="calc-danger">-$0.00</span></div>
+            <div class="calc-res-divider" style="background:var(--border); opacity:0.5;"></div>
+            <div class="calc-res-row calc-res-total"><span>TOTAL</span><span id="cr-total" style="color:var(--primary-light); font-weight:800;">$0.00</span></div>
           </div>
 
-          <div style="display:flex; gap:8px; margin-top:8px;">
-            <button class="calc-clear-btn" id="calc-clear" style="flex:1">LIMPIAR</button>
-            <button class="calc-copy-btn" id="calc-copy-ret" style="flex:1.5; background:var(--success); color:white; border-radius:8px; font-weight:700; font-size:0.75rem; border:none; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.3)">📋 COPIAR A NOTA</button>
+          <div style="display:flex; gap:6px; margin-top:6px;">
+            <button class="calc-clear-btn" id="calc-clear" style="flex:1; font-size:0.7rem; padding:6px;">LIMPIAR</button>
+            <button class="calc-copy-btn" id="calc-copy-ret" style="flex:2; background:var(--success); color:white; border-radius:8px; font-weight:800; font-size:0.8rem; border:none; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.3); padding:6px;">📋 COPIAR A NOTA</button>
           </div>
         </div>
 
@@ -336,8 +337,10 @@ const RetCalc = {
   _setResults(s, iva, isr, rv, t, c) {
     if (!c) return;
     const set = (id, v) => { const el = c.querySelector(id); if (el) el.textContent = v; };
-    set('#cr-iva-combined', `${this._fmt(s)} / ${this._fmt(iva)}`);
-    set('#cr-ret-combined', `-${this._fmt(isr + rv)}`);
+    set('#cr-base',  this._fmt(s));
+    set('#cr-iva',   this._fmt(iva));
+    set('#cr-isr',   '-' + this._fmt(isr));
+    set('#cr-riva',  '-' + this._fmt(rv));
     set('#cr-total', this._fmt(t));
   },
 
