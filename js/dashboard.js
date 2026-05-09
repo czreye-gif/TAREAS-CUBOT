@@ -422,25 +422,6 @@ const Dashboard = {
         card.setAttribute('draggable', 'true');
         card.style.cursor = 'grab';
       });
-
-      // Acciones de botones
-      container.querySelectorAll('[data-action]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const action = btn.getAttribute('data-action');
-          const id = btn.getAttribute('data-id');
-          try {
-            if (action === 'toggle')     Tasks.toggleTask(id);
-            if (action === 'edit')       Tasks.editTask(id);
-            if (action === 'delete')     Tasks.deleteTask(id);
-            if (action === 'show-notes') Tasks.showNotes(id);
-            if (action === 'toggle-sub') {
-              Tasks.toggleSubtask(btn.getAttribute('data-task-id'), btn.getAttribute('data-sub-id'));
-            }
-          } catch(err) {
-            console.error("Dashboard: Error en acción", action, err);
-          }
-        });
-      });
     });
 
     // Re-inicializar drop zones (por si se re-renderizó)
@@ -450,19 +431,14 @@ const Dashboard = {
         zone.classList.add('dash-drop-hover');
       };
       zone.ondragleave = (e) => {
-        // Solo quitar el hover si realmente salimos de la zona
-        // (no si solo cruzamos sobre una tarjeta hija)
         if (e.relatedTarget && zone.contains(e.relatedTarget)) return;
         zone.classList.remove('dash-drop-hover');
       };
       zone.ondrop = (e) => {
         e.preventDefault();
-        
-        // Limpieza de estados visuales inmediata para prevenir bugs si el DOM se regenera y no dispara dragend
         document.querySelectorAll('.drop-zone').forEach(z => {
           z.classList.remove('dash-drag-active', 'dash-drop-hover', 'drag-over');
         });
-
         const taskId = e.dataTransfer.getData('text/plain');
         if (taskId) this.handleDrop(taskId, zone.dataset.zone);
       };

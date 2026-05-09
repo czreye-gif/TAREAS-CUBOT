@@ -101,21 +101,6 @@ const app = {
   },
 
   bindGlobalEvents() {
-    document.addEventListener('dblclick', (e) => {
-      const card = e.target.closest('[data-task-id]');
-      if (!card || e.target.closest('[data-action], button')) return;
-      const taskId = card.dataset.taskId;
-      if (taskId && typeof Tasks !== 'undefined') Tasks.editTask(taskId);
-    });
-
-    document.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-action="show-notes"]');
-      if (!btn) return;
-      e.stopPropagation();
-      e.preventDefault();
-      if (typeof Tasks !== 'undefined') Tasks.showNotes(btn.dataset.id);
-    });
-    
     window.addEventListener('hashchange', () => {
       const hash = location.hash.slice(1);
       if (hash) this.navigate(hash, true);
