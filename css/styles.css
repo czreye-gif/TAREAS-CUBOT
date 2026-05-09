@@ -2342,6 +2342,42 @@ body {
 .note-line-3 { font-size: 0.85rem; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
 .note-line-4 { display: flex; gap: 4px; margin-top: 4px; }
 
+/* Adjuntos en biblioteca de notas */
+.note-att-badge {
+  font-size: 0.7rem; font-weight: 600; color: var(--primary-light);
+  background: rgba(99,102,241,0.15); padding: 1px 8px; border-radius: 10px;
+}
+.note-attachments-row {
+  display: flex; gap: 6px; margin-top: 6px; overflow-x: auto;
+  padding-bottom: 2px; flex-wrap: nowrap;
+}
+.note-att-thumb {
+  width: 48px; height: 48px; border-radius: 6px; object-fit: cover;
+  border: 1px solid var(--border); flex-shrink: 0;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.note-att-thumb:hover {
+  transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.note-att-file {
+  display: flex; align-items: center; gap: 4px; padding: 4px 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; font-size: 0.7rem; color: var(--text2);
+  white-space: nowrap; flex-shrink: 0; max-width: 120px;
+}
+.note-att-file span {
+  overflow: hidden; text-overflow: ellipsis;
+}
+/* Asegurar colores correctos en post-its */
+.note-compact-card.postit-pink .note-att-badge,
+.note-compact-card.postit-yellow .note-att-badge {
+  color: #4f46e5 !important; background: rgba(79,70,229,0.15);
+}
+.note-compact-card.postit-pink .note-att-file,
+.note-compact-card.postit-yellow .note-att-file {
+  background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.1);
+}
+
 .note-card-tags {
   margin-top: 12px;
   display: flex;
