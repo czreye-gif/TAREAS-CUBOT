@@ -345,11 +345,17 @@ const Dashboard = {
   },
 
   _clearAllFilters() {
-    this.filters = { query: '', shortcut: null };
-    const el = document.getElementById('dashboard-search');
-    const c  = document.getElementById('clear-text');
-    if (el) el.value = '';
-    if (c)  c.style.display = 'none';
+    this.filters = { query: '', shortcut: null, date: null, tagIds: [] };
+    const inputs = ['dashboard-search', 'dashboard-date-filter', 'dashboard-tag-search'];
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    const clears = ['clear-text', 'clear-date', 'clear-tags'];
+    clears.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
     document.querySelectorAll('.dsh-btn').forEach(b => b.classList.remove('active'));
     this.render();
   },
@@ -403,20 +409,6 @@ const Dashboard = {
       dropdown.classList.remove('show');
       this.render();
     };
-  },
-
-  _clearAllFilters() {
-    this.filters = { text: '', date: null, tagIds: [], shortcut: null };
-    ['dashboard-search', 'dashboard-date-filter', 'dashboard-tag-search'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
-    });
-    ['clear-text', 'clear-date', 'clear-tags'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    });
-    document.querySelectorAll('.dsh-btn').forEach(b => b.classList.remove('active'));
-    this.render();
   },
 
   // ── Eventos de tarjetas ────────────────────────────────────

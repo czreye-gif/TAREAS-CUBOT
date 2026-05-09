@@ -547,7 +547,7 @@ const Tasks = {
     this.resetForm();
     const form = document.getElementById('task-form');
     if (!form) return;
-    // CORRECCIÓN: evitar agregar el listener más de una vez
+    
     if (!form._submitBound) {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -555,35 +555,28 @@ const Tasks = {
       });
       form._submitBound = true;
     }
-    // Set default date
-    const dateInput = document.getElementById('task-date');
-    if (dateInput && !dateInput.value) {
-      dateInput.value = app.selectedDate || storage._todayStr();
-    }
-    // Reset editing
-    form.dataset.editId = '';
-
+    
     // Subtask management in form
     const addSubBtn = document.getElementById('form-add-subtask');
     if (addSubBtn) {
       addSubBtn.onclick = () => this.addFormSubtask();
     }
-    // Init selected tags display + hashtag autocomplete
-    this._formSelectedTags = [];
-    this._renderSelectedTags();
-    this._renderQuickTags();
-    this._formAttachments = [];
-    this._renderFormAtts();
+    
     this._initFormAttachments();
     this._initTagAutocomplete('task-title');
 
     // Bind botón Cancelar
     const cancelBtn = document.getElementById('form-cancel-btn');
     if (cancelBtn) {
-      cancelBtn.onclick = (e) => {
+      cancelBtn.onclick = () => this.cancelForm();
+    }
+
+    // Bind botón Limpiar
+    const clearBtn = document.getElementById('btn-form-clear'); 
+    if (clearBtn) {
+      clearBtn.onclick = (e) => {
         e.preventDefault();
-        e.stopPropagation();
-        this.cancelForm();
+        this.resetForm();
       };
     }
     this._initTagAutocomplete('task-description');
@@ -941,22 +934,43 @@ const Tasks = {
   resetForm() {
     const form = document.getElementById('task-form');
     if (!form) return;
-    const descEl = document.getElementById('task-description');
-    descEl.innerHTML = '';
-    descEl.dataset.folio = '';
-    descEl.dataset.type = 'task';
-    descEl.dataset.convertId = '';
-    // Re-init toolbar
-    RichEditor.init('#task-description', '#main-editor-toolbar');
-    document.getElementById('task-title').value = '';
-    document.getElementById('task-date').value = (typeof app !== 'undefined' && app.selectedDate) ? app.selectedDate : storage._todayStr();
-    document.getElementById('task-priority').value = 'medium';
-    document.getElementById('form-subtask-list').innerHTML = '';
-    document.getElementById('form-subtask-input').value = '';
-    form.dataset.editId = '';
+
+    // 1. Limpieza inmediata y segura de campos básicos
+    const titleEl = document.getElementById('task-title');
+    if (titleEl) titleEl.value = '';
     
+    const dateEl = document.getElementById('task-date');
+    if (dateEl) dateEl.value = (typeof app !== 'undefined' && app.selectedDate) ? app.selectedDate : storage._todayStr();
+
+    const priorityEl = document.getElementById('task-priority');
+    if (priorityEl) priorityEl.value = 'medium';
+
+    const stList = document.getElementById('form-subtask-list');
+    if (stList) stList.innerHTML = '';
+    
+    const stInput = document.getElementById('form-subtask-input');
+    if (stInput) stInput.value = '';
+
+    form.dataset.editId = '';
+
+    // 2. Limpieza de editor enriquecido (con protección)
+    const descEl = document.getElementById('task-description');
+    if (descEl) {
+      descEl.innerHTML = '';
+      descEl.dataset.folio = '';
+      descEl.dataset.type = 'task';
+      descEl.dataset.convertId = '';
+      try {
+        RichEditor.init('#task-description', '#main-editor-toolbar');
+      } catch(e) {
+        console.warn("Tasks: Error al resetear RichEditor", e);
+      }
+    }
+    
+    // 3. UI y etiquetas
     document.getElementById('form-title').textContent = 'Nueva Tarea';
     document.getElementById('form-submit-btn').textContent = 'Crear Tarea';
+    
     this._formSelectedTags = [];
     this._renderSelectedTags();
     this._renderQuickTags();
