@@ -32,6 +32,8 @@
   --glass: rgba(30, 30, 58, 0.7);
   --glass-border: rgba(99, 102, 241, 0.1);
   --transition: 0.25s cubic-bezier(.4,0,.2,1);
+  --font-main: 'Inter', sans-serif;
+  --font-notes: 'Roboto', sans-serif;
 }
 
 /* ---- Light Theme Variables ---- */
@@ -69,7 +71,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 17px; -webkit-tap-highlight-color: transparent; }
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-main), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -87,7 +89,7 @@ input, select, textarea {
 .postit-note {
   background: #fdf3c0 !important; /* Amarillo post-it cálido */
   color: #333333 !important;
-  font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+  font-family: var(--font-notes);
   border: 1px solid #e6d385 !important;
   box-shadow: 2px 4px 10px rgba(0,0,0,0.05) inset;
 }
