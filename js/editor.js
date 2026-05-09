@@ -53,6 +53,9 @@ const RichEditor = {
     // Bind hashtag autocomplete
     this._bindHashtag(editor);
 
+    // Bind table resizing
+    this._initTableResizing(editor);
+
     // Focus Mode Logic (Manual Trigger via Button)
     const expandBtn = toolbar.querySelector('.rt-expand-btn');
     if (expandBtn) {
@@ -73,6 +76,21 @@ const RichEditor = {
         if (typeof Tasks !== 'undefined') Tasks.convertNoteToTask(taskId);
       };
     }
+
+    // Share logic in editor
+    const shareBtn = toolbar.querySelector('.rt-share-btn');
+    if (shareBtn) {
+      shareBtn.onclick = (e) => {
+        e.preventDefault();
+        const taskId = editor.id === 'focus-editor' ? editor._originalId : editor.dataset.taskId;
+        if (taskId && typeof Tasks !== 'undefined') {
+          Tasks.shareNote(taskId);
+        } else {
+          // If no taskId, share current content as text/image (temp)
+          UI.toast('Guarda la nota antes de compartirla completamente', 'warning');
+        }
+      };
+    }
   },
 
   enterFocusMode(originalEditor, originalToolbar) {
@@ -83,7 +101,10 @@ const RichEditor = {
       <div class="rt-focus-window">
         <div class="rt-focus-header">
           <span>📝 Nota Folio: ${folio}</span>
-          <button class="rt-close-focus">MINIMIZAR ESCALA</button>
+          <div style="display:flex; gap:8px">
+            <button class="rt-share-focus" style="background:var(--primary); color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer">Compartir</button>
+            <button class="rt-close-focus">MINIMIZAR ESCALA</button>
+          </div>
         </div>
         <div class="rt-toolbar" id="focus-toolbar">
           ${originalToolbar.innerHTML}
@@ -117,14 +138,23 @@ const RichEditor = {
       overlay.remove();
       originalEditor.focus();
     };
+
+    const shareFocusBtn = overlay.querySelector('.rt-share-focus');
+    if (shareFocusBtn) {
+      shareFocusBtn.onclick = () => {
+        const taskId = focusEditor._originalId;
+        if (taskId && typeof Tasks !== 'undefined') Tasks.shareNote(taskId);
+        else UI.toast('Guarda los cambios primero', 'warning');
+      };
+    }
   },
 
   insertTable(editor) {
     const tableHTML = `
       <br>
-      <table class="rt-table">
+      <table class="rt-table" style="table-layout: fixed; width: 100%;">
         <tbody>
-          <tr><td><br></td><td><br></td></tr>
+          <tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr>
           <tr><td><br></td><td><br></td></tr>
         </tbody>
       </table>
@@ -372,5 +402,113 @@ const RichEditor = {
     }
     
     return Array.from(foundTags);
+  },
+
+  // ---- Redimensionado de Tablas ----
+  _initTableResizing(editor) {
+    let isResizing = false;
+    let startX, startY, startWidth, startHeight, targetCell, type;
+
+    // Hit detection for mouse
+    editor.addEventListener('mousemove', (e) => {
+      if (isResizing) return;
+      const td = e.target.closest('td, th');
+      if (!td) return;
+
+      const rect = td.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const border = 10;
+
+      if (x > rect.width - border) {
+        td.style.cursor = 'col-resize';
+      } else if (y > rect.height - border) {
+        td.style.cursor = 'row-resize';
+      } else {
+        td.style.cursor = '';
+      }
+    });
+
+    const startResize = (clientX, clientY, td) => {
+      const rect = td.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const border = 20; // Hit area larger for touch
+
+      if (x > rect.width - border) {
+        type = 'width';
+        targetCell = td;
+      } else if (y > rect.height - border) {
+        type = 'height';
+        targetCell = td;
+      } else {
+        return false;
+      }
+
+      isResizing = true;
+      startX = clientX;
+      startY = clientY;
+      startWidth = td.offsetWidth;
+      startHeight = td.offsetHeight;
+      document.body.style.cursor = type === 'width' ? 'col-resize' : 'row-resize';
+      return true;
+    };
+
+    const doResize = (clientX, clientY) => {
+      if (!isResizing || !targetCell) return;
+      if (type === 'width') {
+        const delta = clientX - startX;
+        targetCell.style.width = Math.max(40, startWidth + delta) + 'px';
+        const table = targetCell.closest('table');
+        if (table) table.style.tableLayout = 'fixed';
+      } else {
+        const delta = clientY - startY;
+        targetCell.style.height = Math.max(30, startHeight + delta) + 'px';
+      }
+    };
+
+    const stopResize = () => {
+      isResizing = false;
+      targetCell = null;
+      document.body.style.cursor = '';
+    };
+
+    // Mouse Events
+    editor.addEventListener('mousedown', (e) => {
+      const td = e.target.closest('td, th');
+      if (td && startResize(e.clientX, e.clientY, td)) {
+        e.preventDefault();
+        const onMouseMove = (me) => doResize(me.clientX, me.clientY);
+        const onMouseUp = () => {
+          stopResize();
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup', onMouseUp);
+        };
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+      }
+    });
+
+    // Touch Events (For Cubot Tablet)
+    editor.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      const td = e.target.closest('td, th');
+      if (td && startResize(touch.clientX, touch.clientY, td)) {
+        e.preventDefault();
+        const onTouchMove = (te) => {
+          if (isResizing) {
+            te.preventDefault();
+            doResize(te.touches[0].clientX, te.touches[0].clientY);
+          }
+        };
+        const onTouchEnd = () => {
+          stopResize();
+          window.removeEventListener('touchmove', onTouchMove);
+          window.removeEventListener('touchend', onTouchEnd);
+        };
+        window.addEventListener('touchmove', onTouchMove, { passive: false });
+        window.addEventListener('touchend', onTouchEnd);
+      }
+    }, { passive: false });
   }
 };

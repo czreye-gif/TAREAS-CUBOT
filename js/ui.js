@@ -57,12 +57,12 @@ const UI = {
   priorityColor(p) {
     const map = { 
       'A': '#ef4444', 'high': '#ef4444', 
-      'B': '#f59e0b', 'medium': '#f59e0b', 
-      'C': '#eab308', 'low': '#eab308', 
+      'B': '#f97316', 'medium': '#f97316', 
+      'C': '#facc15', 'low': '#facc15', 
       'D': '#3b82f6', 
       'E': '#9ca3af' 
     };
-    return map[p] || '#eab308';
+    return map[p] || '#facc15';
   },
 
   priorityLetter(p) {
@@ -137,16 +137,30 @@ const UI = {
 
   // ─── 4. CONFIRM ───────────────────────────────────────────────────────────
 
-  confirm(title, message) {
+  confirm(title, messageOrOptions, options = {}) {
     return new Promise(resolve => {
+      let message = '';
+      let finalOpts = options;
+
+      if (typeof messageOrOptions === 'string') {
+        message = messageOrOptions;
+      } else {
+        finalOpts = messageOrOptions || {};
+        message = finalOpts.message || '';
+      }
+
       const overlay = this._makeOverlay();
+      const cancelText = finalOpts.cancelText || 'Cancelar';
+      const confirmText = finalOpts.confirmText || 'Confirmar';
+      const danger = finalOpts.danger !== false;
+
       overlay.innerHTML = `
         <div class="ui-modal-box">
           <h3 class="ui-modal-title">${this._esc(title)}</h3>
-          <p class="ui-modal-msg">${this._esc(message)}</p>
+          ${message ? `<p class="ui-modal-msg">${this._esc(message)}</p>` : ''}
           <div class="ui-modal-actions">
-            <button id="ui-cancel" class="btn btn-secondary">Cancelar</button>
-            <button id="ui-ok" class="btn btn-primary" style="background:#ef4444">Confirmar</button>
+            <button id="ui-cancel" class="btn btn-secondary">${this._esc(cancelText)}</button>
+            <button id="ui-ok" class="btn btn-primary" style="${danger ? 'background:#ef4444' : 'background:var(--primary)'}">${this._esc(confirmText)}</button>
           </div>
         </div>`;
       document.body.appendChild(overlay);

@@ -206,7 +206,13 @@ const Tasks = {
           <button type="button" class="rt-btn" data-command="insertDateTime" title="Insertar Fecha y Hora">⌚</button>
           <button type="button" class="rt-btn rt-table-row-btn" data-command="addTableRow" title="Añadir fila" style="display:none; color:var(--primary)">+ Fila</button>
           <button type="button" class="rt-btn rt-table-row-btn" data-command="removeTableRow" title="Eliminar fila" style="display:none; color:var(--danger)">- Fila</button>
-          <button type="button" class="rt-btn rt-expand-btn" title="Expandir" style="margin-left:auto; background:var(--primary); color:white; width:auto; padding:0 8px; font-weight:700">⤢ EXPANDIR</button>
+          <button type="button" class="rt-btn rt-table-row-btn" data-command="removeTableRow" title="Eliminar fila" style="display:none; color:var(--danger)">- Fila</button>
+          <button type="button" class="rt-btn rt-share-btn" title="Compartir nota" style="margin-left:auto; color:var(--primary)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
+            </svg>
+          </button>
+          <button type="button" class="rt-btn rt-expand-btn" title="Expandir" style="background:var(--primary); color:white; width:auto; padding:0 8px; font-weight:700">⤢ EXPANDIR</button>
           <button type="button" class="rt-btn rt-convert-btn" title="Convertir en Tarea" style="background:var(--accent); color:white; width:auto; padding:0 8px; font-weight:700; margin-left:8px; display:none">➔ CONVERTIR A TAREA</button>
         </div>
 
@@ -448,6 +454,158 @@ const Tasks = {
 
     // Focus
     setTimeout(() => box.querySelector('#note-ta')?.focus(), 80);
+  },
+
+  shareNote(id) {
+    const task = storage.getTask(id);
+    if (!task) return;
+
+    UI.confirm('¿Cómo deseas compartir esta nota?', {
+      confirmText: '📸 Como Imagen',
+      cancelText: '📝 Como Texto',
+      danger: false
+    }).then(asImage => {
+      if (asImage) {
+        this.shareNoteAsImage(id);
+      } else {
+        this.shareNoteAsText(id);
+      }
+    }).catch(() => {});
+  },
+
+  shareNoteAsText(id) {
+    const task = storage.getTask(id);
+    if (!task) return;
+
+    const tmp = document.createElement('div');
+    tmp.innerHTML = task.description || '';
+
+    tmp.querySelectorAll('table').forEach(table => {
+      let tableText = '\n';
+      const rows = Array.from(table.querySelectorAll('tr'));
+      rows.forEach((tr, rowIndex) => {
+        const cells = Array.from(tr.querySelectorAll('td, th')).map(c => c.innerText.trim() || ' ');
+        tableText += `| ${cells.join(' | ')} |\n`;
+        if (rowIndex === 0 && rows.length > 1) {
+          tableText += `| ${cells.map(() => '---').join(' | ')} |\n`;
+        }
+      });
+      table.replaceWith(document.createTextNode(tableText + '\n'));
+    });
+    
+    const plainText = tmp.innerText || tmp.textContent || '';
+    const shareTitle = `Nota: ${task.title} (${task.code || ''})`;
+    const shareText = `${shareTitle}\n\n${plainText}\n\n--- Compartido desde TaskPanel ---`;
+
+    if (navigator.share) {
+      navigator.share({ title: shareTitle, text: shareText }).catch(err => console.warn(err));
+    } else {
+      UI.confirm('¿Por dónde deseas enviar el texto?', {
+        confirmText: 'WhatsApp',
+        cancelText: 'Correo',
+        danger: false
+      }).then(isWA => {
+        if (isWA) window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+        else window.open(`mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(shareText)}`, '_blank');
+      }).catch(() => {});
+    }
+  },
+
+  async shareNoteAsImage(id) {
+    const task = storage.getTask(id);
+    if (!task) return;
+
+    UI.toast('Generando imagen de la nota...', 'info');
+
+    // 1. Crear contenedor temporal fuera de pantalla para el renderizado
+    const offscreen = document.createElement('div');
+    offscreen.style.cssText = `
+      position: absolute; left: -9999px; top: 0;
+      width: 500px; padding: 40px; background: #ffffff;
+      color: #1e293b; font-family: 'Inter', sans-serif;
+      border-radius: 12px; line-height: 1.6;
+    `;
+    
+    offscreen.innerHTML = `
+      <div style="margin-bottom: 24px; border-bottom: 2px solid #6366f1; padding-bottom: 12px;">
+        <h2 style="margin:0; font-size: 1.4rem; color: #0f172a;">${task.title}</h2>
+        <div style="color: #64748b; font-size: 0.85rem; margin-top: 4px;">
+          Folio: <span style="color:#6366f1; font-weight:700">${task.code || '---'}</span> | 
+          Fecha: ${new Date(task.createdAt).toLocaleDateString('es-ES')}
+        </div>
+      </div>
+      <div class="render-content" style="font-size: 1.05rem;">
+        ${task.description || '<p style="color:#94a3b8; font-style:italic">Sin contenido en la nota</p>'}
+      </div>
+      <div style="margin-top: 32px; text-align: center; font-size: 0.75rem; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 12px;">
+         Compartido desde <b>TaskPanel</b>
+      </div>
+    `;
+
+    // Estilos forzados para tablas en el render de imagen (fondo blanco)
+    offscreen.querySelectorAll('table').forEach(tbl => {
+      tbl.style.cssText = 'width:100%; border-collapse:collapse; margin:16px 0; border:1px solid #e2e8f0; table-layout:auto;';
+      tbl.querySelectorAll('td, th').forEach(cell => {
+        cell.style.cssText = 'border:1px solid #e2e8f0; padding:12px; text-align:left; font-size:0.95rem; color:#334155;';
+      });
+      tbl.querySelectorAll('th').forEach(th => {
+        th.style.background = '#f8fafc';
+        th.style.fontWeight = '700';
+      });
+    });
+
+    document.body.appendChild(offscreen);
+
+    try {
+      // Pequeña pausa para asegurar que el renderizado de fuentes esté listo
+      await new Promise(r => setTimeout(r, 100));
+
+      const canvas = await html2canvas(offscreen, {
+        backgroundColor: '#ffffff',
+        scale: 2, // Retína quality
+        logging: false,
+        useCORS: true
+      });
+
+      document.body.removeChild(offscreen);
+
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], `Nota_${task.code || 'export'}.png`, { type: 'image/png' });
+        
+        // Intentar usar el API de compartir archivos (Soportado en la mayoría de tablets/móviles modernos)
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              title: task.title,
+              files: [file]
+            });
+          } catch (shareErr) {
+            console.warn('Share falló, intentando descarga directa', shareErr);
+            this._downloadBlob(blob, `Nota_${task.code || 'export'}.png`);
+          }
+        } else {
+          // Fallback: Descargar la imagen
+          this._downloadBlob(blob, `Nota_${task.code || 'export'}.png`);
+          UI.toast('Imagen generada y descargada', 'success');
+        }
+      }, 'image/png');
+
+    } catch (err) {
+      console.error('Error al generar imagen:', err);
+      UI.toast('Error al procesar la imagen', 'danger');
+      if (offscreen.parentNode) document.body.removeChild(offscreen);
+    }
+  },
+
+  _downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   },
 
   cancelForm() {

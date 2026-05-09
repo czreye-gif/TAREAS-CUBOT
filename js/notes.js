@@ -172,6 +172,11 @@ const Notes = {
                   <span style="color:${folioColor}; font-weight:700">${t.code || '---'}</span>
                   <span>${UI.formatTime(t.createdAt)}</span>
                   ${hasAtts ? `<span class="note-att-badge">📎 ${atts.length}</span>` : ''}
+                  <button class="note-card-share" onclick="event.stopPropagation(); Tasks.shareNote('${t.id}')" title="Compartir" style="margin-left:auto; background:none; border:none; color:var(--primary); cursor:pointer; padding:0; display:flex; align-items:center">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
+                    </svg>
+                  </button>
                 </div>
                 <div class="note-line-3">${snippet}</div>
                 ${attHTML}
