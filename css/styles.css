@@ -515,6 +515,20 @@ input:focus, select:focus, textarea:focus {
 }
 .form-subtask-title:focus { color: var(--primary); }
 
+.form-subtask-grip {
+  cursor: grab; color: var(--muted); font-size: 1.1rem; 
+  user-select: none; padding: 2px 4px; line-height: 1;
+  touch-action: none; flex-shrink: 0;
+  transition: color 0.15s;
+}
+.form-subtask-grip:hover { color: var(--primary-light); }
+.form-subtask-grip:active { cursor: grabbing; }
+
+.form-subtask-item.dragging-sub {
+  opacity: 0.95; background: var(--surface2);
+  border-color: var(--primary); 
+}
+
 /* ---- Timeline Subtasks ---- */
 .tl-subtask-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
 .tl-subtask-list { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
