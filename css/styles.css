@@ -255,9 +255,11 @@ input:focus, select:focus, textarea:focus {
   border-left: 3px solid transparent; cursor: default;
   transition: all var(--transition); max-width: 380px; flex-shrink: 0;
 }
-.tl-card.priority-high { border-left-color: var(--danger); }
-.tl-card.priority-medium { border-left-color: var(--warning); }
-.tl-card.priority-low { border-left-color: var(--success); }
+.tl-card.priority-A, .tl-card.priority-high { border-left-color: var(--danger); }
+.tl-card.priority-B, .tl-card.priority-medium { border-left-color: #f97316; } /* Naranja vivo */
+.tl-card.priority-C, .tl-card.priority-low { border-left-color: #facc15; }    /* Amarillo brillante */
+.tl-card.priority-D { border-left-color: #3b82f6; }
+.tl-card.priority-E { border-left-color: #9ca3af; }
 .tl-card.tl-completed { opacity: 0.5; }
 .tl-card.tl-completed .tl-card-title { text-decoration: line-through; }
 .tl-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.2); transform: translateY(-1px); }
@@ -2522,5 +2524,43 @@ body {
 
 .rt-ac-item strong {
   color: var(--warning);
+}
+
+/* ---- Rich Editor Tables & Resizing ---- */
+.rt-table {
+  border-collapse: collapse;
+  margin: 15px 0;
+  width: auto;
+  min-width: 150px;
+  table-layout: fixed; /* Necesario para redimensionado estable */
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+}
+
+.rt-table td, .rt-table th {
+  border: 1px solid var(--border);
+  padding: 12px;
+  min-width: 60px;
+  min-height: 40px;
+  position: relative;
+  word-break: break-word;
+  vertical-align: top;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.rt-table th {
+  background: rgba(99, 102, 241, 0.1);
+  font-weight: 700;
+}
+
+/* Visual cue for resizable edges (optional but helpful) */
+.rt-table td:hover, .rt-table th:hover {
+  outline: 1px dashed rgba(99, 102, 241, 0.3);
+}
+
+/* Fix for contenteditable tables scroll on mobile */
+.rt-editor {
+  overflow-x: auto;
 }
 
