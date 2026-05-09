@@ -124,7 +124,6 @@ const Timeline = {
             <span class="tl-card-title">${this._esc(task.title)}</span>
           </div>
           <div class="tl-card-meta">
-            <span class="tl-card-cat">${catIcon}</span>
             ${task.timeStart ? `<span class="tl-card-time">${task.timeStart}${task.timeEnd ? '-' + task.timeEnd : ''}</span>` : ''}
             ${hasSubs ? `<span class="tl-card-subs">📋 ${subsDone}/${subsTotal}</span>` : ''}
             ${task.alarm ? '<span class="tl-card-alarm">🔔</span>' : ''}
@@ -136,7 +135,7 @@ const Timeline = {
                 <line x1="16" y1="17" x2="8" y2="17"/>
               </svg>
             </button>
-            <span class="tl-card-priority" style="background:${pColor}"></span>
+            <span class="tl-card-priority" style="background:${pColor}" title="${UI.priorityLabel(task.priority)}">${UI.priorityLetter(task.priority)}</span>
             ${tagPills}
           </div>
         </div>

@@ -65,6 +65,16 @@ const UI = {
     return map[p] || '#eab308';
   },
 
+  priorityLetter(p) {
+    const map = { 
+      'A': 'A', 'high': 'A', 
+      'B': 'B', 'medium': 'B', 
+      'C': 'C', 'low': 'C',
+      'D': 'D', 'E': 'E'
+    };
+    return map[p] || (p ? p.charAt(0).toUpperCase() : 'B');
+  },
+
   priorityLabel(p) {
     const map = { 
       'A': 'A (Muy Alta)', 'high': 'A (Muy Alta)', 

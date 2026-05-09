@@ -92,7 +92,7 @@ const Tasks = {
             </div>
             <div class="task-meta">
               ${codeBadge}
-              <span class="task-priority-dot" style="background:${UI.priorityColor(task.priority)}" title="${UI.priorityLabel(task.priority)}"></span>
+              <span class="task-priority-dot" style="background:${UI.priorityColor(task.priority)}" title="${UI.priorityLabel(task.priority)}">${UI.priorityLetter(task.priority)}</span>
             </div>
           </div>
           <div class="task-actions">
