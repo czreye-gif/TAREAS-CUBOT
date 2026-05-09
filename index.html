@@ -295,7 +295,7 @@
             <div class="form-main">
               <div class="form-group">
                 <label for="task-title">Título *</label>
-                <input type="text" id="task-title" class="input-field" placeholder="¿Qué necesitas hacer?" required>
+                <input type="text" id="task-title" class="input-field" placeholder="¿Qué necesitas hacer?" required autocomplete="off">
                 <div id="form-tags-selected" style="min-height:20px;display:flex;flex-wrap:wrap;gap:6px;padding:8px 0 2px">
                   <span style="color:var(--muted,#888);font-size:0.8rem;font-style:italic">Sin etiquetas asignadas</span>
                 </div>
@@ -380,7 +380,7 @@
             <!-- Columna de Botones (Sidebar) -->
             <div class="form-sidebar">
               <button type="submit" id="form-submit-btn" class="btn btn-primary" style="height:60px; font-size:1.1rem">CREAR TAREA</button>
-              <button type="button" class="btn btn-secondary" onclick="Tasks.resetForm()">LIMPIAR</button>
+              <button type="button" id="btn-form-clear" class="btn btn-secondary">LIMPIAR</button>
               <button type="button" id="form-cancel-btn" class="btn btn-secondary" style="border:1px solid #ef444455;color:#ef4444">CANCELAR</button>
               
               <div style="margin-top:auto; padding:15px; border-radius:10px; background:rgba(99,102,241,0.05); border:1px solid var(--border)">
