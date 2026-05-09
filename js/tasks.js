@@ -544,6 +544,7 @@ const Tasks = {
   // ---- Formulario de creación / edición ----
 
   initForm() {
+    this.resetForm();
     const form = document.getElementById('task-form');
     if (!form) return;
     // CORRECCIÓN: evitar agregar el listener más de una vez
@@ -947,8 +948,13 @@ const Tasks = {
     descEl.dataset.convertId = '';
     // Re-init toolbar
     RichEditor.init('#task-description', '#main-editor-toolbar');
-    document.getElementById('task-date').value = storage._todayStr();
+    document.getElementById('task-title').value = '';
+    document.getElementById('task-date').value = (typeof app !== 'undefined' && app.selectedDate) ? app.selectedDate : storage._todayStr();
+    document.getElementById('task-priority').value = 'medium';
     document.getElementById('form-subtask-list').innerHTML = '';
+    document.getElementById('form-subtask-input').value = '';
+    form.dataset.editId = '';
+    
     document.getElementById('form-title').textContent = 'Nueva Tarea';
     document.getElementById('form-submit-btn').textContent = 'Crear Tarea';
     this._formSelectedTags = [];
