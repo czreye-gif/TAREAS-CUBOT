@@ -1,88 +1,200 @@
 /**
- * Calculadora de Retenciones Fiscales MX
- * Convertida de Python/Tkinter a JavaScript
+ * Calculadora Dual: Retenciones MX + Normal
+ * Modo switch integrado en el panel
  */
 const RetCalc = {
+  // ── Retenciones state ──────────────────────────────────
   ivaRate: 16, isrRate: 1.25, retIvaRate: 0,
   subtotalCents: 0, totalCents: 0,
   activeInput: 'subtotal',
 
+  // ── Calculadora normal state ────────────────────────────
+  stdDisplay: '0',
+  stdPrev: null,
+  stdOp: null,
+  stdWaitingNext: false,
+
+  // ── Modo activo ─────────────────────────────────────────
+  mode: 'ret', // 'ret' | 'std'
+
+  // ── HTML principal ──────────────────────────────────────
   render() {
     return `
       <div class="calc-panel" id="ret-calc-panel">
-        <div class="calc-header-bar">
-          <span class="calc-title">🧮 CZREYE CALC</span>
-          <span class="calc-sub">RETENCIONES MX</span>
+
+        <!-- SWITCH DE MODO -->
+        <div class="calc-mode-switch">
+          <button class="calc-mode-btn active" data-mode="ret">📊 Retenciones</button>
+          <button class="calc-mode-btn" data-mode="std">🔢 Normal</button>
         </div>
 
-        <div class="calc-inputs">
-          <div class="calc-input-group active-input" id="cig-sub" data-field="subtotal">
-            <label class="calc-lbl">SUB-TOTAL</label>
-            <input id="calc-subtotal" class="calc-inp" value="0.00" readonly>
-          </div>
-          <div class="calc-input-group" id="cig-tot" data-field="total">
-            <label class="calc-lbl">TOTAL NETO</label>
-            <input id="calc-total" class="calc-inp calc-inp-neon" value="0.00" readonly>
-          </div>
-        </div>
-
-        <div class="calc-selectors">
-          <div class="calc-sel-group">
-            <label class="calc-lbl">IVA</label>
-            <div class="calc-pills" data-rate="iva">
-              <button class="calc-pill" data-value="0">0%</button>
-              <button class="calc-pill" data-value="10">10%</button>
-              <button class="calc-pill active" data-value="16">16%</button>
+        <!-- PANEL RETENCIONES -->
+        <div id="calc-ret-view">
+          <div class="calc-inputs">
+            <div class="calc-input-group active-input" id="cig-sub" data-field="subtotal">
+              <label class="calc-lbl">SUB-TOTAL</label>
+              <input id="calc-subtotal" class="calc-inp" value="0.00" readonly>
+            </div>
+            <div class="calc-input-group" id="cig-tot" data-field="total">
+              <label class="calc-lbl">TOTAL NETO</label>
+              <input id="calc-total" class="calc-inp calc-inp-neon" value="0.00" readonly>
             </div>
           </div>
-          <div class="calc-sel-group">
-            <label class="calc-lbl">RET. ISR</label>
-            <div class="calc-pills" data-rate="isr">
-              <button class="calc-pill" data-value="0">0%</button>
-              <button class="calc-pill active" data-value="1.25">1.25%</button>
-              <button class="calc-pill" data-value="10">10%</button>
+
+          <div class="calc-selectors">
+            <div class="calc-sel-group">
+              <label class="calc-lbl">IVA</label>
+              <div class="calc-pills" data-rate="iva">
+                <button class="calc-pill" data-value="0">0%</button>
+                <button class="calc-pill" data-value="10">10%</button>
+                <button class="calc-pill active" data-value="16">16%</button>
+              </div>
+            </div>
+            <div class="calc-sel-group">
+              <label class="calc-lbl">RET. ISR</label>
+              <div class="calc-pills" data-rate="isr">
+                <button class="calc-pill" data-value="0">0%</button>
+                <button class="calc-pill active" data-value="1.25">1.25%</button>
+                <button class="calc-pill" data-value="10">10%</button>
+              </div>
+            </div>
+            <div class="calc-sel-group">
+              <label class="calc-lbl">RET. IVA</label>
+              <div class="calc-pills" data-rate="retIva">
+                <button class="calc-pill active" data-value="0">0%</button>
+                <button class="calc-pill" data-value="10.6667">10.67%</button>
+              </div>
             </div>
           </div>
-          <div class="calc-sel-group">
-            <label class="calc-lbl">RET. IVA</label>
-            <div class="calc-pills" data-rate="retIva">
-              <button class="calc-pill active" data-value="0">0%</button>
-              <button class="calc-pill" data-value="10.6667">10.67%</button>
+
+          <div class="calc-numpad">
+            <button class="calc-key" data-key="7">7</button>
+            <button class="calc-key" data-key="8">8</button>
+            <button class="calc-key" data-key="9">9</button>
+            <button class="calc-key" data-key="4">4</button>
+            <button class="calc-key" data-key="5">5</button>
+            <button class="calc-key" data-key="6">6</button>
+            <button class="calc-key" data-key="1">1</button>
+            <button class="calc-key" data-key="2">2</button>
+            <button class="calc-key" data-key="3">3</button>
+            <button class="calc-key calc-key-wide" data-key="0">0</button>
+            <button class="calc-key calc-key-del" data-key="del">⌫</button>
+          </div>
+
+          <div class="calc-results">
+            <div class="calc-res-divider"></div>
+            <div class="calc-res-row"><span>Base</span><span id="cr-base">$0.00</span></div>
+            <div class="calc-res-row"><span>IVA</span><span id="cr-iva">$0.00</span></div>
+            <div class="calc-res-row"><span>Ret. ISR</span><span id="cr-isr" class="calc-danger">-$0.00</span></div>
+            <div class="calc-res-row"><span>Ret. IVA</span><span id="cr-riva" class="calc-danger">-$0.00</span></div>
+            <div class="calc-res-divider"></div>
+            <div class="calc-res-row calc-res-total"><span>TOTAL</span><span id="cr-total">$0.00</span></div>
+          </div>
+
+          <button class="calc-clear-btn" id="calc-clear">C — LIMPIAR</button>
+        </div>
+
+        <!-- PANEL CALCULADORA NORMAL -->
+        <div id="calc-std-view" style="display:none; flex-direction:column; gap:8px;">
+
+          <!-- Sub-switch Normal / RPN -->
+          <div class="calc-sub-switch">
+            <button class="calc-sub-btn active" data-submode="normal">Normal</button>
+            <button class="calc-sub-btn" data-submode="rpn">RPN</button>
+          </div>
+
+          <!-- NORMAL VIEW -->
+          <div id="calc-normal-inner">
+            <div class="calc-std-display">
+              <div class="calc-std-expr" id="calc-std-expr"></div>
+              <div class="calc-std-screen" id="calc-std-screen">0</div>
+            </div>
+            <div class="calc-std-pad">
+              <button class="calc-key calc-key-fn" data-std="C">C</button>
+              <button class="calc-key calc-key-fn" data-std="+/-">+/−</button>
+              <button class="calc-key calc-key-fn" data-std="%">%</button>
+              <button class="calc-key calc-key-op" data-std="÷">÷</button>
+              <button class="calc-key" data-std="7">7</button>
+              <button class="calc-key" data-std="8">8</button>
+              <button class="calc-key" data-std="9">9</button>
+              <button class="calc-key calc-key-op" data-std="×">×</button>
+              <button class="calc-key" data-std="4">4</button>
+              <button class="calc-key" data-std="5">5</button>
+              <button class="calc-key" data-std="6">6</button>
+              <button class="calc-key calc-key-op" data-std="−">−</button>
+              <button class="calc-key" data-std="1">1</button>
+              <button class="calc-key" data-std="2">2</button>
+              <button class="calc-key" data-std="3">3</button>
+              <button class="calc-key calc-key-op" data-std="+">+</button>
+              <button class="calc-key calc-key-wide" data-std="0">0</button>
+              <button class="calc-key" data-std=".">.</button>
+              <button class="calc-key calc-key-eq" data-std="=">=</button>
             </div>
           </div>
+
+          <!-- RPN VIEW -->
+          <div id="calc-rpn-inner" style="display:none; flex-direction:column; gap:8px;">
+            <div class="calc-rpn-stack" id="calc-rpn-stack">
+              <div class="rpn-row" id="rpn-t"><span class="rpn-lbl">T:</span><span class="rpn-val">0</span></div>
+              <div class="rpn-row" id="rpn-z"><span class="rpn-lbl">Z:</span><span class="rpn-val">0</span></div>
+              <div class="rpn-row" id="rpn-y"><span class="rpn-lbl">Y:</span><span class="rpn-val">0</span></div>
+              <div class="rpn-row rpn-x" id="rpn-x"><span class="rpn-lbl">X:</span><span class="rpn-val rpn-x-val" id="rpn-x-val">0</span></div>
+            </div>
+            <div class="calc-rpn-pad">
+              <button class="calc-key calc-key-fn" data-rpn="C">C</button>
+              <button class="calc-key calc-key-fn" data-rpn="CHS">+/−</button>
+              <button class="calc-key calc-key-fn" data-rpn="DROP">DROP</button>
+              <button class="calc-key calc-key-fn" data-rpn="SWAP">XY</button>
+              <button class="calc-key" data-rpn="7">7</button>
+              <button class="calc-key" data-rpn="8">8</button>
+              <button class="calc-key" data-rpn="9">9</button>
+              <button class="calc-key calc-key-op" data-rpn="÷">÷</button>
+              <button class="calc-key" data-rpn="4">4</button>
+              <button class="calc-key" data-rpn="5">5</button>
+              <button class="calc-key" data-rpn="6">6</button>
+              <button class="calc-key calc-key-op" data-rpn="×">×</button>
+              <button class="calc-key" data-rpn="1">1</button>
+              <button class="calc-key" data-rpn="2">2</button>
+              <button class="calc-key" data-rpn="3">3</button>
+              <button class="calc-key calc-key-op" data-rpn="−">−</button>
+              <button class="calc-key calc-key-enter" data-rpn="ENTER">ENTER</button>
+              <button class="calc-key" data-rpn=".">.</button>
+              <button class="calc-key calc-key-op" data-rpn="+">+</button>
+            </div>
+          </div>
+
         </div>
 
-        <div class="calc-numpad">
-          <button class="calc-key" data-key="7">7</button>
-          <button class="calc-key" data-key="8">8</button>
-          <button class="calc-key" data-key="9">9</button>
-          <button class="calc-key" data-key="4">4</button>
-          <button class="calc-key" data-key="5">5</button>
-          <button class="calc-key" data-key="6">6</button>
-          <button class="calc-key" data-key="1">1</button>
-          <button class="calc-key" data-key="2">2</button>
-          <button class="calc-key" data-key="3">3</button>
-          <button class="calc-key calc-key-wide" data-key="0">0</button>
-          <button class="calc-key calc-key-del" data-key="del">⌫</button>
-        </div>
-
-        <div class="calc-results">
-          <div class="calc-res-divider"></div>
-          <div class="calc-res-row"><span>Base</span><span id="cr-base">$0.00</span></div>
-          <div class="calc-res-row"><span>IVA</span><span id="cr-iva">$0.00</span></div>
-          <div class="calc-res-row"><span>Ret. ISR</span><span id="cr-isr" class="calc-danger">-$0.00</span></div>
-          <div class="calc-res-row"><span>Ret. IVA</span><span id="cr-riva" class="calc-danger">-$0.00</span></div>
-          <div class="calc-res-divider"></div>
-          <div class="calc-res-row calc-res-total"><span>TOTAL</span><span id="cr-total">$0.00</span></div>
-        </div>
-
-        <button class="calc-clear-btn" id="calc-clear">C — LIMPIAR</button>
       </div>
     `;
   },
 
+  // ── Inicialización ──────────────────────────────────────
   init(container) {
-    // Pills
+    // Mode switch
+    container.querySelectorAll('.calc-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.mode = btn.dataset.mode;
+        container.querySelectorAll('.calc-mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const retView = container.querySelector('#calc-ret-view');
+        const stdView = container.querySelector('#calc-std-view');
+        if (this.mode === 'ret') {
+          retView.style.display = 'block';
+          stdView.style.display = 'none';
+        } else {
+          retView.style.display = 'none';
+          stdView.style.display = 'flex';
+        }
+      });
+    });
+
+    this._initRet(container);
+    this._initStd(container);
+  },
+
+  // ── Calculadora Retenciones ─────────────────────────────
+  _initRet(container) {
     container.querySelectorAll('.calc-pills').forEach(group => {
       group.querySelectorAll('.calc-pill').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -97,7 +209,6 @@ const RetCalc = {
       });
     });
 
-    // Input toggle
     ['sub','tot'].forEach(k => {
       const el = container.querySelector(`#cig-${k}`);
       if (el) el.addEventListener('click', () => {
@@ -107,12 +218,10 @@ const RetCalc = {
       });
     });
 
-    // Numpad
-    container.querySelectorAll('.calc-key').forEach(btn => {
-      btn.addEventListener('click', () => this._handleKey(btn.dataset.key, container));
+    container.querySelectorAll('.calc-key[data-key]').forEach(btn => {
+      btn.addEventListener('click', () => this._handleRetKey(btn.dataset.key, container));
     });
 
-    // Clear
     const clearBtn = container.querySelector('#calc-clear');
     if (clearBtn) clearBtn.addEventListener('click', () => {
       this.subtotalCents = 0; this.totalCents = 0;
@@ -121,11 +230,10 @@ const RetCalc = {
     });
   },
 
-  _handleKey(key, container) {
+  _handleRetKey(key, container) {
     let c = this.activeInput === 'subtotal' ? this.subtotalCents : this.totalCents;
     if (key === 'del') { c = Math.floor(c / 10); }
     else if (String(c).length < 13) { c = c * 10 + parseInt(key); }
-
     if (this.activeInput === 'subtotal') { this.subtotalCents = c; this.calcForward(container); }
     else { this.totalCents = c; this.calcBackward(container); }
     this._updateDisplays(container);
@@ -154,7 +262,7 @@ const RetCalc = {
     this._updateDisplays(container);
   },
 
-  _fmt(n) { return '$' + n.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2}); },
+  _fmt(n)  { return '$' + n.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2}); },
   _fmtI(c) { const n=c/100; return n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2}); },
 
   _updateDisplays(c) {
@@ -173,5 +281,147 @@ const RetCalc = {
     set('#cr-isr',  '-' + this._fmt(isr));
     set('#cr-riva', '-' + this._fmt(rv));
     set('#cr-total',this._fmt(t));
+  },
+
+  // ── Calculadora Normal + RPN ────────────────────────────
+  stdSubMode: 'normal', // 'normal' | 'rpn'
+  rpnStack: [0, 0, 0, 0], // [T, Z, Y, X]
+  rpnEntry: '0',
+  rpnEntryActive: false,
+
+  _initStd(container) {
+    // Sub-switch Normal / RPN
+    container.querySelectorAll('.calc-sub-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.stdSubMode = btn.dataset.submode;
+        container.querySelectorAll('.calc-sub-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const ni = container.querySelector('#calc-normal-inner');
+        const ri = container.querySelector('#calc-rpn-inner');
+        if (this.stdSubMode === 'normal') {
+          ni.style.display = 'block'; ri.style.display = 'none';
+        } else {
+          ni.style.display = 'none'; ri.style.display = 'flex';
+        }
+      });
+    });
+    // Normal keys
+    container.querySelectorAll('[data-std]').forEach(btn => {
+      btn.addEventListener('click', () => this._handleStdKey(btn.dataset.std, container));
+    });
+    // RPN keys
+    container.querySelectorAll('[data-rpn]').forEach(btn => {
+      btn.addEventListener('click', () => this._handleRpnKey(btn.dataset.rpn, container));
+    });
+  },
+
+  _handleStdKey(key, container) {
+    const screen = container.querySelector('#calc-std-screen');
+    const expr   = container.querySelector('#calc-std-expr');
+    if (!screen) return;
+
+    if (key === 'C') {
+      this.stdDisplay = '0'; this.stdPrev = null;
+      this.stdOp = null; this.stdWaitingNext = false;
+      if (expr) expr.textContent = '';
+    } else if (key === '+/-') {
+      this.stdDisplay = String(parseFloat(this.stdDisplay) * -1);
+    } else if (key === '%') {
+      this.stdDisplay = String(parseFloat(this.stdDisplay) / 100);
+    } else if (['+','−','×','÷'].includes(key)) {
+      this.stdPrev = parseFloat(this.stdDisplay);
+      this.stdOp = key;
+      this.stdWaitingNext = true;
+      if (expr) expr.textContent = `${this._stdFmt(this.stdPrev)} ${key}`;
+    } else if (key === '=') {
+      if (this.stdOp !== null && this.stdPrev !== null) {
+        const curr = parseFloat(this.stdDisplay);
+        if (expr) expr.textContent = `${this._stdFmt(this.stdPrev)} ${this.stdOp} ${this._stdFmt(curr)} =`;
+        let result;
+        if (this.stdOp === '+') result = this.stdPrev + curr;
+        if (this.stdOp === '−') result = this.stdPrev - curr;
+        if (this.stdOp === '×') result = this.stdPrev * curr;
+        if (this.stdOp === '÷') result = curr !== 0 ? this.stdPrev / curr : 'Error';
+        this.stdDisplay = String(result);
+        this.stdPrev = null; this.stdOp = null; this.stdWaitingNext = false;
+      }
+    } else if (key === '.') {
+      if (this.stdWaitingNext) { this.stdDisplay = '0.'; this.stdWaitingNext = false; return; }
+      if (!this.stdDisplay.includes('.')) this.stdDisplay += '.';
+    } else {
+      // Digit
+      if (this.stdWaitingNext) { this.stdDisplay = key; this.stdWaitingNext = false; }
+      else { this.stdDisplay = this.stdDisplay === '0' ? key : this.stdDisplay + key; }
+    }
+
+    screen.textContent = this._stdFmt(this.stdDisplay);
+  },
+
+  _stdFmt(n) {
+    const num = parseFloat(n);
+    if (isNaN(num)) return String(n);
+    const s = String(n);
+    if (s.includes('.')) return parseFloat(num.toFixed(8)).toLocaleString('es-MX');
+    return num.toLocaleString('es-MX');
+  },
+
+  // ── RPN Calculator ─────────────────────────────────────
+  _handleRpnKey(key, container) {
+    if (key === 'C') {
+      this.rpnStack = [0,0,0,0]; this.rpnEntry = '0'; this.rpnEntryActive = false;
+    } else if (key === 'ENTER') {
+      const x = parseFloat(this.rpnEntry);
+      this.rpnStack[0] = this.rpnStack[1];
+      this.rpnStack[1] = this.rpnStack[2];
+      this.rpnStack[2] = this.rpnStack[3];
+      this.rpnStack[3] = x;
+      this.rpnEntryActive = false;
+    } else if (key === 'DROP') {
+      this.rpnStack[3] = this.rpnStack[2];
+      this.rpnStack[2] = this.rpnStack[1];
+      this.rpnStack[1] = this.rpnStack[0];
+      this.rpnStack[0] = 0;
+      this.rpnEntry = String(this.rpnStack[3]);
+    } else if (key === 'SWAP') {
+      const tmp = this.rpnStack[3];
+      this.rpnStack[3] = this.rpnStack[2];
+      this.rpnStack[2] = tmp;
+      this.rpnEntry = String(this.rpnStack[3]);
+    } else if (key === 'CHS') {
+      const v = parseFloat(this.rpnEntry) * -1;
+      this.rpnEntry = String(v);
+      this.rpnStack[3] = v;
+    } else if (['+','−','×','÷'].includes(key)) {
+      const x = parseFloat(this.rpnEntry);
+      const y = this.rpnStack[2];
+      let result;
+      if (key === '+') result = y + x;
+      if (key === '−') result = y - x;
+      if (key === '×') result = y * x;
+      if (key === '÷') result = x !== 0 ? y / x : 0;
+      this.rpnStack[3] = result;
+      this.rpnStack[2] = this.rpnStack[1];
+      this.rpnStack[1] = this.rpnStack[0];
+      this.rpnStack[0] = 0;
+      this.rpnEntry = String(result);
+      this.rpnEntryActive = false;
+    } else if (key === '.') {
+      if (!this.rpnEntryActive) { this.rpnEntry = '0.'; this.rpnEntryActive = true; }
+      else if (!this.rpnEntry.includes('.')) this.rpnEntry += '.';
+    } else {
+      if (!this.rpnEntryActive) { this.rpnEntry = key; this.rpnEntryActive = true; }
+      else { this.rpnEntry = this.rpnEntry === '0' ? key : this.rpnEntry + key; }
+      this.rpnStack[3] = parseFloat(this.rpnEntry);
+    }
+    this._renderRpnStack(container);
+  },
+
+  _renderRpnStack(c) {
+    ['t','z','y'].forEach((lbl, i) => {
+      const el = c.querySelector(`#rpn-${lbl} .rpn-val`);
+      if (el) el.textContent = this._stdFmt(this.rpnStack[i]);
+    });
+    const xEl = c.querySelector('#rpn-x-val');
+    if (xEl) xEl.textContent = this._stdFmt(this.rpnEntry);
   }
 };
