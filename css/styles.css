@@ -2340,6 +2340,7 @@ body {
   }
 }
 
+
 /* ---- Rich Editor Autocomplete ---- */
 .rt-autocomplete-dropdown {
   position: absolute;
@@ -2378,5 +2379,121 @@ body {
 
 .rt-ac-item strong {
   color: var(--warning);
+}
+
+/* ============================================================
+   MOBILE OPTIMIZATION (max-width: 600px)
+   ============================================================ */
+@media (max-width: 600px) {
+  /* 1. Sidebar to Bottom Nav */
+  #sidebar {
+    width: 100% !important;
+    height: 65px !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    flex-direction: row !important;
+    padding: 0 !important;
+    border-right: none !important;
+    border-top: 1px solid var(--border) !important;
+    background: var(--surface) !important;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.2) !important;
+    z-index: 2000 !important;
+    transform: none !important;
+  }
+
+  #sidebar-header, .sidebar-footer, #sidebar-toggle {
+    display: none !important;
+  }
+
+  .sidebar-nav {
+    flex-direction: row !important;
+    justify-content: space-around !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .nav-item {
+    flex-direction: column !important;
+    padding: 6px 4px !important;
+    gap: 2px !important;
+    font-size: 0.6rem !important;
+    flex: 1 !important;
+    justify-content: center !important;
+    border-radius: 0 !important;
+    text-align: center !important;
+    border-left: none !important;
+  }
+
+  .nav-item i {
+    font-size: 1.3rem !important;
+    margin: 0 !important;
+  }
+
+  .nav-item.active {
+    background: transparent !important;
+    color: var(--primary) !important;
+    border-top: 2px solid var(--primary) !important;
+  }
+
+  /* 2. Main Content Adjustment */
+  #main-content {
+    margin-left: 0 !important;
+    padding: 12px 10px 80px 10px !important;
+  }
+
+  #sidebar.collapsed ~ #main-content {
+    margin-left: 0 !important;
+  }
+
+  /* 3. Layout Stacking */
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .dashboard-kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .view-title {
+    font-size: 1.4rem !important;
+  }
+
+  /* 4. Modals to Fullscreen */
+  .modal-content {
+    width: 98% !important;
+    max-width: 98% !important;
+    max-height: 95vh !important;
+    border-radius: 12px !important;
+    margin: 10px auto !important;
+  }
+
+  /* 5. Rich Editor Improvements */
+  .rt-toolbar {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+    overflow-x: auto !important;
+  }
+
+  .rt-toolbar button {
+    padding: 8px !important;
+    min-width: 32px !important;
+  }
+
+  /* 6. Timeline and Lists */
+  .tl-day-header {
+    padding: 8px 12px !important;
+  }
+  
+  .tl-day-body {
+    padding: 6px 8px 6px 45px !important;
+  }
+
+  .note-compact-card {
+    padding: 10px !important;
+  }
 }
 
