@@ -2497,8 +2497,8 @@ body {
   }
 }
 
-/* Bloqueo visual de orientación horizontal en móviles */
-@media (max-width: 600px) and (orientation: landscape) {
+/* Bloqueo visual de orientación horizontal en móviles (detectado por altura pequeña) */
+@media (orientation: landscape) and (max-height: 500px) {
   body::after {
     content: '🔄 Por favor, gira tu dispositivo. Esta aplicación está optimizada para modo vertical en móviles.';
     position: fixed;
