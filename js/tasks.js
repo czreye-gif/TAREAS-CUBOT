@@ -498,9 +498,21 @@ const Tasks = {
     app.refreshCurrentView();
   },
 
-  deleteSubtask(taskId, subId) {
-    storage.deleteSubtask(taskId, subId);
-    app.refreshCurrentView();
+  async deleteSubtask(taskId, subId) {
+    const task = storage.getTask(taskId);
+    if (!task) return;
+    const sub = (task.subtasks || []).find(s => s.id === subId);
+    const subName = sub ? sub.title : 'subtarea';
+
+    const confirmed = await UI.confirm(
+      'Eliminar subtarea', 
+      `¿Eliminar "${subName}"?`
+    );
+    if (confirmed) {
+      storage.deleteSubtask(taskId, subId);
+      UI.toast('Subtarea eliminada', 'success');
+      app.refreshCurrentView();
+    }
   },
 
   convertNoteToTask(noteId) {
@@ -873,7 +885,7 @@ const Tasks = {
       <span class="form-subtask-grip" title="Arrastrar para reordenar">⠿</span>
       <input type="checkbox" class="form-subtask-check">
       <span contenteditable="true" class="form-subtask-title">${this._escapeHTML(title)}</span>
-      <button type="button" class="subtask-remove" onclick="this.parentElement.remove()">&times;</button>
+      <button type="button" class="subtask-remove" onclick="Tasks._confirmRemoveFormSubtask(this)">&times;</button>
     `;
     list.appendChild(item);
     this._initSubtaskDrag(list);
@@ -906,7 +918,7 @@ const Tasks = {
         <span class="form-subtask-grip" title="Arrastrar para reordenar">⠿</span>
         <input type="checkbox" class="form-subtask-check" ${sub.completed ? 'checked' : ''}>
         <span contenteditable="true" class="form-subtask-title">${this._escapeHTML(sub.title)}</span>
-        <button type="button" class="subtask-remove" onclick="this.parentElement.remove()">&times;</button>
+        <button type="button" class="subtask-remove" onclick="Tasks._confirmRemoveFormSubtask(this)">&times;</button>
       `;
       list.appendChild(item);
     });
@@ -1198,14 +1210,42 @@ const Tasks = {
     return div.innerHTML;
   },
 
+  // ---- Confirmación para eliminar subtarea del formulario ----
+  async _confirmRemoveFormSubtask(btn) {
+    const item = btn.closest('.form-subtask-item');
+    if (!item) return;
+    const title = item.querySelector('.form-subtask-title')?.textContent?.trim() || 'subtarea';
+    const confirmed = await UI.confirm(
+      'Eliminar subtarea',
+      `¿Eliminar "${title}" del formulario?`
+    );
+    if (confirmed) {
+      item.style.transition = 'opacity 0.2s, transform 0.2s';
+      item.style.opacity = '0';
+      item.style.transform = 'translateX(30px)';
+      setTimeout(() => item.remove(), 200);
+    }
+  },
+
   // ---- Drag & Drop para reordenar subtareas en formulario ----
   _initSubtaskDrag(list) {
     if (!list) return;
-    let dragItem = null;
-    let placeholder = null;
 
     // Limpiar listeners previos
     if (list._dragCleanup) list._dragCleanup();
+
+    let dragItem = null;
+    let placeholder = null;
+    let startY = 0;
+    let offsetY = 0;
+    let isDragging = false;
+    const DRAG_THRESHOLD = 5; // px antes de iniciar arrastre real
+
+    // Prevenir menú contextual en los grips
+    const preventCtx = (e) => {
+      if (e.target.closest('.form-subtask-grip')) e.preventDefault();
+    };
+    list.addEventListener('contextmenu', preventCtx);
 
     const getAfterElement = (y) => {
       const items = [...list.querySelectorAll('.form-subtask-item:not(.dragging-sub)')];
@@ -1219,45 +1259,37 @@ const Tasks = {
       }, { offset: Number.NEGATIVE_INFINITY }).element;
     };
 
-    const onPointerDown = (e) => {
-      const grip = e.target.closest('.form-subtask-grip');
-      if (!grip) return;
-      e.preventDefault();
-      dragItem = grip.closest('.form-subtask-item');
-      if (!dragItem) return;
+    const startDrag = (clientY) => {
+      if (!dragItem || isDragging) return;
+      isDragging = true;
 
-      // Crear placeholder
+      // Crear placeholder con las mismas dimensiones
       placeholder = document.createElement('div');
       placeholder.className = 'form-subtask-placeholder';
-      placeholder.style.cssText = 'height:' + dragItem.offsetHeight + 'px;border:2px dashed var(--primary);border-radius:8px;margin-bottom:6px;opacity:0.5;background:rgba(99,102,241,0.08);';
+      const h = dragItem.offsetHeight;
+      placeholder.style.cssText = `height:${h}px;border:2px dashed var(--primary);border-radius:8px;margin-bottom:6px;opacity:0.5;background:rgba(99,102,241,0.08);transition:none;`;
 
-      dragItem.classList.add('dragging-sub');
-      dragItem.style.position = 'fixed';
-      dragItem.style.zIndex = '9999';
-      dragItem.style.width = list.offsetWidth + 'px';
-      dragItem.style.pointerEvents = 'none';
-      dragItem.style.boxShadow = '0 8px 32px rgba(0,0,0,0.3)';
-      dragItem.style.transform = 'scale(1.02)';
-
-      // Posicionar en el puntero
       const rect = dragItem.getBoundingClientRect();
-      dragItem._offsetY = e.clientY - rect.top;
-      dragItem.style.left = rect.left + 'px';
-      dragItem.style.top = (e.clientY - dragItem._offsetY) + 'px';
+      offsetY = clientY - rect.top;
+      const listRect = list.getBoundingClientRect();
 
-      // Insertar placeholder donde estaba el item
+      // Fijar al viewport
+      dragItem.classList.add('dragging-sub');
+      dragItem.style.cssText = `
+        position:fixed; z-index:9999; pointer-events:none;
+        width:${rect.width}px; left:${rect.left}px; top:${rect.top}px;
+        box-shadow:0 6px 24px rgba(0,0,0,0.25); transform:scale(1.03);
+        border-radius:8px; transition:box-shadow 0.15s, transform 0.15s;
+      `;
+
       list.insertBefore(placeholder, dragItem.nextSibling);
-
-      document.addEventListener('pointermove', onPointerMove);
-      document.addEventListener('pointerup', onPointerUp);
     };
 
-    const onPointerMove = (e) => {
-      if (!dragItem) return;
-      e.preventDefault();
-      dragItem.style.top = (e.clientY - dragItem._offsetY) + 'px';
+    const moveDrag = (clientY) => {
+      if (!dragItem || !isDragging) return;
+      dragItem.style.top = (clientY - offsetY) + 'px';
 
-      const afterEl = getAfterElement(e.clientY);
+      const afterEl = getAfterElement(clientY);
       if (afterEl) {
         list.insertBefore(placeholder, afterEl);
       } else {
@@ -1265,34 +1297,94 @@ const Tasks = {
       }
     };
 
-    const onPointerUp = (e) => {
+    const endDrag = () => {
       if (!dragItem) return;
-      // Insertar el item real donde está el placeholder
-      if (placeholder && placeholder.parentNode) {
+      if (isDragging && placeholder && placeholder.parentNode) {
         list.insertBefore(dragItem, placeholder);
         placeholder.remove();
       }
-      dragItem.classList.remove('dragging-sub');
-      dragItem.style.position = '';
-      dragItem.style.zIndex = '';
-      dragItem.style.width = '';
-      dragItem.style.pointerEvents = '';
-      dragItem.style.boxShadow = '';
-      dragItem.style.transform = '';
-      dragItem.style.left = '';
-      dragItem.style.top = '';
+      if (dragItem) {
+        dragItem.classList.remove('dragging-sub');
+        dragItem.style.cssText = '';
+      }
       dragItem = null;
       placeholder = null;
-      document.removeEventListener('pointermove', onPointerMove);
-      document.removeEventListener('pointerup', onPointerUp);
+      isDragging = false;
     };
 
-    list.addEventListener('pointerdown', onPointerDown);
+    // ── Touch events (tablets/móviles) ──
+    const onTouchStart = (e) => {
+      const grip = e.target.closest('.form-subtask-grip');
+      if (!grip) return;
+      e.preventDefault(); // Previene el menú y scroll
+      dragItem = grip.closest('.form-subtask-item');
+      if (!dragItem) return;
+      startY = e.touches[0].clientY;
+      isDragging = false;
+    };
+
+    const onTouchMove = (e) => {
+      if (!dragItem) return;
+      e.preventDefault(); // Previene scroll durante arrastre
+      const clientY = e.touches[0].clientY;
+
+      // Iniciar arrastre solo si se movió lo suficiente
+      if (!isDragging && Math.abs(clientY - startY) > DRAG_THRESHOLD) {
+        startDrag(clientY);
+      }
+      if (isDragging) {
+        moveDrag(clientY);
+      }
+    };
+
+    const onTouchEnd = (e) => {
+      endDrag();
+    };
+
+    // ── Mouse events (PC) ──
+    const onMouseDown = (e) => {
+      const grip = e.target.closest('.form-subtask-grip');
+      if (!grip || e.button !== 0) return;
+      e.preventDefault();
+      dragItem = grip.closest('.form-subtask-item');
+      if (!dragItem) return;
+      startY = e.clientY;
+      isDragging = false;
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    };
+
+    const onMouseMove = (e) => {
+      if (!dragItem) return;
+      e.preventDefault();
+      const clientY = e.clientY;
+      if (!isDragging && Math.abs(clientY - startY) > DRAG_THRESHOLD) {
+        startDrag(clientY);
+      }
+      if (isDragging) {
+        moveDrag(clientY);
+      }
+    };
+
+    const onMouseUp = () => {
+      endDrag();
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    list.addEventListener('touchstart', onTouchStart, { passive: false });
+    list.addEventListener('touchmove', onTouchMove, { passive: false });
+    list.addEventListener('touchend', onTouchEnd);
+    list.addEventListener('mousedown', onMouseDown);
 
     list._dragCleanup = () => {
-      list.removeEventListener('pointerdown', onPointerDown);
-      document.removeEventListener('pointermove', onPointerMove);
-      document.removeEventListener('pointerup', onPointerUp);
+      list.removeEventListener('contextmenu', preventCtx);
+      list.removeEventListener('touchstart', onTouchStart);
+      list.removeEventListener('touchmove', onTouchMove);
+      list.removeEventListener('touchend', onTouchEnd);
+      list.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
     };
   }
 };
