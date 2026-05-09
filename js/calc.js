@@ -83,19 +83,20 @@ const RetCalc = {
 
           <div class="calc-results">
             <div class="calc-res-divider"></div>
-            <div class="calc-res-row"><span>Base</span><span id="cr-base">$0.00</span></div>
-            <div class="calc-res-row"><span>IVA</span><span id="cr-iva">$0.00</span></div>
-            <div class="calc-res-row"><span>Ret. ISR</span><span id="cr-isr" class="calc-danger">-$0.00</span></div>
-            <div class="calc-res-row"><span>Ret. IVA</span><span id="cr-riva" class="calc-danger">-$0.00</span></div>
+            <div class="calc-res-row"><span>Subtotal/IVA</span><span id="cr-iva-combined">$0.00 / $0.00</span></div>
+            <div class="calc-res-row"><span>Retenciones</span><span id="cr-ret-combined" class="calc-danger">-$0.00</span></div>
             <div class="calc-res-divider"></div>
             <div class="calc-res-row calc-res-total"><span>TOTAL</span><span id="cr-total">$0.00</span></div>
           </div>
 
-          <button class="calc-clear-btn" id="calc-clear">C — LIMPIAR</button>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="calc-clear-btn" id="calc-clear" style="flex:1">LIMPIAR</button>
+            <button class="calc-copy-btn" id="calc-copy-ret" style="flex:1.5; background:var(--success); color:white; border-radius:8px; font-weight:700; font-size:0.75rem; border:none; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.3)">📋 COPIAR A NOTA</button>
+          </div>
         </div>
 
         <!-- PANEL CALCULADORA NORMAL -->
-        <div id="calc-std-view" style="display:none; flex-direction:column; gap:8px;">
+        <div id="calc-std-view" style="display:none; flex-direction:column; gap:6px;">
 
           <!-- Sub-switch Normal / RPN -->
           <div class="calc-sub-switch">
@@ -130,6 +131,7 @@ const RetCalc = {
               <button class="calc-key" data-std=".">.</button>
               <button class="calc-key calc-key-eq" data-std="=">=</button>
             </div>
+            <button id="calc-copy-std" style="width:100%; margin-top:8px; padding:10px; background:var(--primary); color:white; border-radius:8px; font-weight:700; font-size:0.75rem; border:none; cursor:pointer">📋 COPIAR RESULTADO A NOTA</button>
           </div>
 
           <!-- RPN VIEW -->
@@ -141,24 +143,28 @@ const RetCalc = {
               <div class="rpn-row rpn-x" id="rpn-x"><span class="rpn-lbl">X:</span><span class="rpn-val rpn-x-val" id="rpn-x-val">0</span></div>
             </div>
             <div class="calc-rpn-pad">
-              <button class="calc-key calc-key-fn" data-rpn="C">C</button>
-              <button class="calc-key calc-key-fn" data-rpn="CHS">+/−</button>
-              <button class="calc-key calc-key-fn" data-rpn="DROP">DROP</button>
-              <button class="calc-key calc-key-fn" data-rpn="SWAP">XY</button>
-              <button class="calc-key" data-rpn="7">7</button>
-              <button class="calc-key" data-rpn="8">8</button>
-              <button class="calc-key" data-rpn="9">9</button>
+              <!-- Row 1 -->
+              <button class="calc-key calc-key-fn rpn-fn" data-rpn="CHS"><span class="rpn-main">CHS</span><span class="rpn-sub">+/−</span></button>
+              <button class="calc-key rpn-num" data-rpn="7"><span class="rpn-main">7</span></button>
+              <button class="calc-key rpn-num" data-rpn="8"><span class="rpn-main">8</span></button>
+              <button class="calc-key rpn-num" data-rpn="9"><span class="rpn-main">9</span></button>
               <button class="calc-key calc-key-op" data-rpn="÷">÷</button>
-              <button class="calc-key" data-rpn="4">4</button>
-              <button class="calc-key" data-rpn="5">5</button>
-              <button class="calc-key" data-rpn="6">6</button>
+              <!-- Row 2 -->
+              <button class="calc-key calc-key-fn rpn-fn" data-rpn="SWAP"><span class="rpn-main">XY</span><span class="rpn-sub">swap</span></button>
+              <button class="calc-key rpn-num" data-rpn="4"><span class="rpn-main">4</span></button>
+              <button class="calc-key rpn-num" data-rpn="5"><span class="rpn-main">5</span></button>
+              <button class="calc-key rpn-num" data-rpn="6"><span class="rpn-main">6</span></button>
               <button class="calc-key calc-key-op" data-rpn="×">×</button>
-              <button class="calc-key" data-rpn="1">1</button>
-              <button class="calc-key" data-rpn="2">2</button>
-              <button class="calc-key" data-rpn="3">3</button>
+              <!-- Row 3: ENTER tall -->
+              <button class="calc-key calc-key-enter" data-rpn="ENTER">E<br>N<br>T<br>E<br>R</button>
+              <button class="calc-key rpn-num" data-rpn="1"><span class="rpn-main">1</span></button>
+              <button class="calc-key rpn-num" data-rpn="2"><span class="rpn-main">2</span></button>
+              <button class="calc-key rpn-num" data-rpn="3"><span class="rpn-main">3</span></button>
               <button class="calc-key calc-key-op" data-rpn="−">−</button>
-              <button class="calc-key calc-key-enter" data-rpn="ENTER">ENTER</button>
-              <button class="calc-key" data-rpn=".">.</button>
+              <!-- Row 4 (ENTER continues col 1) -->
+              <button class="calc-key rpn-num" data-rpn="0"><span class="rpn-main">0</span></button>
+              <button class="calc-key rpn-num" data-rpn="."><span class="rpn-main">.</span></button>
+              <button class="calc-key calc-key-fn rpn-fn" data-rpn="DROP"><span class="rpn-main">DROP</span><span class="rpn-sub">del</span></button>
               <button class="calc-key calc-key-op" data-rpn="+">+</button>
             </div>
           </div>
@@ -191,6 +197,60 @@ const RetCalc = {
 
     this._initRet(container);
     this._initStd(container);
+
+    // Copy buttons
+    const btnCopyRet = container.querySelector('#calc-copy-ret');
+    if (btnCopyRet) btnCopyRet.onclick = () => this.copyToNote('ret');
+
+    const btnCopyStd = container.querySelector('#calc-copy-std');
+    if (btnCopyStd) btnCopyStd.onclick = () => this.copyToNote('std');
+  },
+
+  copyToNote(type) {
+    let html = '';
+    if (type === 'ret') {
+      const s = this._fmt(this.subtotalCents / 100);
+      const iva = this._fmt(this.subtotalCents * this.ivaRate / 10000);
+      const isr = this._fmt(this.subtotalCents * this.isrRate / 10000);
+      const riva = this._fmt(this.subtotalCents * this.retIvaRate / 10000);
+      const t = this._fmt(this.totalCents / 100);
+
+      html = `
+        <table class="rt-table" style="width:100%; border-collapse:collapse; margin:10px 0;">
+          <tr style="background:rgba(99,102,241,0.1)">
+            <th style="border:1px solid var(--border); padding:8px; text-align:left;">Concepto</th>
+            <th style="border:1px solid var(--border); padding:8px; text-align:right;">Importe</th>
+          </tr>
+          <tr>
+            <td style="border:1px solid var(--border); padding:8px;">Subtotal</td>
+            <td style="border:1px solid var(--border); padding:8px; text-align:right;">${s}</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid var(--border); padding:8px;">IVA (${this.ivaRate}%)</td>
+            <td style="border:1px solid var(--border); padding:8px; text-align:right;">${iva}</td>
+          </tr>
+          ${this.isrRate > 0 ? `<tr>
+            <td style="border:1px solid var(--border); padding:8px; color:var(--danger)">Ret. ISR (${this.isrRate}%)</td>
+            <td style="border:1px solid var(--border); padding:8px; text-align:right; color:var(--danger)">-${isr}</td>
+          </tr>` : ''}
+          ${this.retIvaRate > 0 ? `<tr>
+            <td style="border:1px solid var(--border); padding:8px; color:var(--danger)">Ret. IVA (${this.retIvaRate.toFixed(2)}%)</td>
+            <td style="border:1px solid var(--border); padding:8px; text-align:right; color:var(--danger)">-${riva}</td>
+          </tr>` : ''}
+          <tr style="font-weight:bold; background:rgba(99,102,241,0.05)">
+            <td style="border:1px solid var(--border); padding:8px;">TOTAL</td>
+            <td style="border:1px solid var(--border); padding:8px; text-align:right; color:var(--primary-light)">${t}</td>
+          </tr>
+        </table><br>
+      `;
+    } else {
+      html = `<p><b>Resultado:</b> ${this._stdFmt(this.stdDisplay)}</p>`;
+    }
+
+    // Trigger event to be caught by the editor
+    const event = new CustomEvent('calc:copy', { detail: { html } });
+    window.dispatchEvent(event);
+    if (typeof UI !== 'undefined') UI.toast('Cálculo listo para insertar', 'success');
   },
 
   // ── Calculadora Retenciones ─────────────────────────────
@@ -276,11 +336,9 @@ const RetCalc = {
   _setResults(s, iva, isr, rv, t, c) {
     if (!c) return;
     const set = (id, v) => { const el = c.querySelector(id); if (el) el.textContent = v; };
-    set('#cr-base', this._fmt(s));
-    set('#cr-iva',  this._fmt(iva));
-    set('#cr-isr',  '-' + this._fmt(isr));
-    set('#cr-riva', '-' + this._fmt(rv));
-    set('#cr-total',this._fmt(t));
+    set('#cr-iva-combined', `${this._fmt(s)} / ${this._fmt(iva)}`);
+    set('#cr-ret-combined', `-${this._fmt(isr + rv)}`);
+    set('#cr-total', this._fmt(t));
   },
 
   // ── Calculadora Normal + RPN ────────────────────────────

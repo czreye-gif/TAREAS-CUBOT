@@ -108,6 +108,15 @@ const RichEditor = {
         }
       };
     }
+
+    // Listener para recibir contenido de la calculadora
+    window.addEventListener('calc:copy', (e) => {
+      // Solo actuar si este editor es el que tiene el foco o está visible en el contexto actual
+      if (document.activeElement === editor || editor.id === 'focus-editor' || editor.id === 'note-ta') {
+        editor.focus();
+        document.execCommand('insertHTML', false, e.detail.html);
+      }
+    });
   },
 
   enterFocusMode(originalEditor, originalToolbar) {
@@ -124,7 +133,6 @@ const RichEditor = {
           <div style="display:flex;gap:6px;align-items:center">
             <button class="rt-calc-toggle" title="Calculadora de Retenciones">🧮 Calc</button>
             ${taskId ? `<button class="rt-share-focus">Compartir</button>` : ''}
-            <button class="rt-close-focus">✕ Cerrar</button>
           </div>
         </div>
         <div class="rt-focus-body">
@@ -148,7 +156,6 @@ const RichEditor = {
     const focusTB     = overlay.querySelector('#focus-toolbar');
     const calcPane    = overlay.querySelector('#rt-calc-pane');
     const calcToggle  = overlay.querySelector('.rt-calc-toggle');
-    const closeBtn    = overlay.querySelector('.rt-close-focus');
     const shareBtn    = overlay.querySelector('.rt-share-focus');
 
     // Clean focus-toolbar
@@ -215,7 +222,6 @@ const RichEditor = {
       overlay.remove();
     };
 
-    closeBtn.onclick = closeFn;
     overlay.addEventListener('click', e => { if (e.target === overlay) closeFn(); });
     if (shareBtn) shareBtn.onclick = () => { if (typeof Tasks !== 'undefined') Tasks.shareNote(taskId); };
   },

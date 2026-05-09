@@ -218,6 +218,7 @@ const Tasks = {
           <button type="button" class="rt-btn rt-table-row-btn" data-command="addTableRow" title="Añadir fila" style="display:none; color:var(--primary)">+ Fila</button>
           <button type="button" class="rt-btn rt-table-row-btn" data-command="removeTableRow" title="Eliminar fila" style="display:none; color:var(--danger)">- Fila</button>
           <button type="button" class="rt-btn rt-table-row-btn" data-command="removeTableRow" title="Eliminar fila" style="display:none; color:var(--danger)">- Fila</button>
+          <button type="button" class="rt-btn rt-calc-toggle" title="Calculadora de Retenciones" style="color:var(--primary); font-weight:bold; border:1px solid var(--primary); padding:0 6px; border-radius:4px; margin-right:4px">🧮 Calc</button>
           <button type="button" class="rt-btn rt-share-btn" title="Compartir nota" style="margin-left:auto; color:var(--primary)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
@@ -226,15 +227,21 @@ const Tasks = {
           <button type="button" class="rt-btn rt-convert-btn" title="Convertir en Tarea" style="background:var(--accent); color:white; width:auto; padding:0 8px; font-weight:700; margin-left:8px; display:none">➔ CONVERTIR A TAREA</button>
         </div>
 
-        <div id="note-ta" class="postit-note rt-editor ${task.type === 'note' ? 'postit-pink' : ''}" contenteditable="true" style="
-          width:100%;min-height:150px;max-height:400px;overflow-y:auto;resize:vertical;padding:12px;
-          border-radius:8px;
-          font-size:0.9rem;line-height:1.6;
-          font-family: ${task.font || 'var(--font-notes)'};
-          outline:none;box-sizing:border-box" 
-          data-task-id="${task.id}"
-          data-type="${task.type || 'task'}"
-          data-folio="${task.code}">${task.description || ''}</div>
+        <div style="display:flex; gap:14px; position:relative;">
+          <div id="note-ta" class="postit-note rt-editor ${task.type === 'note' ? 'postit-pink' : ''}" contenteditable="true" style="
+            flex:1; min-height:250px; max-height:500px; overflow-y:auto; resize:vertical; padding:12px;
+            border-radius:8px;
+            font-size:0.9rem; line-height:1.6;
+            font-family: ${task.font || 'var(--font-notes)'};
+            outline:none; box-sizing:border-box" 
+            data-task-id="${task.id}"
+            data-type="${task.type || 'task'}"
+            data-folio="${task.code}">${task.description || ''}</div>
+          
+          <div id="modal-calc-pane" class="rt-calc-pane" style="display:none; width:280px; flex-shrink:0; border:1px solid var(--border); border-radius:10px; background:var(--bg2); overflow:hidden;">
+            ${typeof RetCalc !== 'undefined' ? RetCalc.render() : '<p style="padding:20px;color:var(--muted)">Calculadora no disponible</p>'}
+          </div>
+        </div>
       </div>
 
       <div id="modal-tags-section" style="margin-top:4px">
@@ -288,6 +295,24 @@ const Tasks = {
 
     // Initialize rich editor for modal
     RichEditor.init('#note-ta', '#modal-editor-toolbar');
+
+    // ── Lógica de la Calculadora en Modal ─────────────────────
+    const calcPane = box.querySelector('#modal-calc-pane');
+    const calcToggle = box.querySelector('.rt-calc-toggle');
+    if (typeof RetCalc !== 'undefined' && calcPane) {
+      RetCalc.init(calcPane);
+      calcToggle.onclick = () => {
+        const isHidden = calcPane.style.display === 'none';
+        calcPane.style.display = isHidden ? 'block' : 'none';
+        calcToggle.style.background = isHidden ? 'var(--primary)' : 'transparent';
+        calcToggle.style.color = isHidden ? '#white' : 'var(--primary)';
+        
+        // Ajustar ancho del modal si se abre la calculadora
+        if (window.innerWidth > 700) {
+          box.style.maxWidth = isHidden ? '850px' : '520px';
+        }
+      };
+    }
 
     // ── Lógica de Etiquetas en Modal ─────────────────────────
     let modalTags = [...(task.tags || [])];
