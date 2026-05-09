@@ -9,6 +9,19 @@ const Notes = {
   typeFilter: 'all',
 
   init() {
+    // Cargar fuente guardada
+    const savedFont = localStorage.getItem('notes-font') || "'Roboto', sans-serif";
+    document.documentElement.style.setProperty('--font-notes', savedFont);
+    const fontSelector = document.getElementById('notes-font-selector');
+    if (fontSelector) {
+      fontSelector.value = savedFont;
+      fontSelector.onchange = (e) => {
+        const font = e.target.value;
+        document.documentElement.style.setProperty('--font-notes', font);
+        localStorage.setItem('notes-font', font);
+      };
+    }
+
     const searchInput = document.getElementById('notes-search-input');
     const dateInput = document.getElementById('notes-date-filter');
     const typeInput = document.getElementById('notes-type-filter');
