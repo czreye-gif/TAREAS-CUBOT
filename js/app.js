@@ -101,6 +101,47 @@ const app = {
   },
 
   bindGlobalEvents() {
+    // Vigilante Global de Clics
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      const btn = target.closest('[data-action]');
+      if (!btn) return;
+
+      const action = btn.getAttribute('data-action');
+      const id = btn.getAttribute('data-id') || btn.getAttribute('data-task-id');
+      const subId = btn.getAttribute('data-sub-id');
+
+      // Prevenir comportamientos por defecto
+      if (btn.tagName === 'BUTTON') e.preventDefault();
+      e.stopPropagation();
+
+      try {
+        if (typeof Tasks === 'undefined') return;
+        
+        switch(action) {
+          case 'toggle': if(!btn.disabled) Tasks.toggleTask(id); break;
+          case 'edit': Tasks.editTask(id); break;
+          case 'edit-card': Tasks.editTask(btn.getAttribute('data-task-id')); break;
+          case 'delete': Tasks.deleteTask(id); break;
+          case 'show-notes': Tasks.showNotes(id); break;
+          case 'reschedule': Tasks.rescheduleTask(id); break;
+          case 'add-subtask': Tasks.promptAddSubtask(id); break;
+          case 'toggle-sub': Tasks.toggleSubtask(id, subId); break;
+          case 'delete-sub': Tasks.deleteSubtask(id, subId); break;
+        }
+      } catch(err) {
+        console.error("GlobalClick Error:", err);
+      }
+    });
+
+    // Vigilante Global de Doble Clic (para editar tarjetas)
+    document.addEventListener('dblclick', (e) => {
+      const card = e.target.closest('[data-task-id]');
+      if (card && typeof Tasks !== 'undefined') {
+        Tasks.editTask(card.getAttribute('data-task-id'));
+      }
+    });
+
     window.addEventListener('hashchange', () => {
       const hash = location.hash.slice(1);
       if (hash) this.navigate(hash, true);
