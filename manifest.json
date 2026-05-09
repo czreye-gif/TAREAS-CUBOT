@@ -11,14 +11,14 @@
   "lang": "es",
   "icons": [
     {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
+      "src": "./icono_tareas_192x192 (1).png",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-512.png",
-      "sizes": "192x192",
+      "src": "./icono_tareas_512x512.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
