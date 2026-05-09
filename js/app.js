@@ -8,6 +8,15 @@ const app = {
   alarmInterval: null,
 
   init() {
+    // Registro de Service Worker para PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('PWA: Service Worker registrado', reg))
+          .catch(err => console.log('PWA: Error al registrar SW', err));
+      });
+    }
+
     console.log("App: Iniciando...");
     
     // 1. Vincular Tema (Lo primero para evitar saltos de color)
