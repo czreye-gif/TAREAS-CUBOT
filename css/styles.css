@@ -2497,3 +2497,24 @@ body {
   }
 }
 
+/* Bloqueo visual de orientación horizontal en móviles */
+@media (max-width: 600px) and (orientation: landscape) {
+  body::after {
+    content: '🔄 Por favor, gira tu dispositivo. Esta aplicación está optimizada para modo vertical en móviles.';
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #0a0a1a;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    text-align: center;
+    padding: 40px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+  #sidebar, #main-content, .modal { display: none !important; }
+}
+
