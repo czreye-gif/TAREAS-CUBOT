@@ -474,7 +474,47 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ---- Subtasks ---- */
-.subtask-section { margin: 12px 0 0 36px; }
+.subtask-section {
+  margin: 8px 0 0 36px;
+  overflow: hidden;
+  max-height: 600px;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+  opacity: 1;
+}
+.subtask-section.subtask-collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+}
+
+/* Toggle button con anillo de progreso */
+.subtask-toggle-btn {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: none; background: none; cursor: pointer;
+  position: relative; padding: 0; margin-top: 1px;
+  transition: transform 0.2s;
+}
+.subtask-toggle-btn:hover { transform: scale(1.15); }
+.subtask-toggle-btn:active { transform: scale(0.95); }
+
+.subtask-toggle-ring { position: absolute; inset: 0; margin: auto; }
+.subtask-toggle-arrow {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  transition: transform 0.25s ease;
+  z-index: 1;
+}
+.subtask-toggle-btn.expanded .subtask-toggle-arrow {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+.subtask-toggle-count {
+  display: none; /* Visible vía tooltip, no en el botón */
+}
+.subtask-toggle-btn.all-done .subtask-toggle-arrow {
+  stroke: var(--success);
+}
+
 .subtask-progress { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .progress-bar { flex: 1; height: 6px; background: var(--surface); border-radius: 3px; overflow: hidden; }
 .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 3px; transition: width 0.4s ease; }
@@ -532,7 +572,15 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ---- Timeline Subtasks ---- */
-.tl-subtask-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.tl-subtask-section {
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+  overflow: hidden; max-height: 600px;
+  transition: max-height 0.35s ease, opacity 0.25s ease, margin 0.25s ease, padding 0.25s ease;
+  opacity: 1;
+}
+.tl-subtask-section.subtask-collapsed {
+  max-height: 0; opacity: 0; margin-top: 0; padding-top: 0; border-top-color: transparent;
+}
 .tl-subtask-list { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
 .btn-add-subtask:hover { color: var(--primary-light); border-color: var(--primary); }
 
