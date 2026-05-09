@@ -96,6 +96,7 @@ const Timeline = {
     const hasSubs = task.subtasks && task.subtasks.length > 0;
     const subsDone = hasSubs ? task.subtasks.filter(s => s.completed).length : 0;
     const subsTotal = hasSubs ? task.subtasks.length : 0;
+    const progressPct = subsTotal > 0 ? Math.round((subsDone/subsTotal)*100) : 0;
     const tagPills = (task.tags || []).map(tid => {
       const tag = storage.getTag(tid);
       return tag ? `<span class="tag-pill-card"><span style="width:7px;height:7px;border-radius:50%;background:${tag.color};display:inline-block;flex-shrink:0"></span>${this._esc(tag.name)}</span>` : '';
@@ -109,7 +110,22 @@ const Timeline = {
           <button class="tl-card-check ${task.completed ? 'checked' : ''}" onclick="event.stopPropagation(); Tasks.toggleTask('${task.id}')">
             ${task.completed ? '✓' : ''}
           </button>
-        ` : '<div style="width:24px; height:24px; flex-shrink:0;"></div>'}
+        ` : `
+          <button class="subtask-toggle-btn ${progressPct === 100 ? 'all-done' : ''}" 
+                  onclick="event.stopPropagation(); Tasks._toggleSubtaskCollapse(this)"
+                  title="${subsDone}/${subsTotal} subtareas completadas">
+            <svg class="subtask-toggle-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="pointer-events:none">
+              <polyline points="9,18 15,12 9,6"/>
+            </svg>
+            <svg class="subtask-toggle-ring" width="22" height="22" viewBox="0 0 36 36" style="pointer-events:none">
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--border)" stroke-width="3"/>
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke="${progressPct === 100 ? 'var(--success)' : 'var(--primary)'}" stroke-width="3"
+                      stroke-dasharray="${Math.round(progressPct * 0.97)} 100"
+                      stroke-linecap="round" transform="rotate(-90 18 18)"
+                      style="transition:stroke-dasharray 0.4s"/>
+            </svg>
+          </button>
+        `}
         <div class="tl-card-body" onclick="Tasks.editTask('${task.id}')">
           <div class="tl-card-top">
             <span class="tl-card-code">${code}</span>
@@ -131,11 +147,7 @@ const Timeline = {
             ${tagPills}
           </div>
           ${hasSubs ? `
-            <div class="tl-subtask-section">
-              <div class="subtask-progress">
-                <div class="progress-bar"><div class="progress-fill" style="width:${subsTotal > 0 ? Math.round((subsDone/subsTotal)*100) : 0}%"></div></div>
-                <span class="progress-label">${subsDone}/${subsTotal}</span>
-              </div>
+            <div class="tl-subtask-section subtask-collapsed">
               <div class="tl-subtask-list">
                 ${task.subtasks.map(sub => `
                   <div class="subtask-item ${sub.completed ? 'completed' : ''}" data-subtask-id="${sub.id}">
