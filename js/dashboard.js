@@ -593,3 +593,5 @@ const Dashboard = {
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => Dashboard.init(), 50);
 });
+
+window.Dashboard = Dashboard;

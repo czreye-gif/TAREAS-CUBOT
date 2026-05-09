@@ -106,9 +106,9 @@ const Timeline = {
            data-task-id="${task.id}" data-date="${task.date}"
            ondblclick="Tasks.editTask('${task.id}')">
         <div class="tl-card-grip">⠿</div>
-        <button class="tl-card-check ${task.completed ? 'checked' : ''}" 
-                style="${hasSubs ? 'display:none' : ''}"
-                onclick="event.stopPropagation(); Tasks.toggleTask('${task.id}')">
+        <button class="tl-card-check ${task.completed ? 'checked' : ''} ${hasSubs ? 'has-subs' : ''}" 
+                ${hasSubs ? 'disabled' : ''}
+                onclick="event.stopPropagation(); if(!this.disabled) Tasks.toggleTask('${task.id}')">
           ${task.completed ? '✓' : ''}
         </button>
         <div class="tl-card-body" onclick="Tasks.editTask('${task.id}')">

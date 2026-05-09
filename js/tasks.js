@@ -81,9 +81,9 @@ const Tasks = {
            ondblclick="Tasks.editTask('${task.id}')">
         <div class="task-card-header">
           <div class="drag-handle" title="Arrastrar para reagendar">⠿</div>
-          <button class="task-check ${task.completed ? 'checked' : ''}" 
-                  style="${hasSubtasks ? 'display:none' : ''}"
-                  onclick="event.stopPropagation(); Tasks.toggleTask('${task.id}')">
+          <button class="task-check ${task.completed ? 'checked' : ''} ${hasSubtasks ? 'has-subs' : ''}" 
+                  ${hasSubtasks ? 'disabled' : ''}
+                  onclick="event.stopPropagation(); if(!this.disabled) Tasks.toggleTask('${task.id}')">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="pointer-events:none">
               ${task.completed ? '<polyline points="20,6 9,17 4,12"/>' : ''}
             </svg>
@@ -1195,3 +1195,5 @@ const Tasks = {
     return div.innerHTML;
   }
 };
+
+window.Tasks = Tasks;

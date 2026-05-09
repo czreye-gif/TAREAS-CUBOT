@@ -443,3 +443,4 @@ class TaskStorage {
 
 // Singleton global
 const storage = new TaskStorage();
+window.storage = storage;
