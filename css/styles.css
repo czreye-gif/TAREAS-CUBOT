@@ -281,7 +281,19 @@ input:focus, select:focus, textarea:focus {
 .tl-card-time { font-size: 0.6rem; color: var(--muted); background: var(--bg2); padding: 1px 4px; border-radius: 3px; }
 .tl-card-subs { font-size: 0.6rem; color: var(--muted); }
 .tl-card-alarm { font-size: 0.6rem; }
-.tl-card-priority { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.tl-card-priority { 
+  width: 18px; 
+  height: 18px; 
+  border-radius: 4px; 
+  flex-shrink: 0; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
 .tl-card-actions { display: flex; gap: 2px; }
 .tl-card-actions button {
   padding: 3px 5px; font-size: 0.75rem; color: var(--muted); border-radius: 4px;
@@ -354,7 +366,19 @@ input:focus, select:focus, textarea:focus {
 .task-title { font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
 .task-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .task-time { font-size: 0.8rem; color: var(--muted); background: var(--surface); padding: 2px 8px; border-radius: 4px; }
-.task-priority-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.task-priority-dot { 
+  width: 20px; 
+  height: 20px; 
+  border-radius: 5px; 
+  flex-shrink: 0; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
 .task-description { font-size: 0.85rem; color: var(--text2); margin: 10px 0 0 36px; line-height: 1.5; }
 
 .task-actions { display: flex; gap: 4px; }
