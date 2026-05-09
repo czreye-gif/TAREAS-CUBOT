@@ -87,7 +87,23 @@ const Tasks = {
                 ${task.completed ? '<polyline points="20,6 9,17 4,12"/>' : ''}
               </svg>
             </button>
-          ` : '<div style="width:26px; height:26px; flex-shrink:0;"></div>'}
+          ` : `
+            <button class="subtask-toggle-btn ${progressPct === 100 ? 'all-done' : ''}" 
+                    onclick="event.stopPropagation(); Tasks._toggleSubtaskCollapse(this)"
+                    title="${completedSubs}/${totalSubs} subtareas completadas">
+              <svg class="subtask-toggle-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="pointer-events:none">
+                <polyline points="9,18 15,12 9,6"/>
+              </svg>
+              <span class="subtask-toggle-count">${completedSubs}/${totalSubs}</span>
+              <svg class="subtask-toggle-ring" width="28" height="28" viewBox="0 0 36 36" style="pointer-events:none">
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--border)" stroke-width="3"/>
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="${progressPct === 100 ? 'var(--success)' : 'var(--primary)'}" stroke-width="3"
+                        stroke-dasharray="${Math.round(progressPct * 0.97)} 100"
+                        stroke-linecap="round" transform="rotate(-90 18 18)"
+                        style="transition:stroke-dasharray 0.4s"/>
+              </svg>
+            </button>
+          `}
           <div class="task-info" onclick="Tasks.editTask('${task.id}')">
             <div class="task-title-row">
               <h4 class="task-title">${this._escapeHTML(task.title)}</h4>
@@ -125,11 +141,7 @@ const Tasks = {
           <p class="task-description">${this._escapeHTML(task.description)}</p>
         </div>` : ''}
         ${hasSubtasks ? `
-          <div class="subtask-section">
-            <div class="subtask-progress">
-              <div class="progress-bar"><div class="progress-fill" style="width:${progressPct}%"></div></div>
-              <span class="progress-label">${completedSubs}/${totalSubs}</span>
-            </div>
+          <div class="subtask-section subtask-collapsed">
             <div class="subtask-list" data-task-id="${task.id}">
               ${subtasksHTML}
             </div>
@@ -1208,6 +1220,16 @@ const Tasks = {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+  },
+
+  // ---- Colapsar / Expandir subtareas ----
+  _toggleSubtaskCollapse(btn) {
+    const card = btn.closest('.task-card, .tl-card');
+    if (!card) return;
+    const section = card.querySelector('.subtask-section, .tl-subtask-section');
+    if (!section) return;
+    section.classList.toggle('subtask-collapsed');
+    btn.classList.toggle('expanded');
   },
 
   // ---- Confirmación para eliminar subtarea del formulario ----

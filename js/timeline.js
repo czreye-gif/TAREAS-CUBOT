@@ -114,10 +114,10 @@ const Timeline = {
           <button class="subtask-toggle-btn ${progressPct === 100 ? 'all-done' : ''}" 
                   onclick="event.stopPropagation(); Tasks._toggleSubtaskCollapse(this)"
                   title="${subsDone}/${subsTotal} subtareas completadas">
-            <svg class="subtask-toggle-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="pointer-events:none">
+            <svg class="subtask-toggle-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="pointer-events:none">
               <polyline points="9,18 15,12 9,6"/>
             </svg>
-            <svg class="subtask-toggle-ring" width="22" height="22" viewBox="0 0 36 36" style="pointer-events:none">
+            <svg class="subtask-toggle-ring" width="28" height="28" viewBox="0 0 36 36" style="pointer-events:none">
               <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--border)" stroke-width="3"/>
               <circle cx="18" cy="18" r="15.5" fill="none" stroke="${progressPct === 100 ? 'var(--success)' : 'var(--primary)'}" stroke-width="3"
                       stroke-dasharray="${Math.round(progressPct * 0.97)} 100"
