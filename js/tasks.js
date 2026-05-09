@@ -870,11 +870,13 @@ const Tasks = {
     item.className = 'form-subtask-item';
     item.dataset.id = id;
     item.innerHTML = `
+      <span class="form-subtask-grip" title="Arrastrar para reordenar">⠿</span>
       <input type="checkbox" class="form-subtask-check">
       <span contenteditable="true" class="form-subtask-title">${this._escapeHTML(title)}</span>
       <button type="button" class="subtask-remove" onclick="this.parentElement.remove()">&times;</button>
     `;
     list.appendChild(item);
+    this._initSubtaskDrag(list);
     input.value = '';
     input.focus();
   },
@@ -901,12 +903,14 @@ const Tasks = {
       item.className = 'form-subtask-item';
       item.dataset.id = sub.id;
       item.innerHTML = `
+        <span class="form-subtask-grip" title="Arrastrar para reordenar">⠿</span>
         <input type="checkbox" class="form-subtask-check" ${sub.completed ? 'checked' : ''}>
         <span contenteditable="true" class="form-subtask-title">${this._escapeHTML(sub.title)}</span>
         <button type="button" class="subtask-remove" onclick="this.parentElement.remove()">&times;</button>
       `;
       list.appendChild(item);
     });
+    this._initSubtaskDrag(list);
 
     // Update title
     document.getElementById('form-title').textContent = 'Editar Tarea';
@@ -1192,6 +1196,104 @@ const Tasks = {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+  },
+
+  // ---- Drag & Drop para reordenar subtareas en formulario ----
+  _initSubtaskDrag(list) {
+    if (!list) return;
+    let dragItem = null;
+    let placeholder = null;
+
+    // Limpiar listeners previos
+    if (list._dragCleanup) list._dragCleanup();
+
+    const getAfterElement = (y) => {
+      const items = [...list.querySelectorAll('.form-subtask-item:not(.dragging-sub)')];
+      return items.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset, element: child };
+        }
+        return closest;
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    };
+
+    const onPointerDown = (e) => {
+      const grip = e.target.closest('.form-subtask-grip');
+      if (!grip) return;
+      e.preventDefault();
+      dragItem = grip.closest('.form-subtask-item');
+      if (!dragItem) return;
+
+      // Crear placeholder
+      placeholder = document.createElement('div');
+      placeholder.className = 'form-subtask-placeholder';
+      placeholder.style.cssText = 'height:' + dragItem.offsetHeight + 'px;border:2px dashed var(--primary);border-radius:8px;margin-bottom:6px;opacity:0.5;background:rgba(99,102,241,0.08);';
+
+      dragItem.classList.add('dragging-sub');
+      dragItem.style.position = 'fixed';
+      dragItem.style.zIndex = '9999';
+      dragItem.style.width = list.offsetWidth + 'px';
+      dragItem.style.pointerEvents = 'none';
+      dragItem.style.boxShadow = '0 8px 32px rgba(0,0,0,0.3)';
+      dragItem.style.transform = 'scale(1.02)';
+
+      // Posicionar en el puntero
+      const rect = dragItem.getBoundingClientRect();
+      dragItem._offsetY = e.clientY - rect.top;
+      dragItem.style.left = rect.left + 'px';
+      dragItem.style.top = (e.clientY - dragItem._offsetY) + 'px';
+
+      // Insertar placeholder donde estaba el item
+      list.insertBefore(placeholder, dragItem.nextSibling);
+
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+    };
+
+    const onPointerMove = (e) => {
+      if (!dragItem) return;
+      e.preventDefault();
+      dragItem.style.top = (e.clientY - dragItem._offsetY) + 'px';
+
+      const afterEl = getAfterElement(e.clientY);
+      if (afterEl) {
+        list.insertBefore(placeholder, afterEl);
+      } else {
+        list.appendChild(placeholder);
+      }
+    };
+
+    const onPointerUp = (e) => {
+      if (!dragItem) return;
+      // Insertar el item real donde está el placeholder
+      if (placeholder && placeholder.parentNode) {
+        list.insertBefore(dragItem, placeholder);
+        placeholder.remove();
+      }
+      dragItem.classList.remove('dragging-sub');
+      dragItem.style.position = '';
+      dragItem.style.zIndex = '';
+      dragItem.style.width = '';
+      dragItem.style.pointerEvents = '';
+      dragItem.style.boxShadow = '';
+      dragItem.style.transform = '';
+      dragItem.style.left = '';
+      dragItem.style.top = '';
+      dragItem = null;
+      placeholder = null;
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+    };
+
+    list.addEventListener('pointerdown', onPointerDown);
+
+    list._dragCleanup = () => {
+      list.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+    };
   }
 };
 
