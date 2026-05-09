@@ -70,13 +70,17 @@ const RichEditor = {
     // Bind table resizing
     this._initTableResizing(editor);
 
-    // Focus Mode Logic (Manual Trigger via Button)
-    const expandBtn = toolbar.querySelector('.rt-expand-btn');
-    if (expandBtn) {
-      expandBtn.onclick = (e) => {
-        e.preventDefault();
-        this.enterFocusMode(editor, toolbar);
-      };
+    // ── Auto-abrir ventana flotante al hacer foco en el editor ──
+    // Solo para editores fuera de modales (el modal de notas ya es una ventana)
+    if (!editor.closest('.ui-modal-box') && !editor.id.includes('focus')) {
+      editor.addEventListener('focus', () => {
+        // Pequeña pausa para evitar disparos accidentales
+        setTimeout(() => {
+          if (document.activeElement === editor && !document.querySelector('.rt-focus-overlay')) {
+            this.enterFocusMode(editor, toolbar);
+          }
+        }, 80);
+      }, { once: false });
     }
 
     // Convert to Task Logic
@@ -86,7 +90,7 @@ const RichEditor = {
       convertBtn.style.display = isNote ? 'block' : 'none';
       convertBtn.onclick = (e) => {
         e.preventDefault();
-        const taskId = editor.id === 'focus-editor' ? editor._originalId : editor.dataset.taskId;
+        const taskId = editor.dataset.taskId;
         if (typeof Tasks !== 'undefined') Tasks.convertNoteToTask(taskId);
       };
     }
@@ -96,12 +100,11 @@ const RichEditor = {
     if (shareBtn) {
       shareBtn.onclick = (e) => {
         e.preventDefault();
-        const taskId = editor.id === 'focus-editor' ? editor._originalId : editor.dataset.taskId;
+        const taskId = editor.dataset.taskId;
         if (taskId && typeof Tasks !== 'undefined') {
           Tasks.shareNote(taskId);
         } else {
-          // If no taskId, share current content as text/image (temp)
-          UI.toast('Guarda la nota antes de compartirla completamente', 'warning');
+          UI.toast('Guarda la nota antes de compartirla', 'warning');
         }
       };
     }
@@ -109,59 +112,69 @@ const RichEditor = {
 
   enterFocusMode(originalEditor, originalToolbar) {
     const folio = originalEditor.dataset.folio || 'NUEVA';
+    const taskId = originalEditor.dataset.taskId || '';
+
     const overlay = document.createElement('div');
     overlay.className = 'rt-focus-overlay';
     overlay.innerHTML = `
       <div class="rt-focus-window">
         <div class="rt-focus-header">
           <span>📝 Nota Folio: ${folio}</span>
-          <div style="display:flex; gap:8px">
-            <button class="rt-share-focus" style="background:var(--primary); color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer">Compartir</button>
-            <button class="rt-close-focus">MINIMIZAR ESCALA</button>
+          <div style="display:flex; gap:8px; align-items:center">
+            <button class="rt-share-focus" style="background:var(--primary); color:white; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; font-weight:600; font-size:0.85rem">Compartir</button>
+            <button class="rt-close-focus">Cerrar</button>
           </div>
         </div>
         <div class="rt-toolbar" id="focus-toolbar">
           ${originalToolbar.innerHTML}
         </div>
-        <div class="rt-editor postit-note" contenteditable="true" id="focus-editor">
+        <div class="rt-editor postit-note" contenteditable="true" id="focus-editor"
+             data-task-id="${taskId}" data-folio="${folio}" style="font-family:${originalEditor.style.fontFamily || 'var(--font-notes)'}">
           ${originalEditor.innerHTML}
         </div>
       </div>
     `;
 
     document.body.appendChild(overlay);
-    const focusEditor = overlay.querySelector('#focus-editor');
+    const focusEditor  = overlay.querySelector('#focus-editor');
     const focusToolbar = overlay.querySelector('#focus-toolbar');
-    const closeBtn = overlay.querySelector('.rt-close-focus');
+    const closeBtn     = overlay.querySelector('.rt-close-focus');
 
-    // Remove the EXPAND/CONVERT buttons from focus toolbar to avoid recursion/confusion
-    const innerExpandBtn = focusToolbar.querySelector('.rt-expand-btn');
-    if (innerExpandBtn) innerExpandBtn.remove();
-    const innerConvertBtn = focusToolbar.querySelector('.rt-convert-btn');
-    if (innerConvertBtn) innerConvertBtn.remove();
+    // Limpiar botones que no aplican dentro de la ventana flotante
+    focusToolbar.querySelectorAll('.rt-expand-btn, .rt-convert-btn').forEach(b => b.remove());
 
-    // Re-bind toolbar in focus mode
-    focusEditor._originalId = originalEditor.id === 'task-description' ? null : originalEditor.dataset.taskId;
+    // Re-bind toolbar en modo focus (sin volver a crear el overlay)
     this.init('#focus-editor', '#focus-toolbar');
-    
-    // Focus the new editor
+
+    // Focus en el editor flotante
     setTimeout(() => focusEditor.focus(), 50);
 
-    closeBtn.onclick = () => {
+    // Cerrar y sincronizar contenido al original
+    const closeFn = () => {
       originalEditor.innerHTML = focusEditor.innerHTML;
+      // Sincronizar fuente elegida
+      const focusFontSelect = focusToolbar.querySelector('.rt-font-select');
+      if (focusFontSelect) originalEditor.style.fontFamily = focusFontSelect.value;
       overlay.remove();
-      originalEditor.focus();
     };
 
+    closeBtn.onclick = closeFn;
+    // Cerrar al hacer clic en el fondo oscuro
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeFn();
+    });
+
+    // Compartir desde la ventana flotante
     const shareFocusBtn = overlay.querySelector('.rt-share-focus');
-    if (shareFocusBtn) {
+    if (shareFocusBtn && taskId) {
       shareFocusBtn.onclick = () => {
-        const taskId = focusEditor._originalId;
-        if (taskId && typeof Tasks !== 'undefined') Tasks.shareNote(taskId);
-        else UI.toast('Guarda los cambios primero', 'warning');
+        if (typeof Tasks !== 'undefined') Tasks.shareNote(taskId);
       };
+    } else if (shareFocusBtn) {
+      shareFocusBtn.style.display = 'none';
     }
   },
+
 
   insertTable(editor) {
     const tableHTML = `
