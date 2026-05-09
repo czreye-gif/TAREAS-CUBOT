@@ -203,7 +203,18 @@ const Tasks = {
           <button type="button" class="rt-btn" data-command="insertOrderedList" title="Lista numerada">1.</button>
           <div class="rt-divider"></div>
           <button type="button" class="rt-btn" data-command="insertTable" title="Insertar Tabla">▦</button>
-          <button type="button" class="rt-btn" data-command="insertDateTime" title="Insertar Fecha y Hora">⌚</button>
+          <button type="button" class="rt-btn" data-command="insertDateTime" title="Insertar Fecha y Hora">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </button>
+          <select class="rt-btn rt-font-select" title="Fuente de la nota" style="width:auto; padding:0 8px; font-size:0.7rem; font-weight:600; background:var(--bg2); border:1px solid var(--border)">
+            <option value="'Roboto', sans-serif">Roboto</option>
+            <option value="'Inter', sans-serif">Inter</option>
+            <option value="'Montserrat', sans-serif">Montserrat</option>
+            <option value="'Kalam', cursive">Manuscrita</option>
+          </select>
           <button type="button" class="rt-btn rt-table-row-btn" data-command="addTableRow" title="Añadir fila" style="display:none; color:var(--primary)">+ Fila</button>
           <button type="button" class="rt-btn rt-table-row-btn" data-command="removeTableRow" title="Eliminar fila" style="display:none; color:var(--danger)">- Fila</button>
           <button type="button" class="rt-btn rt-table-row-btn" data-command="removeTableRow" title="Eliminar fila" style="display:none; color:var(--danger)">- Fila</button>
@@ -220,6 +231,7 @@ const Tasks = {
           width:100%;min-height:150px;max-height:400px;overflow-y:auto;resize:vertical;padding:12px;
           border-radius:8px;
           font-size:0.9rem;line-height:1.6;
+          font-family: ${task.font || 'var(--font-notes)'};
           outline:none;box-sizing:border-box" 
           data-task-id="${task.id}"
           data-type="${task.type || 'task'}"
@@ -443,7 +455,8 @@ const Tasks = {
       storage.updateTask(id, { 
         description: htmlContent, 
         attachments: [...attachments],
-        tags: modalTags
+        tags: modalTags,
+        font: box.querySelector('.rt-font-select')?.value
       });
       
       UI.toast('Nota guardada', 'success');

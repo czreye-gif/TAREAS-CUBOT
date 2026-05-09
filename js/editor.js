@@ -8,8 +8,22 @@ const RichEditor = {
     const toolbar = document.querySelector(toolbarSelector);
     if (!editor || !toolbar) return;
 
+    // Pre-seleccionar fuente si el editor ya tiene una
+    const fontSelect = toolbar.querySelector('.rt-font-select');
+    if (fontSelect) {
+      const currentFont = editor.style.fontFamily || "'Roboto', sans-serif";
+      // Normalizar para comparación
+      const options = Array.from(fontSelect.options);
+      const matching = options.find(opt => opt.value.includes(currentFont.replace(/['"]/g, '')));
+      if (matching) fontSelect.value = matching.value;
+
+      fontSelect.onchange = (e) => {
+        editor.style.fontFamily = e.target.value;
+      };
+    }
+
     // Bind format buttons
-    toolbar.querySelectorAll('[data-command]').forEach(btn => {
+    toolbar.querySelectorAll('.rt-btn[data-command]').forEach(btn => {
       btn.onmousedown = (e) => {
         e.preventDefault();
         const cmd = btn.dataset.command;
