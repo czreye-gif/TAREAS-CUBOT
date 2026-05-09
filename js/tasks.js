@@ -77,17 +77,18 @@ const Tasks = {
 
     return `
       <div class="task-card ${task.completed ? 'completed' : ''} ${isOverdue ? 'overdue' : ''} priority-${task.priority}"
-           data-task-id="${task.id}" data-draggable data-date="${task.date}">
+           data-task-id="${task.id}" data-date="${task.date}">
         <div class="task-card-header">
           <div class="drag-handle" title="Arrastrar para reagendar">⠿</div>
           ${!hasSubtasks ? `
-            <button class="task-check ${task.completed ? 'checked' : ''}" data-action="toggle" data-id="${task.id}">
+            <button class="task-check ${task.completed ? 'checked' : ''}" 
+                    onclick="event.stopPropagation(); Tasks.toggleTask('${task.id}')">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="pointer-events:none">
                 ${task.completed ? '<polyline points="20,6 9,17 4,12"/>' : ''}
               </svg>
             </button>
-          ` : '<div style="width:28px"></div>'}
-          <div class="task-info" data-action="edit" data-id="${task.id}">
+          ` : '<div style="width:26px; height:26px; flex-shrink:0;"></div>'}
+          <div class="task-info" onclick="Tasks.editTask('${task.id}')">
             <div class="task-title-row">
               <h4 class="task-title">${this._escapeHTML(task.title)}</h4>
               ${tagPills ? `<div class="task-tag-row">${tagPills}</div>` : ''}
@@ -98,12 +99,12 @@ const Tasks = {
             </div>
           </div>
           <div class="task-actions">
-            <button class="task-action-btn" data-action="reschedule" data-id="${task.id}" title="Reagendar">
+            <button class="task-action-btn" onclick="event.stopPropagation(); Tasks.rescheduleTask('${task.id}')" title="Reagendar">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="pointer-events:none">
                 <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
               </svg>
             </button>
-            <button class="task-action-btn danger" data-action="delete" data-id="${task.id}" title="Eliminar">
+            <button class="task-action-btn danger" onclick="event.stopPropagation(); Tasks.deleteTask('${task.id}')" title="Eliminar">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="pointer-events:none">
                 <polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
               </svg>
@@ -111,7 +112,7 @@ const Tasks = {
           </div>
         </div>
         <button class="task-notes-btn ${(task.description || (task.attachments && task.attachments.length > 0)) ? 'has-notes' : 'no-notes'}" 
-                data-action="show-notes" data-id="${task.id}" title="${(task.description || (task.attachments && task.attachments.length > 0)) ? 'Ver / editar notas' : 'Agregar nota'}">
+                onclick="event.stopPropagation(); Tasks.showNotes('${task.id}')" title="${(task.description || (task.attachments && task.attachments.length > 0)) ? 'Ver / editar notas' : 'Agregar nota'}">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="pointer-events:none">
             <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
             <polyline points="14,2 14,8 20,8"/>
@@ -135,7 +136,7 @@ const Tasks = {
           </div>
         ` : ''}
         <div class="subtask-add" data-task-id="${task.id}">
-          <button class="btn-add-subtask" data-action="add-subtask" data-id="${task.id}">+ Subtarea</button>
+          <button class="btn-add-subtask" onclick="event.stopPropagation(); Tasks.promptAddSubtask('${task.id}')">+ Subtarea</button>
         </div>
       </div>
     `;
@@ -146,13 +147,13 @@ const Tasks = {
     return task.subtasks.map(sub => `
       <div class="subtask-item ${sub.completed ? 'completed' : ''}" data-subtask-id="${sub.id}">
         <button class="subtask-check ${sub.completed ? 'checked' : ''}"
-                data-action="toggle-sub" data-task-id="${task.id}" data-sub-id="${sub.id}">
+                onclick="event.stopPropagation(); Tasks.toggleSubtask('${task.id}', '${sub.id}')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="pointer-events:none">
             ${sub.completed ? '<polyline points="20,6 9,17 4,12"/>' : ''}
           </svg>
         </button>
-        <span class="subtask-title" data-action="edit" data-id="${task.id}">${this._escapeHTML(sub.title)}</span>
-        <button class="subtask-delete" data-action="delete-sub" data-task-id="${task.id}" data-sub-id="${sub.id}">&times;</button>
+        <span class="subtask-title" onclick="event.stopPropagation(); Tasks.editTask('${task.id}')">${this._escapeHTML(sub.title)}</span>
+        <button class="subtask-delete" onclick="event.stopPropagation(); Tasks.deleteSubtask('${task.id}', '${sub.id}')">&times;</button>
       </div>
     `).join('');
   },
@@ -1015,7 +1016,6 @@ const Tasks = {
       attachments: this._formAttachments || []
     };
 
-    const editId = form.dataset.editId;
     const convertId = document.getElementById('task-description').dataset.convertId;
 
     if (editId) {

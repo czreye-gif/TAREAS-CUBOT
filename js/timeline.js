@@ -106,11 +106,11 @@ const Timeline = {
            data-task-id="${task.id}" data-date="${task.date}">
         <div class="tl-card-grip">⠿</div>
         ${!hasSubs ? `
-          <button class="tl-card-check ${task.completed ? 'checked' : ''}" data-action="toggle" data-id="${task.id}">
+          <button class="tl-card-check ${task.completed ? 'checked' : ''}" onclick="event.stopPropagation(); Tasks.toggleTask('${task.id}')">
             ${task.completed ? '✓' : ''}
           </button>
-        ` : '<div style="width:24px"></div>'}
-        <div class="tl-card-body" data-action="edit" data-id="${task.id}">
+        ` : '<div style="width:24px; height:24px; flex-shrink:0;"></div>'}
+        <div class="tl-card-body" onclick="Tasks.editTask('${task.id}')">
           <div class="tl-card-top">
             <span class="tl-card-code">${code}</span>
             <span class="tl-card-title">${this._esc(task.title)}</span>
@@ -119,7 +119,7 @@ const Timeline = {
             ${task.timeStart ? `<span class="tl-card-time">${task.timeStart}${task.timeEnd ? '-' + task.timeEnd : ''}</span>` : ''}
             ${task.alarm ? '<span class="tl-card-alarm">🔔</span>' : ''}
             <button class="tl-notes-btn ${(task.description || (task.attachments && task.attachments.length > 0)) ? 'has-notes' : 'no-notes'}" 
-                    data-action="show-notes" data-id="${task.id}" title="${(task.description || (task.attachments && task.attachments.length > 0)) ? 'Ver/editar notas' : 'Agregar nota'}">
+                    onclick="event.stopPropagation(); Tasks.showNotes('${task.id}')" title="${(task.description || (task.attachments && task.attachments.length > 0)) ? 'Ver/editar notas' : 'Agregar nota'}">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="pointer-events:none">
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
                 <polyline points="14,2 14,8 20,8"/>
@@ -140,13 +140,13 @@ const Timeline = {
                 ${task.subtasks.map(sub => `
                   <div class="subtask-item ${sub.completed ? 'completed' : ''}" data-subtask-id="${sub.id}">
                     <button class="subtask-check ${sub.completed ? 'checked' : ''}"
-                            data-action="toggle-sub" data-task-id="${task.id}" data-sub-id="${sub.id}">
+                            onclick="event.stopPropagation(); Tasks.toggleSubtask('${task.id}', '${sub.id}')">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="pointer-events:none">
                         ${sub.completed ? '<polyline points="20,6 9,17 4,12"/>' : ''}
                       </svg>
                     </button>
-                    <span class="subtask-title" data-action="edit" data-id="${task.id}">${this._esc(sub.title)}</span>
-                    <button class="subtask-delete" data-action="delete-sub" data-task-id="${task.id}" data-sub-id="${sub.id}">&times;</button>
+                    <span class="subtask-title" onclick="event.stopPropagation(); Tasks.editTask('${task.id}')">${this._esc(sub.title)}</span>
+                    <button class="subtask-delete" onclick="event.stopPropagation(); Tasks.deleteSubtask('${task.id}', '${sub.id}')">&times;</button>
                   </div>
                 `).join('')}
               </div>
@@ -154,7 +154,7 @@ const Timeline = {
           ` : ''}
         </div>
         <div class="tl-card-actions">
-          <button data-action="delete" data-id="${task.id}" title="Eliminar">✕</button>
+          <button onclick="event.stopPropagation(); Tasks.deleteTask('${task.id}')" title="Eliminar">✕</button>
         </div>
       </div>
     `;

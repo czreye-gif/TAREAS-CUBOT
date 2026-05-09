@@ -417,11 +417,8 @@ const Dashboard = {
       const container = document.getElementById(listId);
       if (!container) return;
 
-      // Hacer tarjetas arrastrables
-      container.querySelectorAll('.tl-card').forEach(card => {
-        card.setAttribute('draggable', 'true');
-        card.style.cursor = 'grab';
-      });
+      // Las tarjetas ya no son "arrastrables" por defecto para no bloquear clics.
+      // El arrastre se activará solo al presionar el drag-handle.
     });
 
     // Re-inicializar drop zones (por si se re-renderizó)
@@ -447,8 +444,28 @@ const Dashboard = {
 
   // ── Drag & drop con pistas de aterrizaje ──────────────────
   setupDragAndDrop() {
+    // Activar arrastre solo al tocar el handle
+    document.addEventListener('mousedown', e => {
+      if (e.target.closest('.drag-handle') || e.target.closest('.tl-card-grip')) {
+        const card = e.target.closest('[data-task-id]');
+        if (card) card.setAttribute('draggable', 'true');
+      }
+    });
+    document.addEventListener('touchstart', e => {
+      if (e.target.closest('.drag-handle') || e.target.closest('.tl-card-grip')) {
+        const card = e.target.closest('[data-task-id]');
+        if (card) card.setAttribute('draggable', 'true');
+      }
+    }, {passive: true});
+    document.addEventListener('mouseup', e => {
+      document.querySelectorAll('.task-card, .tl-card').forEach(c => c.removeAttribute('draggable'));
+    });
+    document.addEventListener('touchend', e => {
+      document.querySelectorAll('.task-card, .tl-card').forEach(c => c.removeAttribute('draggable'));
+    });
+
     document.addEventListener('dragstart', e => {
-      const card = e.target.closest('.tl-card');
+      const card = e.target.closest('.task-card, .tl-card');
       if (!card || !card.dataset.taskId) return;
       // Solo aplicar al dashboard (no afectar timeline/agenda)
       if (!card.closest('#view-today')) return;
