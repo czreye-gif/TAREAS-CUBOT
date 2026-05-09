@@ -16,7 +16,21 @@ const firebaseConfig = {
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
-const db = firebase.firestore();
+let db;
+try {
+  db = firebase.firestore();
+} catch (e) {
+  console.warn("Storage: Firebase no disponible, usando modo local", e);
+  db = { 
+    collection: () => ({ 
+      doc: () => ({ 
+        set: () => Promise.resolve(), 
+        get: () => Promise.resolve({ exists: false }),
+        delete: () => Promise.resolve()
+      }) 
+    }) 
+  };
+}
 
 class TaskStorage {
   constructor() {

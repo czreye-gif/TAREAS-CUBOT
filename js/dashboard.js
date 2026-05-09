@@ -425,23 +425,21 @@ const Dashboard = {
 
       // Acciones de botones
       container.querySelectorAll('[data-action]').forEach(btn => {
-        btn.onclick = (e) => {
-          e.stopPropagation();
-          const { action, id } = btn.dataset;
+        btn.addEventListener('click', (e) => {
+          const action = btn.getAttribute('data-action');
+          const id = btn.getAttribute('data-id');
           try {
             if (action === 'toggle')     Tasks.toggleTask(id);
             if (action === 'edit')       Tasks.editTask(id);
             if (action === 'delete')     Tasks.deleteTask(id);
             if (action === 'show-notes') Tasks.showNotes(id);
             if (action === 'toggle-sub') {
-              const taskId = btn.getAttribute('data-task-id');
-              const subId = btn.getAttribute('data-sub-id');
-              Tasks.toggleSubtask(taskId, subId);
+              Tasks.toggleSubtask(btn.getAttribute('data-task-id'), btn.getAttribute('data-sub-id'));
             }
           } catch(err) {
             console.error("Dashboard: Error en acción", action, err);
           }
-        };
+        });
       });
     });
 

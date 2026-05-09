@@ -160,10 +160,9 @@ const Tasks = {
 
   _bindTaskEvents(container) {
     container.querySelectorAll('[data-action]').forEach(btn => {
-      btn.onclick = (e) => {
-        e.stopPropagation();
-        const action = btn.dataset.action;
-        const id = btn.dataset.id;
+      btn.addEventListener('click', (e) => {
+        const action = btn.getAttribute('data-action');
+        const id = btn.getAttribute('data-id');
         try {
           switch (action) {
             case 'toggle': this.toggleTask(id); break;
@@ -182,7 +181,7 @@ const Tasks = {
         } catch(err) {
           console.error("Tasks: Error en acción", action, err);
         }
-      };
+      });
     });
   },
 

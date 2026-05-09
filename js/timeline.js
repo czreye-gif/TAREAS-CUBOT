@@ -88,9 +88,9 @@ const Timeline = {
 
     // Bind task actions
     container.querySelectorAll('[data-action]').forEach(btn => {
-      btn.onclick = (e) => {
-        e.stopPropagation();
-        const { action, id } = btn.dataset;
+      btn.addEventListener('click', (e) => {
+        const action = btn.getAttribute('data-action');
+        const id = btn.getAttribute('data-id');
         try {
           if (action === 'toggle')     Tasks.toggleTask(id);
           if (action === 'edit')       Tasks.editTask(id);
@@ -102,7 +102,7 @@ const Timeline = {
         } catch(err) {
           console.error("Timeline: Error en acción", action, err);
         }
-      };
+      });
     });
   },
 
@@ -149,7 +149,7 @@ const Timeline = {
           ${hasSubs ? `
             <div class="tl-subtask-section">
               <div class="subtask-progress">
-                <div class="progress-bar"><div class="progress-fill" style="width:${Math.round((subsDone/subsTotal)*100)}%"></div></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:${subsTotal > 0 ? Math.round((subsDone/subsTotal)*100) : 0}%"></div></div>
                 <span class="progress-label">${subsDone}/${subsTotal}</span>
               </div>
               <div class="tl-subtask-list">
