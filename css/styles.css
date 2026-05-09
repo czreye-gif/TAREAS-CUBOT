@@ -353,6 +353,12 @@ input:focus, select:focus, textarea:focus {
 .task-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
 .task-card.dragging { opacity: 0.3; transform: scale(0.95); }
 
+.task-check.has-subs {
+  border-style: dashed; 
+  opacity: 0.6; 
+  cursor: default;
+}
+
 .task-card-header { display: flex; align-items: flex-start; gap: 10px; }
 .drag-handle { color: var(--muted); cursor: grab; font-size: 1.1rem; padding: 2px 4px; user-select: none; line-height: 1; }
 .task-check {
