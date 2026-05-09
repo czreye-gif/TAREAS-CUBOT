@@ -88,8 +88,12 @@ const Notes = {
 
     let tasks = storage.getAllTasks();
 
-    // Filtrar por contenido (independientes o con descripción)
-    tasks = tasks.filter(t => t.type === 'note' || (t.description && t.description.length > 0));
+    // Filtrar: notas independientes, con descripción, O con archivos adjuntos
+    tasks = tasks.filter(t => 
+      t.type === 'note' || 
+      (t.description && t.description.length > 0) ||
+      (t.attachments && t.attachments.length > 0)
+    );
 
     // Aplicar Filtros (Búsqueda, Fecha, Etiquetas, TIPO)
     tasks = tasks.filter(t => {
@@ -142,6 +146,24 @@ const Notes = {
             const isIndNote = t.type === 'note';
             const snippet = this._getSnippet(t.description);
             const folioColor = isIndNote ? '#ff3399' : 'var(--warning)';
+            const atts = t.attachments || [];
+            const hasAtts = atts.length > 0;
+
+            // Generar previews de adjuntos
+            const attHTML = hasAtts ? `
+              <div class="note-attachments-row">
+                ${atts.map(att => {
+                  if (att.type && att.type.startsWith('image/')) {
+                    return `<img src="${att.data}" class="note-att-thumb" alt="${att.name || 'imagen'}" title="${att.name || 'imagen'}">`;
+                  } else {
+                    return `<div class="note-att-file" title="${att.name || 'archivo'}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                      <span>${att.name || 'archivo'}</span>
+                    </div>`;
+                  }
+                }).join('')}
+              </div>
+            ` : '';
 
             return `
               <div class="note-compact-card ${isIndNote ? 'postit-pink' : 'postit-yellow'}" onclick="Tasks.showNotes('${t.id}')">
@@ -149,8 +171,10 @@ const Notes = {
                 <div class="note-line-2">
                   <span style="color:${folioColor}; font-weight:700">${t.code || '---'}</span>
                   <span>${UI.formatTime(t.createdAt)}</span>
+                  ${hasAtts ? `<span class="note-att-badge">📎 ${atts.length}</span>` : ''}
                 </div>
                 <div class="note-line-3">${snippet}</div>
+                ${attHTML}
                 <div class="note-line-4">
                   ${(t.tags || []).map(tid => {
                     const tag = storage.getTag(tid);
