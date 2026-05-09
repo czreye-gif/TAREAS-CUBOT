@@ -517,12 +517,14 @@ input:focus, select:focus, textarea:focus {
 
 .form-subtask-grip {
   cursor: grab; color: var(--muted); font-size: 1.1rem; 
-  user-select: none; padding: 2px 4px; line-height: 1;
+  user-select: none; padding: 4px 6px; line-height: 1;
   touch-action: none; flex-shrink: 0;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
   transition: color 0.15s;
 }
 .form-subtask-grip:hover { color: var(--primary-light); }
-.form-subtask-grip:active { cursor: grabbing; }
+.form-subtask-grip:active { cursor: grabbing; color: var(--primary); }
 
 .form-subtask-item.dragging-sub {
   opacity: 0.95; background: var(--surface2);
