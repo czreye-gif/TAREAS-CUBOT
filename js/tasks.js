@@ -229,7 +229,7 @@ const Tasks = {
 
         <div style="display:flex; gap:14px; position:relative;">
           <div id="note-ta" class="postit-note rt-editor ${task.type === 'note' ? 'postit-pink' : ''}" contenteditable="true" style="
-            flex:1; min-height:250px; max-height:500px; overflow-y:auto; resize:vertical; padding:12px;
+            flex:1; min-height:275px; max-height:550px; overflow-y:auto; resize:vertical; padding:12px;
             border-radius:8px;
             font-size:0.9rem; line-height:1.6;
             font-family: ${task.font || 'var(--font-notes)'};
