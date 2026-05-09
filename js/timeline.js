@@ -103,12 +103,13 @@ const Timeline = {
 
     return `
       <div class="tl-card ${task.completed ? 'tl-completed' : ''} priority-${task.priority}"
-           data-task-id="${task.id}" data-date="${task.date}" data-action="edit-card">
+           data-task-id="${task.id}" data-date="${task.date}">
         <div class="tl-card-grip">⠿</div>
-        <button class="tl-card-check ${task.completed ? 'checked' : ''} ${hasSubs ? 'has-subs' : ''}" 
-                ${hasSubs ? 'disabled' : ''} data-action="toggle" data-id="${task.id}">
-          ${task.completed ? '✓' : ''}
-        </button>
+        ${!hasSubs ? `
+          <button class="tl-card-check ${task.completed ? 'checked' : ''}" data-action="toggle" data-id="${task.id}">
+            ${task.completed ? '✓' : ''}
+          </button>
+        ` : '<div style="width:24px"></div>'}
         <div class="tl-card-body" data-action="edit" data-id="${task.id}">
           <div class="tl-card-top">
             <span class="tl-card-code">${code}</span>

@@ -77,15 +77,16 @@ const Tasks = {
 
     return `
       <div class="task-card ${task.completed ? 'completed' : ''} ${isOverdue ? 'overdue' : ''} priority-${task.priority}"
-           data-task-id="${task.id}" data-draggable data-date="${task.date}" data-action="edit-card">
+           data-task-id="${task.id}" data-draggable data-date="${task.date}">
         <div class="task-card-header">
           <div class="drag-handle" title="Arrastrar para reagendar">⠿</div>
-          <button class="task-check ${task.completed ? 'checked' : ''} ${hasSubtasks ? 'has-subs' : ''}" 
-                  ${hasSubtasks ? 'disabled' : ''} data-action="toggle" data-id="${task.id}">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="pointer-events:none">
-              ${task.completed ? '<polyline points="20,6 9,17 4,12"/>' : ''}
-            </svg>
-          </button>
+          ${!hasSubtasks ? `
+            <button class="task-check ${task.completed ? 'checked' : ''}" data-action="toggle" data-id="${task.id}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="pointer-events:none">
+                ${task.completed ? '<polyline points="20,6 9,17 4,12"/>' : ''}
+              </svg>
+            </button>
+          ` : '<div style="width:28px"></div>'}
           <div class="task-info" data-action="edit" data-id="${task.id}">
             <div class="task-title-row">
               <h4 class="task-title">${this._escapeHTML(task.title)}</h4>

@@ -103,25 +103,28 @@ const app = {
   bindGlobalEvents() {
     // Vigilante Global de Clics
     document.addEventListener('click', (e) => {
-      const target = e.target;
-      const btn = target.closest('[data-action]');
+      const btn = e.target.closest('[data-action]');
       if (!btn) return;
 
       const action = btn.getAttribute('data-action');
-      const id = btn.getAttribute('data-id') || btn.getAttribute('data-task-id');
+      const id = btn.getAttribute('data-id') || btn.closest('[data-task-id]')?.getAttribute('data-task-id');
       const subId = btn.getAttribute('data-sub-id');
 
-      // Prevenir comportamientos por defecto
-      if (btn.tagName === 'BUTTON') e.preventDefault();
-      e.stopPropagation();
+      // Si el botón está desactivado, no hacer nada
+      if (btn.hasAttribute('disabled')) return;
 
       try {
         if (typeof Tasks === 'undefined') return;
         
+        // Evitar que el clic se propague si es un botón o acción específica
+        if (btn.tagName === 'BUTTON' || action !== 'edit-card') {
+          // e.preventDefault(); // Comentado para permitir comportamiento natural si es necesario
+          e.stopPropagation();
+        }
+
         switch(action) {
-          case 'toggle': if(!btn.disabled) Tasks.toggleTask(id); break;
+          case 'toggle': Tasks.toggleTask(id); break;
           case 'edit': Tasks.editTask(id); break;
-          case 'edit-card': Tasks.editTask(btn.getAttribute('data-task-id')); break;
           case 'delete': Tasks.deleteTask(id); break;
           case 'show-notes': Tasks.showNotes(id); break;
           case 'reschedule': Tasks.rescheduleTask(id); break;
