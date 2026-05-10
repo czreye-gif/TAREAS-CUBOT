@@ -261,7 +261,10 @@ input:focus, select:focus, textarea:focus {
   user-select: none !important;
   touch-action: pan-y;
 }
-.tl-card.priority-A, .tl-card.priority-high { border-left-color: var(--danger); }
+.tl-card.priority-A, .tl-card.priority-high { 
+  border: 2px solid var(--danger) !important; 
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3) !important;
+}
 .tl-card.priority-B, .tl-card.priority-medium { border-left-color: #f97316; } /* Naranja vivo */
 .tl-card.priority-C, .tl-card.priority-low { border-left-color: #facc15; }    /* Amarillo brillante */
 .tl-card.priority-D { border-left-color: #3b82f6; }
