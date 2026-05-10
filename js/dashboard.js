@@ -108,7 +108,7 @@ const Dashboard = {
       t.type !== 'note' && t.date === tomorrowDate && !t.completed
     ).sort(sortCompletedLast);
 
-    this._renderList('dash-urgent-list',   urgentTasks,   'No hay tareas urgentes ni vencidas. 🎉');
+    this._renderList('dash-urgent-list',   urgentTasks,   'No hay tareas urgentes ni vencidas. 🎉', { showDate: true });
     this._renderList('dash-today-list',    todayTasks,    'No hay más tareas para hoy.');
     this._renderList('dash-tomorrow-list', tomorrowTasks, 'No hay tareas programadas para mañana.');
     this._renderActiveChips(null);
@@ -145,14 +145,14 @@ const Dashboard = {
     this.bindEvents();
   },
 
-  _renderList(containerId, tasks, emptyMsg) {
+  _renderList(containerId, tasks, emptyMsg, options = {}) {
     const el = document.getElementById(containerId);
     if (!el) return;
     if (tasks.length === 0) {
       el.innerHTML = `<div class="tl-empty" style="text-align:left;padding-left:0">${emptyMsg}</div>`;
     } else {
       el.innerHTML = tasks.map(t => {
-        try { return typeof Timeline !== 'undefined' ? Timeline._renderCard(t) : this._simpleCard(t); }
+        try { return typeof Timeline !== 'undefined' ? Timeline._renderCard(t, options) : this._simpleCard(t); }
         catch(e) { return this._simpleCard(t); }
       }).join('');
     }

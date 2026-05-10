@@ -93,7 +93,7 @@ const Timeline = {
     // Redundante: Ahora usamos onclick directo en el HTML
   },
 
-  _renderCard(task) {
+  _renderCard(task, options = {}) {
     const code = task.code || '---';
     const pColor = UI.priorityColor(task.priority);
     const catIcon = UI.categoryIcon(task.category);
@@ -136,6 +136,7 @@ const Timeline = {
             <span class="tl-card-title">${this._esc(task.title)}</span>
           </div>
           <div class="tl-card-meta">
+            ${options.showDate ? `<span class="tl-card-date" style="font-size:0.6rem; color:var(--primary-light); font-weight:700; background:rgba(99,102,241,0.1); padding:1px 5px; border-radius:3px; margin-right:6px">📅 ${task.date}</span>` : ''}
             ${task.timeStart ? `<span class="tl-card-time">${task.timeStart}${task.timeEnd ? '-' + task.timeEnd : ''}</span>` : ''}
             ${task.alarm ? '<span class="tl-card-alarm">🔔</span>' : ''}
             <button class="tl-notes-btn ${(task.description || (task.attachments && task.attachments.length > 0)) ? 'has-notes' : 'no-notes'}" 
