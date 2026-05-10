@@ -22,6 +22,10 @@ const Timeline = {
     container.addEventListener('mousedown', (e) => this._mouseDown(e));
     document.addEventListener('mousemove', (e) => this._mouseMove(e));
     document.addEventListener('mouseup', (e) => this._mouseUp(e));
+    // Prevent context menu on drag handles
+    container.addEventListener('contextmenu', (e) => {
+      if (e.target.closest('.tl-card-grip')) e.preventDefault();
+    });
   },
 
   render() {
@@ -201,6 +205,11 @@ const Timeline = {
   _touchStart(e) {
     const card = this._getCard(e.target);
     if (!card) return;
+    
+    if (e.target.closest('.tl-card-grip')) {
+      e.preventDefault();
+    }
+
     const touch = e.touches[0];
     this.dragState = {
       el: card, taskId: card.dataset.taskId,

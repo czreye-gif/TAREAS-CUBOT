@@ -458,6 +458,12 @@ const Dashboard = {
         if (card) card.setAttribute('draggable', 'true');
       }
     }, {passive: true});
+
+    document.addEventListener('contextmenu', e => {
+      if (e.target.closest('.drag-handle') || e.target.closest('.tl-card-grip')) {
+        e.preventDefault();
+      }
+    });
     document.addEventListener('mouseup', e => {
       document.querySelectorAll('.task-card, .tl-card').forEach(c => c.removeAttribute('draggable'));
     });
