@@ -348,6 +348,11 @@ input:focus, select:focus, textarea:focus {
   padding: 14px; transition: all var(--transition); position: relative;
   border-left: 4px solid transparent;
   box-shadow: var(--shadow-sm);
+  /* Prevent system context menu and selection on tablet */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: pan-y; /* Allow vertical scroll, but prevent long-press menus */
 }
 .task-card.priority-A { border-left-color: #ef4444; } /* Muy Alta - Rojo */
 .task-card.priority-B { border-left-color: #f59e0b; } /* Media - Naranja */
@@ -362,7 +367,16 @@ input:focus, select:focus, textarea:focus {
 
 
 .task-card-header { display: flex; align-items: flex-start; gap: 10px; }
-.drag-handle { color: var(--muted); cursor: grab; font-size: 1.1rem; padding: 2px 4px; user-select: none; line-height: 1; }
+.drag-handle { 
+  color: var(--muted); 
+  cursor: grab; 
+  font-size: 1.1rem; 
+  padding: 2px 4px; 
+  user-select: none; 
+  line-height: 1;
+  /* Extra protection for the handle */
+  touch-action: none;
+}
 .task-check {
   width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--muted);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
