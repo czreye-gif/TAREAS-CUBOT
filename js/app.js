@@ -120,12 +120,12 @@ const app = {
       if (hash) this.navigate(hash, true);
     });
 
-    // Cerrar modal de tarea al tocar fuera
+    // Interceptar cierre de modal de tarea al tocar fuera
     const taskModal = document.getElementById('view-new-task');
     if (taskModal) {
       taskModal.onclick = (e) => {
         if (e.target === taskModal) {
-          this.navigate('today');
+          this.confirmTaskExit();
         }
       };
     }
@@ -249,7 +249,22 @@ const app = {
   requestNotificationPermission() { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); },
   startAlarmChecker() { this.alarmInterval = setInterval(() => this.checkAlarms(), 30000); this.checkAlarms(); },
   checkAlarms() { const al = storage.getPendingAlarms(); al.forEach(t => { this.showNotification(t); storage.updateTask(t.id, { alarm: null }); }); },
-  showNotification(t) { UI.toast(`🔔 ${t.title}`, 'warning', 6000); if ('Notification' in window && Notification.permission === 'granted') { new Notification('⏰ Recordatorio', { body: t.title, icon: 'icons/icon-192.png' }); } }
+  showNotification(t) { UI.toast(`🔔 ${t.title}`, 'warning', 6000); if ('Notification' in window && Notification.permission === 'granted') { new Notification('⏰ Recordatorio', { body: t.title, icon: 'icons/icon-192.png' }); } },
+
+  async confirmTaskExit() {
+    const res = await UI.modal('Confirmación', '¿Qué deseas hacer con los cambios?', [
+      { label: 'Guardar', class: 'btn-primary' },
+      { label: 'Seguir Editando', class: 'btn-secondary' },
+      { label: 'Salir sin Guardar', class: 'btn-secondary' }
+    ]);
+
+    if (res === 0) { // Guardar
+      Tasks.submitForm();
+    } else if (res === 2) { // Salir sin Guardar
+      Tasks.resetForm();
+      this.navigate('today');
+    }
+  }
 };
 
 document.addEventListener('DOMContentLoaded', () => app.init());
