@@ -2184,6 +2184,16 @@ body {
   max-height: 500px;
   overflow-y: auto;
 }
+
+/* Editor compacto para el formulario principal */
+.form-main .rt-toolbar {
+  display: none;
+}
+.form-main .rt-editor {
+  max-height: 180px;
+  border-radius: 8px !important;
+  border: 1px solid var(--border);
+}
 .rt-table-row-btn {
   width: auto !important;
   padding: 0 10px;
@@ -2259,6 +2269,7 @@ body {
   to   { opacity: 1; }
 }
 .rt-focus-window {
+  position: relative;
   background: var(--surface);
   width: 97%;
   max-width: 960px;
@@ -2320,6 +2331,67 @@ body {
   resize: none !important;
 }
 
+/* Manejador de redimensionamiento de ventana (esquina) */
+.rt-resizer {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  cursor: nwse-resize;
+  z-index: 999999;
+  background: linear-gradient(135deg, transparent 60%, var(--primary) 60%);
+  border-bottom-right-radius: 16px; /* Ajustar al radio de la ventana */
+  opacity: 0.4;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 4px;
+}
+.rt-resizer::after {
+  content: "";
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: -5px 0 0 white, 0 -5px 0 white;
+  margin-bottom: 2px;
+  margin-right: 2px;
+  opacity: 0.8;
+}
+.rt-resizer:hover {
+  opacity: 1;
+  background: linear-gradient(135deg, transparent 50%, var(--primary) 50%);
+  transform: scale(1.1);
+}
+
+/* Barra divisoria arrastrable */
+.rt-gutter {
+  width: 8px;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  cursor: col-resize;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  z-index: 10;
+}
+.rt-gutter:hover, .rt-gutter.dragging {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.rt-gutter::after {
+  content: "⠿";
+  color: var(--muted);
+  font-size: 10px;
+  opacity: 0.5;
+}
+.rt-gutter:hover::after { color: white; opacity: 1; }
+
 /* .rt-editor height is now controlled dynamically via JS (auto-expand on focus) */
 
 /* ── Focus body split layout ───────────────────────────── */
@@ -2355,9 +2427,11 @@ body {
 }
 .rt-calc-pane {
   width: 300px;
+  min-width: 240px;
+  max-width: 500px;
   flex-shrink: 0;
-  border-left: 1px solid var(--border);
   background: #080810;
+  display: flex;
   flex-direction: column;
   overflow-y: auto;
 }
