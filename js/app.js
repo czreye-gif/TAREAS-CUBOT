@@ -117,7 +117,7 @@ const app = {
 
     window.addEventListener('hashchange', () => {
       const hash = location.hash.slice(1);
-      if (hash) this.navigate(hash, true);
+      if (hash && hash !== this.currentView) this.navigate(hash, true);
     });
 
     // Interceptar cierre de modal de tarea al tocar fuera
