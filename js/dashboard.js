@@ -22,6 +22,7 @@ const Dashboard = {
   render() {
     this.renderHeader();
     this.renderTaskLists();
+    this.renderMiniCalendar();
   },
 
   // ── Cabecera con saludo y fecha ────────────────────────────
@@ -530,10 +531,25 @@ const Dashboard = {
     const lastDay = new Date(year, month + 1, 0).getDate();
     const today = new Date();
 
+    // Pre-calcular conteo de tareas por fecha para eficiencia
+    const allTasks = storage.getAllTasks();
+    const taskCounts = {};
+    allTasks.forEach(t => {
+      if (t.date && t.type !== 'note' && !t.completed) {
+        taskCounts[t.date] = (taskCounts[t.date] || 0) + 1;
+      }
+    });
+
     for (let i = 1; i <= lastDay; i++) {
         const dateObj = new Date(year, month, i);
         const dayIndex = dateObj.getDay();
         const isWeekend = dayIndex === 0 || dayIndex === 6;
+        
+        // Formatear fecha para el mapa de conteo
+        const mStr = String(month + 1).padStart(2, '0');
+        const dStr = String(i).padStart(2, '0');
+        const fullDateStr = `${year}-${mStr}-${dStr}`;
+        const count = taskCounts[fullDateStr] || 0;
 
         const row = document.createElement('div');
         row.className = `vc-day-row ${isWeekend ? 'vc-weekend' : ''}`;
@@ -548,7 +564,10 @@ const Dashboard = {
 
         row.innerHTML = `
             <span class="vc-day-name ${isWeekend ? '' : 'text-gray-400'}">${this.dayNamesShort[dayIndex]}</span>
-            <span class="vc-day-number">${i}</span>
+            <span class="vc-day-number">
+              ${i}
+              ${count > 0 ? `<span class="vc-day-badge">${count}</span>` : ''}
+            </span>
         `;
 
         row.onclick = () => this.selectDate(year, month, i);
