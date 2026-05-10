@@ -761,7 +761,7 @@ const Tasks = {
     const task = storage.getTask(id);
     if (!task) return;
     app.navigate('new-task');
-    setTimeout(() => this.fillForm(task), 100);
+    this.fillForm(task);
   },
 
   // ---- Subtareas ----

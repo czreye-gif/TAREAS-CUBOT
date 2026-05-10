@@ -205,8 +205,6 @@ const app = {
     if (view === 'day' && !this.selectedDate) this.selectedDate = storage._todayStr();
     if (view === 'new-task') {
       Tasks.resetForm();
-      const di = document.getElementById('task-date');
-      if (di) di.value = storage._todayStr();
     }
     this.currentView = view;
     if (!fromHash) location.hash = view;
