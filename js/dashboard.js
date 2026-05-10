@@ -94,15 +94,19 @@ const Dashboard = {
     };
 
     urgentTasks = allTasks.filter(t =>
-      t.type !== 'note' && (
-        (t.date && t.date < todayDate && !t.completed) ||
-        (t.date === todayDate && t.priority === 'high' && !t.completed)
+      t.type !== 'note' && !t.completed && (
+        (t.date && t.date < todayDate) || // Vencidas
+        (t.priority === 'A' || t.priority === 'high') // Prioridad muy alta (A)
       )
     ).sort(sortCompletedLast);
+
     todayTasks = allTasks.filter(t =>
-      t.type !== 'note' && t.date === todayDate && t.priority !== 'high' && !t.completed
+      t.type !== 'note' && t.date === todayDate && !t.completed
     ).sort(sortCompletedLast);
-    tomorrowTasks = allTasks.filter(t => t.type !== 'note' && t.date === tomorrowDate && !t.completed).sort(sortCompletedLast);
+
+    tomorrowTasks = allTasks.filter(t => 
+      t.type !== 'note' && t.date === tomorrowDate && !t.completed
+    ).sort(sortCompletedLast);
 
     this._renderList('dash-urgent-list',   urgentTasks,   'No hay tareas urgentes ni vencidas. 🎉');
     this._renderList('dash-today-list',    todayTasks,    'No hay más tareas para hoy.');
