@@ -137,7 +137,7 @@ const Dashboard = {
         todayList.innerHTML = '<div class="tl-empty" style="text-align:left;padding-left:0">No se encontraron tareas con esos filtros.</div>';
       } else {
         todayList.innerHTML = sorted.map(t => {
-          try { return typeof Timeline !== 'undefined' ? Timeline._renderCard(t) : this._simpleCard(t); }
+          try { return typeof Timeline !== 'undefined' ? Timeline._renderCard(t, { showDate: true }) : this._simpleCard(t); }
           catch(e) { return this._simpleCard(t); }
         }).join('');
       }
@@ -212,25 +212,14 @@ const Dashboard = {
       // Exclude independent notes from Dashboard (they belong in Notes Library)
       if (t.type === 'note') return false;
       
-      // Exclude completed tasks from Dashboard views and searches
-      if (t.completed) return false;
-
-      // Filtro de fecha exacta del mini calendario
-      if (this.filters.date && t.date !== this.filters.date) return false;
-
-      // Shortcut de fecha
-      if (shortcut === 'today'    && t.date !== today)    return false;
-      if (shortcut === 'tomorrow' && t.date !== tomorrow) return false;
-      if (shortcut === 'week'     && (!t.date || t.date < today || t.date > weekEnd)) return false;
-
-      // Búsqueda universal
+      // SI HAY BÚSQUEDA: Ignoramos filtros de fecha y estado completado para búsqueda universal
       if (q) {
         // Folio exacto: comparar en lowercase de ambos lados
         if (parsed?.type === 'folio') {
           if ((t.code || '').toLowerCase() === parsed.value) return true;
           return false;
         }
-        // Fecha exacta
+        // Fecha exacta (si el usuario escribió una fecha en el buscador)
         if (parsed?.type === 'date' && t.date === parsed.value) return true;
 
         // Buscar en TODOS los campos (cualquier match es válido)
@@ -242,6 +231,7 @@ const Dashboard = {
           const tag = storage.getTag(tid);
           return tag && tag.name.toLowerCase().includes(q);
         });
+        
         // Fecha en formato legible
         let inDateText = false;
         if (t.date) {
@@ -252,8 +242,21 @@ const Dashboard = {
           } catch {}
         }
 
-        if (!(inTitle || inDesc || inCode || inDate || inTags || inDateText)) return false;
+        return (inTitle || inDesc || inCode || inDate || inTags || inDateText);
       }
+
+      // SI NO HAY BÚSQUEDA: Aplicamos filtros restrictivos del Dashboard
+      
+      // Excluir terminadas en vista normal
+      if (t.completed) return false;
+
+      // Filtro de fecha exacta del mini calendario
+      if (this.filters.date && t.date !== this.filters.date) return false;
+
+      // Shortcut de fecha (Hoy / Mañana / Semana)
+      if (shortcut === 'today'    && t.date !== today)    return false;
+      if (shortcut === 'tomorrow' && t.date !== tomorrow) return false;
+      if (shortcut === 'week'     && (!t.date || t.date < today || t.date > weekEnd)) return false;
 
       return true;
     });
