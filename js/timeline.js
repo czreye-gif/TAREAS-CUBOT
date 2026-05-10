@@ -109,7 +109,7 @@ const Timeline = {
     return `
       <div class="tl-card ${task.completed ? 'tl-completed' : ''} priority-${task.priority}"
            data-task-id="${task.id}" data-date="${task.date}">
-        <div class="tl-card-grip">⠿</div>
+        <div class="tl-card-grip" style="pointer-events: auto;"><span style="pointer-events: none;">⠿</span></div>
         ${!hasSubs ? `
           <button class="tl-card-check ${task.completed ? 'checked' : ''}" onclick="event.stopPropagation(); Tasks.toggleTask('${task.id}')">
             ${task.completed ? '✓' : ''}
@@ -281,11 +281,13 @@ const Timeline = {
     if (!this.ghost) return;
     this.ghost.style.left = (x - 40) + 'px';
     this.ghost.style.top = (y - 15) + 'px';
-    document.querySelectorAll('.tl-day-body.tl-drop-hover').forEach(z => z.classList.remove('tl-drop-hover'));
     const under = document.elementFromPoint(x, y);
-    if (under) {
-      const zone = under.closest('.tl-day-body');
-      if (zone) zone.classList.add('tl-drop-hover');
+    const newZone = under ? under.closest('.tl-day-body') : null;
+    
+    if (this._currentHoverZone !== newZone) {
+      if (this._currentHoverZone) this._currentHoverZone.classList.remove('tl-drop-hover');
+      if (newZone) newZone.classList.add('tl-drop-hover');
+      this._currentHoverZone = newZone;
     }
 
     // Auto-scroll when near edges

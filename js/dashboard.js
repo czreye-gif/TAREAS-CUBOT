@@ -530,35 +530,39 @@ const Dashboard = {
 
   _handleTouchMove(e) {
     if (!this._touchState.dragging) return;
-    e.preventDefault(); // Bloquea scroll durante el arrastre
+    e.preventDefault();
 
     const touch = e.touches[0];
     
-    // Crear ghost si no existe
     if (!this._touchState.ghost) {
       const card = this._touchState.card;
+      const rect = card.getBoundingClientRect();
       const ghost = card.cloneNode(true);
-      ghost.classList.add('tl-drag-ghost'); // Usamos la misma clase que timeline para consistencia
+      ghost.classList.add('tl-drag-ghost');
       ghost.style.width = card.offsetWidth + 'px';
-      ghost.style.position = 'fixed';
-      ghost.style.zIndex = '10000';
-      ghost.style.pointerEvents = 'none';
-      ghost.style.opacity = '0.8';
+      ghost.style.left = rect.left + 'px';
+      ghost.style.top = rect.top + 'px';
+      // Ya tiene transition:none !important en CSS
       document.body.appendChild(ghost);
       this._touchState.ghost = ghost;
+      this._touchState.zones = Array.from(document.querySelectorAll('.drop-zone'));
     }
 
-    // Mover ghost
     const ghost = this._touchState.ghost;
-    ghost.style.left = (touch.clientX - 40) + 'px';
-    ghost.style.top = (touch.clientY - 20) + 'px';
+    ghost.style.transform = `translate(${touch.clientX - this._touchState.startX}px, ${touch.clientY - this._touchState.startY}px) scale(1.02) rotate(1deg)`;
 
-    // Resaltar zona bajo el dedo
-    document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('dash-drop-hover'));
+    // Detección de zona optimizada
     const under = document.elementFromPoint(touch.clientX, touch.clientY);
-    if (under) {
-      const zone = under.closest('.drop-zone');
-      if (zone) zone.classList.add('dash-drop-hover');
+    const newZone = under ? under.closest('.drop-zone') : null;
+
+    if (this._touchState.currentHoverZone !== newZone) {
+      if (this._touchState.currentHoverZone) {
+        this._touchState.currentHoverZone.classList.remove('dash-drop-hover');
+      }
+      if (newZone) {
+        newZone.classList.add('dash-drop-hover');
+      }
+      this._touchState.currentHoverZone = newZone;
     }
   },
 
