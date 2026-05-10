@@ -113,6 +113,16 @@ const app = {
       const hash = location.hash.slice(1);
       if (hash) this.navigate(hash, true);
     });
+
+    // Cerrar modal de tarea al tocar fuera
+    const taskModal = document.getElementById('view-new-task');
+    if (taskModal) {
+      taskModal.onclick = (e) => {
+        if (e.target === taskModal) {
+          this.navigate('today');
+        }
+      };
+    }
   },
 
   bindNavigation() {

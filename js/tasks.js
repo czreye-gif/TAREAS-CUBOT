@@ -854,20 +854,8 @@ const Tasks = {
     this._initFormAttachments();
     this._initTagAutocomplete('task-title');
 
-    // Bind botón Cancelar
-    const cancelBtn = document.getElementById('form-cancel-btn');
-    if (cancelBtn) {
-      cancelBtn.onclick = () => this.cancelForm();
-    }
-
-    // Bind botón Limpiar
-    const clearBtn = document.getElementById('btn-form-clear'); 
-    if (clearBtn) {
-      clearBtn.onclick = (e) => {
-        e.preventDefault();
-        this.resetForm();
-      };
-    }
+    this._initFormAttachments();
+    this._initTagAutocomplete('task-title');
     this._initTagAutocomplete('task-description');
   },
 
