@@ -1159,7 +1159,7 @@ const Tasks = {
     item.className = 'form-subtask-item';
     item.dataset.id = id;
     item.innerHTML = `
-      <span class="form-subtask-grip" title="Arrastrar para reordenar">⠿</span>
+      <span class="form-subtask-grip" title="Arrastrar para reordenar" style="pointer-events: auto;"><span style="pointer-events: none;">⠿</span></span>
       <input type="checkbox" class="form-subtask-check">
       <span contenteditable="true" class="form-subtask-title">${this._escapeHTML(title)}</span>
       <button type="button" class="subtask-remove" onclick="Tasks._confirmRemoveFormSubtask(this)">&times;</button>
@@ -1175,6 +1175,7 @@ const Tasks = {
     if (!form) return;
     form.dataset.editId = task.id;
     document.getElementById('task-title').value = task.title || '';
+    document.getElementById('task-date').value = task.date || '';
     document.getElementById('task-priority').value = task.priority || 'C';
     const descEl = document.getElementById('task-description');
     descEl.dataset.folio = task.code || '';
@@ -1192,7 +1193,7 @@ const Tasks = {
       item.className = 'form-subtask-item';
       item.dataset.id = sub.id;
       item.innerHTML = `
-        <span class="form-subtask-grip" title="Arrastrar para reordenar">⠿</span>
+        <span class="form-subtask-grip" title="Arrastrar para reordenar" style="pointer-events: auto;"><span style="pointer-events: none;">⠿</span></span>
         <input type="checkbox" class="form-subtask-check" ${sub.completed ? 'checked' : ''}>
         <span contenteditable="true" class="form-subtask-title">${this._escapeHTML(sub.title)}</span>
         <button type="button" class="subtask-remove" onclick="Tasks._confirmRemoveFormSubtask(this)">&times;</button>
