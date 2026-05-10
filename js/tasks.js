@@ -187,8 +187,16 @@ const Tasks = {
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px';
 
+    // Recuperar dimensiones persistentes
+    // Recuperar dimensiones persistentes
+    const savedDim = JSON.parse(localStorage.getItem('rt-focus-dim') || '{}');
+    const initialWidth = savedDim.w || '520px';
+    const initialHeight = savedDim.h || 'auto';
+    const initCalcW = savedDim.calcW || '300px';
+
     const box = document.createElement('div');
-    box.style.cssText = 'background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;position:relative';
+    box.id = 'note-modal-box';
+    box.style.cssText = `background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;width:${initialWidth};height:${initialHeight};max-height:88vh;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;position:relative;min-width:400px;min-height:400px;`;
 
     box.innerHTML = `
       <h3 style="margin:0;font-size:1rem;color:var(--text)">📋 Notas — ${this._escapeHTML(task.title)}</h3>
@@ -217,7 +225,6 @@ const Tasks = {
           </select>
           <button type="button" class="rt-btn rt-table-row-btn" data-command="addTableRow" title="Añadir fila" style="display:none; color:var(--primary)">+ Fila</button>
           <button type="button" class="rt-btn rt-table-row-btn" data-command="removeTableRow" title="Eliminar fila" style="display:none; color:var(--danger)">- Fila</button>
-          <button type="button" class="rt-btn rt-table-row-btn" data-command="removeTableRow" title="Eliminar fila" style="display:none; color:var(--danger)">- Fila</button>
           <button type="button" class="rt-btn rt-calc-toggle" title="Calculadora de Retenciones" style="color:var(--primary); font-weight:bold; border:1px solid var(--primary); padding:0 6px; border-radius:4px; margin-right:4px">🧮 Calc</button>
           <button type="button" class="rt-btn rt-share-btn" title="Compartir nota" style="margin-left:auto; color:var(--primary)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -227,9 +234,9 @@ const Tasks = {
           <button type="button" class="rt-btn rt-convert-btn" title="Convertir en Tarea" style="background:var(--accent); color:white; width:auto; padding:0 8px; font-weight:700; margin-left:8px; display:none">➔ CONVERTIR A TAREA</button>
         </div>
 
-        <div style="display:flex; gap:14px; position:relative;">
+        <div style="display:flex; gap:14px; position:relative; flex:1; min-height:0;">
           <div id="note-ta" class="postit-note rt-editor ${task.type === 'note' ? 'postit-pink' : ''}" contenteditable="true" style="
-            flex:1; min-height:300px; max-height:600px; overflow-y:auto; resize:vertical; padding:12px;
+            flex:1; min-height:0; overflow-y:auto; resize:none; padding:12px;
             border-radius:8px;
             font-size:0.9rem; line-height:1.6;
             font-family: ${task.font || 'var(--font-notes)'};
@@ -238,9 +245,11 @@ const Tasks = {
             data-type="${task.type || 'task'}"
             data-folio="${task.code}">${task.description || ''}</div>
           
-          <div id="modal-calc-pane" class="rt-calc-pane" style="display:none; width:280px; flex-shrink:0; border:1px solid var(--border); border-radius:10px; background:var(--bg2); overflow:hidden;">
+          <div class="rt-gutter" id="modal-gutter" style="display:none"></div>
+          <div id="modal-calc-pane" class="rt-calc-pane" style="display:none; width:${initCalcW}; flex-shrink:0; border-radius:10px; background:var(--bg2); overflow:hidden;">
             ${typeof RetCalc !== 'undefined' ? RetCalc.render() : '<p style="padding:20px;color:var(--muted)">Calculadora no disponible</p>'}
           </div>
+        </div>
         </div>
       </div>
 
@@ -288,7 +297,9 @@ const Tasks = {
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
         <button id="note-cancel" style="padding:8px 18px;border-radius:8px;border:1px solid #374151;background:transparent;color:#e2e8f0;cursor:pointer;font-size:0.875rem">Cancelar</button>
         <button id="note-save"   style="padding:8px 18px;border-radius:8px;border:none;background:#6366f1;color:#fff;cursor:pointer;font-size:0.875rem;font-weight:600">💾 Guardar</button>
-      </div>`;
+      </div>
+      
+      <div class="rt-resizer" id="modal-resizer"></div>`;
 
     overlay.appendChild(box);
     document.body.appendChild(overlay);
@@ -296,23 +307,87 @@ const Tasks = {
     // Initialize rich editor for modal
     RichEditor.init('#note-ta', '#modal-editor-toolbar');
 
+    // ── PERSISTENCIA ─────────────────────────────────────────────
+    const saveDimensions = () => {
+      localStorage.setItem('rt-focus-dim', JSON.stringify({
+        w: box.style.width,
+        h: box.style.height,
+        calcW: calcPane.style.width
+      }));
+    };
+
     // ── Lógica de la Calculadora en Modal ─────────────────────
     const calcPane = box.querySelector('#modal-calc-pane');
+    const gutter = box.querySelector('#modal-gutter');
+    const resizer = box.querySelector('#modal-resizer');
     const calcToggle = box.querySelector('.rt-calc-toggle');
     if (typeof RetCalc !== 'undefined' && calcPane) {
       RetCalc.init(calcPane);
       calcToggle.onclick = () => {
         const isHidden = calcPane.style.display === 'none';
-        calcPane.style.display = isHidden ? 'block' : 'none';
+        calcPane.style.display = isHidden ? 'flex' : 'none';
+        gutter.style.display = isHidden ? 'flex' : 'none';
         calcToggle.style.background = isHidden ? 'var(--primary)' : 'transparent';
-        calcToggle.style.color = isHidden ? '#white' : 'var(--primary)';
-        
-        // Ajustar ancho del modal si se abre la calculadora
-        if (window.innerWidth > 700) {
-          box.style.maxWidth = isHidden ? '850px' : '520px';
-        }
+        calcToggle.style.color = isHidden ? 'white' : 'var(--primary)';
       };
     }
+
+    // ── RESIZE (VENTANA) ─────────────────────────────────────────
+    let resizing = false, rsX, rsY, rsW, rsH;
+    const startResize = (cx, cy) => {
+      resizing = true;
+      rsX = cx; rsY = cy;
+      rsW = box.offsetWidth;
+      rsH = box.offsetHeight;
+      document.body.style.cursor = 'nwse-resize';
+    };
+    const moveResize = (cx, cy) => {
+      if (!resizing) return;
+      box.style.width  = (rsW + (cx - rsX)) + 'px';
+      box.style.height = (rsH + (cy - rsY)) + 'px';
+    };
+    const endResize = () => { if (resizing) { resizing = false; document.body.style.cursor = ''; saveDimensions(); } };
+
+    resizer.addEventListener('mousedown', e => { startResize(e.clientX, e.clientY); e.preventDefault(); e.stopPropagation(); });
+    resizer.addEventListener('touchstart', e => { startResize(e.touches[0].clientX, e.touches[0].clientY); e.stopPropagation(); }, { passive: true });
+
+    // ── GUTTER (CALCULADORA) ─────────────────────────────────────
+    let gutterDragging = false, gX, gW;
+    const startGutter = (cx) => {
+      gutterDragging = true;
+      gX = cx;
+      gW = calcPane.offsetWidth;
+      gutter.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+    };
+    const moveGutter = (cx) => {
+      if (!gutterDragging) return;
+      const newW = gW - (cx - gX);
+      calcPane.style.width = Math.max(240, Math.min(500, newW)) + 'px';
+    };
+    const endGutter = () => { if (gutterDragging) { gutterDragging = false; gutter.classList.remove('dragging'); document.body.style.cursor = ''; saveDimensions(); } };
+
+    gutter.addEventListener('mousedown', e => { startGutter(e.clientX); e.preventDefault(); });
+    gutter.addEventListener('touchstart', e => { startGutter(e.touches[0].clientX); }, { passive: true });
+
+    // ── EVENTOS GLOBALES ─────────────────────────────────────────
+    const onMouseMove = e => {
+      if (resizing) moveResize(e.clientX, e.clientY);
+      if (gutterDragging) moveGutter(e.clientX);
+    };
+    const onTouchMove = e => {
+      if (resizing) moveResize(e.touches[0].clientX, e.touches[0].clientY);
+      if (gutterDragging) moveGutter(e.touches[0].clientX);
+    };
+    const onEnd = () => {
+      endResize();
+      endGutter();
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onEnd);
+    document.addEventListener('touchmove', onTouchMove, { passive: true });
+    document.addEventListener('touchend', onEnd);
 
     // ── Lógica de Etiquetas en Modal ─────────────────────────
     let modalTags = [...(task.tags || [])];
@@ -487,7 +562,14 @@ const Tasks = {
       overlay.remove();
       app.refreshCurrentView();
     };
-    overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+
+    // Close handler
+    overlay.onclick = (e) => {
+      if (e.target === overlay) {
+        saveDimensions();
+        overlay.remove();
+      }
+    };
 
     // Focus
     setTimeout(() => box.querySelector('#note-ta')?.focus(), 80);

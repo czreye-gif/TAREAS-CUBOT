@@ -124,10 +124,16 @@ const RichEditor = {
     const taskId = originalEditor.dataset.taskId || '';
     const font   = originalEditor.style.fontFamily || 'var(--font-notes)';
 
+    // Recuperar dimensiones persistentes
+    const savedDim = JSON.parse(localStorage.getItem('rt-focus-dim') || '{}');
+    const initW = savedDim.w || '97%';
+    const initH = savedDim.h || '82vh';
+    const initCalcW = savedDim.calcW || '300px';
+
     const overlay = document.createElement('div');
     overlay.className = 'rt-focus-overlay';
     overlay.innerHTML = `
-      <div class="rt-focus-window" id="rt-focus-win">
+      <div class="rt-focus-window" id="rt-focus-win" style="width:${initW}; height:${initH}; max-width:none;">
         <div class="rt-focus-header" id="rt-focus-hdr">
           <span>📝 Nota: ${folio}</span>
           <div style="display:flex;gap:6px;align-items:center">
@@ -142,10 +148,12 @@ const RichEditor = {
                  data-task-id="${taskId}" data-folio="${folio}"
                  style="font-family:${font}">${originalEditor.innerHTML}</div>
           </div>
-          <div class="rt-calc-pane" id="rt-calc-pane" style="display:none">
+          <div class="rt-gutter" id="rt-focus-gutter" style="display:none"></div>
+          <div class="rt-calc-pane" id="rt-calc-pane" style="display:none; width:${initCalcW}">
             ${typeof RetCalc !== 'undefined' ? RetCalc.render() : '<p style="padding:20px;color:var(--muted)">Calculadora no disponible</p>'}
           </div>
         </div>
+        <div class="rt-resizer" id="rt-focus-resizer"></div>
       </div>`;
 
     document.body.appendChild(overlay);
@@ -155,6 +163,8 @@ const RichEditor = {
     const focusEditor = overlay.querySelector('#focus-editor');
     const focusTB     = overlay.querySelector('#focus-toolbar');
     const calcPane    = overlay.querySelector('#rt-calc-pane');
+    const gutter      = overlay.querySelector('#rt-focus-gutter');
+    const resizer     = overlay.querySelector('#rt-focus-resizer');
     const calcToggle  = overlay.querySelector('.rt-calc-toggle');
     const shareBtn    = overlay.querySelector('.rt-share-focus');
 
@@ -167,7 +177,16 @@ const RichEditor = {
 
     setTimeout(() => focusEditor.focus(), 50);
 
-    // ── DRAG ─────────────────────────────────────────────────────
+    // ── PERSISTENCIA ─────────────────────────────────────────────
+    const saveDimensions = () => {
+      localStorage.setItem('rt-focus-dim', JSON.stringify({
+        w: win.style.width,
+        h: win.style.height,
+        calcW: calcPane.style.width
+      }));
+    };
+
+    // ── DRAG (MOVER) ─────────────────────────────────────────────
     hdr.style.cursor = 'grab';
     let dragging = false, sx, sy, sl, st;
 
@@ -189,24 +208,80 @@ const RichEditor = {
     };
     const endDrag = () => { dragging = false; hdr.style.cursor = 'grab'; };
 
-    const onMD = e => { if (!e.target.closest('button')) { startDrag(e.clientX, e.clientY); e.preventDefault(); } };
-    const onMM = e => moveDrag(e.clientX, e.clientY);
-    const onTS = e => { if (!e.target.closest('button')) startDrag(e.touches[0].clientX, e.touches[0].clientY); };
-    const onTM = e => moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+    hdr.addEventListener('mousedown', e => { if (!e.target.closest('button')) { startDrag(e.clientX, e.clientY); e.preventDefault(); } });
+    hdr.addEventListener('touchstart', e => { if (!e.target.closest('button')) startDrag(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
 
-    hdr.addEventListener('mousedown', onMD);
-    hdr.addEventListener('touchstart', onTS, { passive: true });
-    document.addEventListener('mousemove', onMM);
-    document.addEventListener('mouseup', endDrag);
-    document.addEventListener('touchmove', onTM, { passive: true });
-    document.addEventListener('touchend', endDrag);
+    // ── RESIZE (VENTANA) ─────────────────────────────────────────
+    let resizing = false, rsX, rsY, rsW, rsH;
+    const startResize = (cx, cy) => {
+      resizing = true;
+      rsX = cx; rsY = cy;
+      rsW = win.offsetWidth;
+      rsH = win.offsetHeight;
+      document.body.style.cursor = 'nwse-resize';
+    };
+    const moveResize = (cx, cy) => {
+      if (!resizing) return;
+      win.style.width  = (rsW + (cx - rsX)) + 'px';
+      win.style.height = (rsH + (cy - rsY)) + 'px';
+    };
+    const endResize = () => { if (resizing) { resizing = false; document.body.style.cursor = ''; saveDimensions(); } };
+
+    resizer.addEventListener('mousedown', e => { startResize(e.clientX, e.clientY); e.preventDefault(); e.stopPropagation(); });
+    resizer.addEventListener('touchstart', e => { startResize(e.touches[0].clientX, e.touches[0].clientY); e.stopPropagation(); }, { passive: true });
+
+    // ── GUTTER (CALCULADORA) ─────────────────────────────────────
+    let gutterDragging = false, gX, gW;
+    const startGutter = (cx) => {
+      gutterDragging = true;
+      gX = cx;
+      gW = calcPane.offsetWidth;
+      gutter.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+    };
+    const moveGutter = (cx) => {
+      if (!gutterDragging) return;
+      const newW = gW - (cx - gX);
+      calcPane.style.width = Math.max(240, Math.min(500, newW)) + 'px';
+    };
+    const endGutter = () => { if (gutterDragging) { gutterDragging = false; gutter.classList.remove('dragging'); document.body.style.cursor = ''; saveDimensions(); } };
+
+    gutter.addEventListener('mousedown', e => { startGutter(e.clientX); e.preventDefault(); });
+    gutter.addEventListener('touchstart', e => { startGutter(e.touches[0].clientX); }, { passive: true });
+
+    // ── EVENTOS GLOBALES ─────────────────────────────────────────
+    const onMouseMove = e => {
+      if (dragging) moveDrag(e.clientX, e.clientY);
+      if (resizing) moveResize(e.clientX, e.clientY);
+      if (gutterDragging) moveGutter(e.clientX);
+    };
+    const onTouchMove = e => {
+      if (dragging) moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+      if (resizing) moveResize(e.touches[0].clientX, e.touches[0].clientY);
+      if (gutterDragging) moveGutter(e.touches[0].clientX);
+    };
+    const onEnd = () => {
+      endDrag();
+      endResize();
+      endGutter();
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onEnd);
+    document.addEventListener('touchmove', onTouchMove, { passive: true });
+    document.addEventListener('touchend', onEnd);
 
     // ── CALCULATOR TOGGLE ────────────────────────────────────────
+    const toggleCalc = (show) => {
+      calcPane.style.display = show ? 'flex' : 'none';
+      gutter.style.display = show ? 'flex' : 'none';
+      calcToggle.classList.toggle('active', show);
+    };
+
     if (calcToggle) {
       calcToggle.addEventListener('click', () => {
-        const show = calcPane.style.display === 'none';
-        calcPane.style.display = show ? 'flex' : 'none';
-        calcToggle.classList.toggle('active', show);
+        const isHidden = calcPane.style.display === 'none';
+        toggleCalc(isHidden);
       });
     }
 
@@ -215,10 +290,11 @@ const RichEditor = {
       originalEditor.innerHTML = focusEditor.innerHTML;
       const fs = focusTB.querySelector('.rt-font-select');
       if (fs) originalEditor.style.fontFamily = fs.value;
-      document.removeEventListener('mousemove', onMM);
-      document.removeEventListener('mouseup', endDrag);
-      document.removeEventListener('touchmove', onTM);
-      document.removeEventListener('touchend', endDrag);
+      
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onEnd);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onEnd);
       overlay.remove();
     };
 
