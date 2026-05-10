@@ -258,7 +258,7 @@ const app = {
   checkAlarms() { const al = storage.getPendingAlarms(); al.forEach(t => { this.showNotification(t); storage.updateTask(t.id, { alarm: null }); }); },
   showNotification(t) { UI.toast(`🔔 ${t.title}`, 'warning', 6000); if ('Notification' in window && Notification.permission === 'granted') { new Notification('⏰ Recordatorio', { body: t.title, icon: 'icons/icon-192.png' }); } },
 
-  async confirmTaskExit(targetView = 'today') {
+  async confirmTaskExit(targetView = 'today', callbacks = {}) {
     const res = await UI.modal('Confirmación', '¿Qué deseas hacer con los cambios?', [
       { label: 'Guardar y Salir', class: 'btn-primary' },
       { label: 'Seguir Editando', class: 'btn-secondary' },
@@ -266,12 +266,20 @@ const app = {
     ]);
 
     if (res === 0) { // Guardar
-      this._forceExit = true;
-      Tasks.submitForm(); // submitForm llama internamente a app.navigate('today')
+      if (callbacks.onSave) {
+        callbacks.onSave();
+      } else {
+        this._forceExit = true;
+        Tasks.submitForm();
+      }
     } else if (res === 2) { // Salir sin Guardar
-      this._forceExit = true;
-      Tasks.resetForm();
-      this.navigate(targetView);
+      if (callbacks.onCancel) {
+        callbacks.onCancel();
+      } else {
+        this._forceExit = true;
+        Tasks.resetForm();
+        this.navigate(targetView);
+      }
     }
   }
 };

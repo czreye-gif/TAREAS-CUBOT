@@ -540,12 +540,10 @@ const Tasks = {
     pasteZone.onclick = () => attInput.click();
 
     // ── Botones ──────────────────────────────────────────────
-    box.querySelector('#note-cancel').onclick = () => overlay.remove();
-    box.querySelector('#note-save').onclick = () => {
+    const doSave = () => {
       const editorEl = box.querySelector('#note-ta');
       const htmlContent = editorEl.innerHTML;
       
-      // Sincronización final antes de guardar
       const extracted = RichEditor.extractTags(htmlContent);
       extracted.forEach(tid => {
         if (!modalTags.includes(tid)) modalTags.push(tid);
@@ -563,11 +561,23 @@ const Tasks = {
       app.refreshCurrentView();
     };
 
-    // Close handler
+    box.querySelector('#note-cancel').onclick = () => {
+      app.confirmTaskExit('today', {
+        onSave: doSave,
+        onCancel: () => overlay.remove()
+      });
+    };
+    
+    box.querySelector('#note-save').onclick = doSave;
+
+    // Close handler (Overlay)
     overlay.onclick = (e) => {
       if (e.target === overlay) {
         saveDimensions();
-        overlay.remove();
+        app.confirmTaskExit('today', {
+          onSave: doSave,
+          onCancel: () => overlay.remove()
+        });
       }
     };
 
