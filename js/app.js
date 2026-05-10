@@ -125,7 +125,7 @@ const app = {
     if (taskModal) {
       taskModal.onclick = (e) => {
         if (e.target === taskModal) {
-          this.confirmTaskExit();
+          this.navigate('today'); // La guardia se encargará de preguntar
         }
       };
     }
@@ -202,6 +202,13 @@ const app = {
   },
 
   navigate(view, fromHash = false) {
+    // GUARDIA DE NAVEGACIÓN: Si estamos en el formulario y queremos salir
+    if (this.currentView === 'new-task' && view !== 'new-task' && !this._forceExit) {
+      this.confirmTaskExit(view);
+      return;
+    }
+    this._forceExit = false;
+
     if (view === 'day' && !this.selectedDate) this.selectedDate = storage._todayStr();
     if (view === 'new-task') {
       Tasks.resetForm();
@@ -251,18 +258,20 @@ const app = {
   checkAlarms() { const al = storage.getPendingAlarms(); al.forEach(t => { this.showNotification(t); storage.updateTask(t.id, { alarm: null }); }); },
   showNotification(t) { UI.toast(`🔔 ${t.title}`, 'warning', 6000); if ('Notification' in window && Notification.permission === 'granted') { new Notification('⏰ Recordatorio', { body: t.title, icon: 'icons/icon-192.png' }); } },
 
-  async confirmTaskExit() {
+  async confirmTaskExit(targetView = 'today') {
     const res = await UI.modal('Confirmación', '¿Qué deseas hacer con los cambios?', [
-      { label: 'Guardar', class: 'btn-primary' },
+      { label: 'Guardar y Salir', class: 'btn-primary' },
       { label: 'Seguir Editando', class: 'btn-secondary' },
       { label: 'Salir sin Guardar', class: 'btn-secondary' }
     ]);
 
     if (res === 0) { // Guardar
-      Tasks.submitForm();
+      this._forceExit = true;
+      Tasks.submitForm(); // submitForm llama internamente a app.navigate('today')
     } else if (res === 2) { // Salir sin Guardar
+      this._forceExit = true;
       Tasks.resetForm();
-      this.navigate('today');
+      this.navigate(targetView);
     }
   }
 };
