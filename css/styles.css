@@ -320,6 +320,7 @@ input:focus, select:focus, textarea:focus {
   position: fixed; z-index: 9999; pointer-events: none; opacity: 0.9;
   transform: scale(1.02) rotate(1deg); box-shadow: 0 8px 32px rgba(0,0,0,0.5);
   border-radius: var(--radius-sm);
+  transition: none !important; /* CRÍTICO: Evita lag al arrastrar */
 }
 
 /* ---- Stats Grid ---- */
