@@ -445,31 +445,30 @@ const Dashboard = {
 
   // ── Drag & drop con pistas de aterrizaje ──────────────────
   setupDragAndDrop() {
-    // Activar arrastre solo al tocar el handle
+    // 1. Mouse DnD (Nativo para PC)
     document.addEventListener('mousedown', e => {
       if (e.target.closest('.drag-handle') || e.target.closest('.tl-card-grip')) {
         const card = e.target.closest('[data-task-id]');
         if (card) card.setAttribute('draggable', 'true');
       }
     });
-    document.addEventListener('touchstart', e => {
-      if (e.target.closest('.drag-handle') || e.target.closest('.tl-card-grip')) {
-        const card = e.target.closest('[data-task-id]');
-        if (card) card.setAttribute('draggable', 'true');
-      }
-    }, {passive: true});
 
-    document.addEventListener('contextmenu', e => {
-      if (e.target.closest('.drag-handle') || e.target.closest('.tl-card-grip')) {
-        e.preventDefault();
-      }
-    });
     document.addEventListener('mouseup', e => {
       document.querySelectorAll('.task-card, .tl-card').forEach(c => c.removeAttribute('draggable'));
     });
-    document.addEventListener('touchend', e => {
-      document.querySelectorAll('.task-card, .tl-card').forEach(c => c.removeAttribute('draggable'));
-    });
+
+    // 2. Touch DnD (Custom para Tablet/Móvil - Evita menús del SO)
+    document.addEventListener('touchstart', e => this._handleTouchStart(e), { passive: false });
+    document.addEventListener('touchmove', e => this._handleTouchMove(e), { passive: false });
+    document.addEventListener('touchend', e => this._handleTouchEnd(e), { passive: false });
+
+    // 3. Prevención de menú contextual (Doble capa de seguridad)
+    document.addEventListener('contextmenu', e => {
+      if (e.target.closest('.drag-handle') || e.target.closest('.tl-card-grip')) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
 
     document.addEventListener('dragstart', e => {
       const card = e.target.closest('.task-card, .tl-card');
@@ -496,6 +495,97 @@ const Dashboard = {
         z.classList.remove('dash-drag-active', 'dash-drop-hover', 'drag-over');
       });
     });
+  },
+
+  // ── Manejadores Touch Custom ─────────────────────────────
+  _touchState: { dragging: false, card: null, ghost: null, startX: 0, startY: 0 },
+
+  _handleTouchStart(e) {
+    const grip = e.target.closest('.drag-handle') || e.target.closest('.tl-card-grip');
+    if (!grip) return;
+
+    // BLOQUEO CRÍTICO: Previene que el sistema operativo detecte el "Hold" y abra el menú
+    e.preventDefault(); 
+
+    const card = e.target.closest('[data-task-id]');
+    if (!card) return;
+
+    const touch = e.touches[0];
+    this._touchState = {
+      dragging: true,
+      card: card,
+      taskId: card.dataset.taskId,
+      startX: touch.clientX,
+      startY: touch.clientY,
+      ghost: null
+    };
+
+    // Vibración sutil para feedback táctil
+    if (navigator.vibrate) navigator.vibrate(40);
+
+    // Activar pistas visuales
+    document.querySelectorAll('#view-today .drop-zone').forEach(z => z.classList.add('dash-drag-active'));
+    card.classList.add('dragging');
+  },
+
+  _handleTouchMove(e) {
+    if (!this._touchState.dragging) return;
+    e.preventDefault(); // Bloquea scroll durante el arrastre
+
+    const touch = e.touches[0];
+    
+    // Crear ghost si no existe
+    if (!this._touchState.ghost) {
+      const card = this._touchState.card;
+      const ghost = card.cloneNode(true);
+      ghost.classList.add('tl-drag-ghost'); // Usamos la misma clase que timeline para consistencia
+      ghost.style.width = card.offsetWidth + 'px';
+      ghost.style.position = 'fixed';
+      ghost.style.zIndex = '10000';
+      ghost.style.pointerEvents = 'none';
+      ghost.style.opacity = '0.8';
+      document.body.appendChild(ghost);
+      this._touchState.ghost = ghost;
+    }
+
+    // Mover ghost
+    const ghost = this._touchState.ghost;
+    ghost.style.left = (touch.clientX - 40) + 'px';
+    ghost.style.top = (touch.clientY - 20) + 'px';
+
+    // Resaltar zona bajo el dedo
+    document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('dash-drop-hover'));
+    const under = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (under) {
+      const zone = under.closest('.drop-zone');
+      if (zone) zone.classList.add('dash-drop-hover');
+    }
+  },
+
+  _handleTouchEnd(e) {
+    if (!this._touchState.dragging) return;
+    
+    // Limpieza visual
+    if (this._touchState.ghost) {
+      this._touchState.ghost.remove();
+    }
+    if (this._touchState.card) {
+      this._touchState.card.classList.remove('dragging');
+    }
+
+    const touch = e.changedTouches[0];
+    const under = document.elementFromPoint(touch.clientX, touch.clientY);
+    const zone = under ? under.closest('.drop-zone') : null;
+
+    if (zone && this._touchState.taskId) {
+      this.handleDrop(this._touchState.taskId, zone.dataset.zone);
+    }
+
+    // Resetear todo
+    document.querySelectorAll('.drop-zone').forEach(z => {
+      z.classList.remove('dash-drag-active', 'dash-drop-hover', 'drag-over');
+    });
+    this._touchState = { dragging: false, card: null, ghost: null };
   },
 
   handleDrop(taskId, zoneName) {
