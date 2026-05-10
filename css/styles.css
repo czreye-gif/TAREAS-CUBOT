@@ -256,6 +256,8 @@ input:focus, select:focus, textarea:focus {
   border-radius: var(--radius-sm); padding: 6px 10px;
   border-left: 3px solid transparent; cursor: default;
   transition: all var(--transition); max-width: 380px; flex-shrink: 0;
+  -webkit-touch-callout: none;
+  touch-action: none;
 }
 .tl-card.priority-A, .tl-card.priority-high { border-left-color: var(--danger); }
 .tl-card.priority-B, .tl-card.priority-medium { border-left-color: #f97316; } /* Naranja vivo */
@@ -448,6 +450,9 @@ input:focus, select:focus, textarea:focus {
   padding: 8px 10px; cursor: grab; position: relative;
   border-left: 3px solid transparent;
   transition: all var(--transition); user-select: none;
+  /* Prevent system context menu and ensure touch dragging */
+  -webkit-touch-callout: none;
+  touch-action: none;
 }
 .agenda-card.priority-A { border-left-color: #ef4444; }
 .agenda-card.priority-B { border-left-color: #f59e0b; }
@@ -2348,6 +2353,11 @@ body {
   align-items: flex-end;
   justify-content: flex-end;
   padding: 4px;
+  /* Prevent system context menu and selection on tablet */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
 }
 .rt-resizer::after {
   content: "";
@@ -2379,6 +2389,11 @@ body {
   justify-content: center;
   transition: background 0.2s;
   z-index: 10;
+  /* Prevent system context menu and selection on tablet */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
 }
 .rt-gutter:hover, .rt-gutter.dragging {
   background: var(--primary);
@@ -2436,7 +2451,13 @@ body {
   overflow-y: auto;
 }
 /* Drag cursor visual */
-.rt-focus-header { cursor: grab; }
+.rt-focus-header { 
+  cursor: grab; 
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+}
 .rt-focus-header:active { cursor: grabbing; }
 /* Calc toggle button */
 .rt-calc-toggle {
@@ -2449,6 +2470,19 @@ body {
   font-size: 0.82rem;
   font-weight: 700;
   transition: all .2s;
+}
+.drag-handle {
+  padding: 8px 4px;
+  cursor: grab;
+  color: var(--muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  transition: color 0.2s;
+  /* Prevent system context menu and selection on tablet */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
 }
 .rt-calc-toggle.active, .rt-calc-toggle:hover {
   background: var(--primary);
