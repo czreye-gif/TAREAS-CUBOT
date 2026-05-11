@@ -87,12 +87,27 @@ const RichEditor = {
       const savedColor = localStorage.getItem('rt-last-hilite') || '#00e5ff';
       btn.dataset.value = savedColor;
       if (indicator) indicator.style.background = (savedColor === 'transparent' ? 'transparent' : savedColor);
+      
+      // Sincronizar color de selección inicial
+      const setSelectionColor = (color) => {
+        let selectionColor = 'rgba(0, 120, 215, 0.3)';
+        if (color && color !== 'transparent') {
+          // Si el color es hex (e.g. #00e5ff), le añadimos transparencia 'aa'
+          selectionColor = color.startsWith('#') ? (color + 'aa') : color;
+        }
+        editor.style.setProperty('--rt-selection-color', selectionColor, 'important');
+      };
+      setSelectionColor(savedColor);
 
       // Click main: apply current color
       btn.onmousedown = (e) => {
         e.preventDefault();
         const color = btn.dataset.value;
         document.execCommand('hiliteColor', false, color === 'transparent' ? '#fdf3c0' : color);
+        
+        // Quitar la selección después de marcar para revelar el color real (Opcional, pero ayuda)
+        // window.getSelection().removeAllRanges(); 
+        
         editor.focus();
         palette.classList.remove('show');
       };
@@ -111,6 +126,9 @@ const RichEditor = {
           btn.dataset.value = color;
           if (indicator) indicator.style.background = (color === 'transparent' ? 'transparent' : color);
           
+          // Actualizar color de selección dinámicamente
+          setSelectionColor(color);
+
           // Guardar color persistente
           localStorage.setItem('rt-last-hilite', color);
           
@@ -126,6 +144,26 @@ const RichEditor = {
       document.addEventListener('click', (e) => {
         if (!wrapper.contains(e.target)) palette.classList.remove('show');
       });
+
+      // ── MODO MARCADOR REAL (Auto-Highlight & Auto-Clear) ──
+      const autoHighlight = () => {
+        const color = btn.dataset.value;
+        if (!color) return;
+        
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0 && selection.toString().length > 0) {
+          if (color === 'transparent') {
+            // Modo Borrador: aplicamos el color de fondo del post-it para "limpiar"
+            document.execCommand('hiliteColor', false, '#fdf3c0');
+          } else {
+            // Modo Marcador: aplicamos el color neón activo
+            document.execCommand('hiliteColor', false, color);
+          }
+        }
+      };
+
+      editor.addEventListener('mouseup', autoHighlight);
+      editor.addEventListener('touchend', autoHighlight);
     });
 
     // ── Auto-abrir ventana flotante al hacer foco en el editor ──
