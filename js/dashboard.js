@@ -728,7 +728,7 @@ const Dashboard = {
     setTimeout(() => {
         const todayEl = document.querySelector('.vc-day-row.today');
         if (todayEl) todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
+    }, 300);
   }
 };
 
