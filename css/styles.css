@@ -2068,7 +2068,7 @@ body {
 .dashboard-layout {
   display: flex;
   gap: 16px;
-  align-items: flex-start;
+  align-items: stretch;
   width: 100%;
 }
 .dashboard-main {
