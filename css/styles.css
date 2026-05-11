@@ -2277,6 +2277,17 @@ body {
   min-height: 120px;
   max-height: 500px;
   overflow-y: auto;
+  --rt-selection-color: rgba(0, 120, 215, 0.3);
+}
+
+.rt-editor::selection, .rt-editor *::selection {
+  background: var(--rt-selection-color) !important;
+  color: inherit !important;
+}
+
+.rt-editor::-moz-selection, .rt-editor *::-moz-selection {
+  background: var(--rt-selection-color) !important;
+  color: inherit !important;
 }
 
 /* Editor compacto para el formulario principal */
