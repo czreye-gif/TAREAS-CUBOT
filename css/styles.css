@@ -2083,7 +2083,7 @@ body {
 
 .vertical-calendar {
   width: 160px;
-  height: calc(90vh - 80px); /* Reducido 10% para mejor ajuste en Cubot */
+  height: calc(95vh - 80px); /* Reducido solo 5% para mejor equilibrio */
   display: flex;
   flex-direction: column;
   background: var(--surface);
