@@ -3042,3 +3042,244 @@ body {
   overflow-x: auto;
 }
 
+/* ---- Toma de Nota (Quick Notes) ---- */
+.qn-container {
+  display: flex;
+  gap: 0;
+  width: 97%;
+  height: 82vh;
+  margin: 10px auto;
+  position: relative; /* CRÍTICO: Para anclar el tirón al módulo */
+  background: var(--bg2);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+}
+
+.qn-block-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: var(--surface2);
+  padding: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--border);
+}
+
+.qn-block {
+  flex: 1;
+  position: relative;
+  perspective: 1500px;
+  background: var(--surface); /* Fondo base tras las hojas */
+}
+
+.qn-sheet {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, visibility 0.4s;
+  backface-visibility: hidden;
+  border-radius: 0;
+  box-shadow: none;
+  visibility: hidden;
+  opacity: 0;
+}
+
+.qn-sheet.active {
+  visibility: visible;
+  opacity: 1;
+  transform: rotateY(0deg) translateZ(0);
+}
+
+.qn-sheet.flipped-left {
+  transform: rotateY(-90deg) translateX(-100%);
+  opacity: 0;
+  visibility: hidden;
+}
+
+.qn-sheet.flipped-right {
+  transform: rotateY(90deg) translateX(100%);
+  opacity: 0;
+  visibility: hidden;
+}
+
+.qn-sheet-header {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #8a7b45;
+  border-bottom: 2px dashed rgba(138, 123, 69, 0.2);
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.qn-editor {
+  flex: 1;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  outline: none;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.qn-editor:empty:before {
+  content: attr(placeholder);
+  color: #8a7b45;
+  opacity: 0.6;
+}
+
+.qn-sheet-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 15px;
+  border-top: 2px dashed rgba(138, 123, 69, 0.2);
+  margin-top: 10px;
+}
+
+.qn-delete-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  transition: all 0.2s;
+}
+
+.qn-delete-btn:hover {
+  background: var(--danger);
+  color: white;
+}
+
+.qn-navigation-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  padding: 15px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.qn-nav-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.qn-nav-btn:hover {
+  background: var(--primary);
+  color: white;
+  transform: scale(1.1);
+}
+
+#qn-counter {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-light);
+  font-family: monospace;
+}
+
+.qn-calc-pane {
+  width: 320px; /* Tamaño similar al de Editar Nota */
+  min-width: 320px;
+  background: var(--bg2);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+#qn-calc-container {
+  height: 100%;
+}
+
+/* Manejador de redimensionamiento de ventana (esquina) */
+.qn-resizer {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  cursor: nwse-resize;
+  z-index: 100;
+  background: linear-gradient(135deg, transparent 60%, var(--primary) 60%);
+  opacity: 0.5;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 6px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+}
+.qn-resizer:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Barra divisoria arrastrable (Gutter) */
+.qn-gutter {
+  width: 10px;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  cursor: col-resize;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  z-index: 10;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+}
+.qn-gutter:hover, .qn-gutter.dragging {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.qn-gutter::after {
+  content: "⠿";
+  color: var(--muted);
+  font-size: 14px;
+  opacity: 0.6;
+}
+.qn-gutter:hover::after { color: white; opacity: 1; }
+
+/* Tablet Optimizations */
+@media (max-width: 1024px) {
+  .qn-container {
+    width: 98%;
+    height: 85vh;
+  }
+  .qn-calc-pane {
+    width: 300px;
+    min-width: 300px;
+  }
+  .qn-gutter {
+    width: 15px; /* Más ancho en tablet */
+  }
+}
