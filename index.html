@@ -53,6 +53,13 @@
         </svg>
         <span>Etiquetas</span>
       </button>
+      <button class="nav-btn" data-view="quick-notes" id="nav-quick-notes">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h9z"></path>
+        </svg>
+        <span>Toma de Nota</span>
+      </button>
     </nav>
     <div class="sidebar-footer">
       <button class="nav-btn" id="btn-theme-toggle">
@@ -530,6 +537,47 @@
       </div>
     </section>
 
+    <!-- Nueva Vista: Toma de Nota (Block de Notas Rápidas) -->
+    <section id="view-quick-notes" class="view">
+      <div class="view-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <h1 class="view-title">Toma de Nota</h1>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button id="qn-share-img" class="btn btn-secondary" style="background:var(--accent); color:white; border:none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Compartir Imagen
+          </button>
+          <button id="qn-add-btn" class="btn btn-primary">+ Nueva Hoja</button>
+        </div>
+      </div>
+
+      <div class="qn-container">
+        <!-- Panel Izquierdo: El Block (Hojas) -->
+        <div class="qn-block-wrapper">
+          <div id="qn-block" class="qn-block">
+            <!-- Las hojas se renderizan aquí -->
+          </div>
+          <div class="qn-navigation-bar">
+            <button id="qn-prev" class="qn-nav-btn" title="Anterior">❮</button>
+            <span id="qn-counter">0 / 0</span>
+            <button id="qn-next" class="qn-nav-btn" title="Siguiente">❯</button>
+          </div>
+        </div>
+
+        <!-- Divisor (Gutter) -->
+        <div class="qn-gutter" id="qn-gutter"></div>
+
+        <!-- Panel Derecho: Calculadora -->
+        <div class="qn-calc-pane" id="qn-calc-pane">
+          <div id="qn-calc-container">
+            <!-- La calculadora se inyecta aquí -->
+          </div>
+        </div>
+
+        <!-- Tirón para redimensionar ventana -->
+        <div class="qn-resizer" id="qn-resizer"></div>
+      </div>
+    </section>
+
     </main>
 
   <!-- Scripts de Firebase (Agregados para la conexión a la nube) -->
@@ -547,6 +595,7 @@
   <script src="js/agenda.js"></script>
   <script src="js/timeline.js"></script>
   <script src="js/dashboard.js"></script>
+  <script src="js/quicknotes.js"></script>
   <script src="js/app.js"></script>
 
   <script>
