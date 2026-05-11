@@ -2083,7 +2083,7 @@ body {
 
 .vertical-calendar {
   width: 160px;
-  height: calc(100vh - 80px);
+  height: calc(90vh - 80px); /* Reducido 10% para mejor ajuste en Cubot */
   display: flex;
   flex-direction: column;
   background: var(--surface);
@@ -2092,7 +2092,9 @@ body {
   box-shadow: var(--shadow);
   overflow: hidden;
   position: sticky;
-  top: 32px;
+  top: 20px; /* Ajustado para dar más margen superior */
+  z-index: 80; /* Por debajo de modales pero visible */
+  will-change: transform;
 }
 .vc-header {
   padding: 12px;
