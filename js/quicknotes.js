@@ -189,15 +189,37 @@ const QuickNotes = {
 
             <div class="rt-divider"></div>
             <button type="button" class="rt-btn" data-command="insertUnorderedList" title="Lista con viñetas">•</button>
+            <button type="button" class="rt-btn" data-command="insertOrderedList" title="Lista numerada">1.</button>
             <button type="button" class="rt-btn" data-command="insertCheckbox" title="Insertar Checkbox">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="9 11 12 14 22 4"></polyline>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
             </button>
+            
+            <div class="rt-divider"></div>
             <button type="button" class="rt-btn" data-command="insertTable" title="Insertar Tabla">▦</button>
+            <button type="button" class="rt-btn" data-command="insertDateTime" title="Insertar Fecha y Hora">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </button>
+
+            <select class="rt-btn rt-font-select" title="Fuente de la nota" style="width:auto; padding:0 8px; font-size:0.7rem; font-weight:600; background:var(--bg2); border:1px solid var(--border); margin-left:4px">
+              <option value="'Roboto', sans-serif">Roboto</option>
+              <option value="'Inter', sans-serif">Inter</option>
+              <option value="'Montserrat', sans-serif">Montserrat</option>
+              <option value="'Kalam', cursive">Manuscrita</option>
+            </select>
+
+            <button type="button" class="rt-btn rt-share-btn" title="Compartir nota" style="margin-left:auto; color:var(--primary)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 12v8a2 2 0 0 02 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/>
+              </svg>
+            </button>
           </div>
-          <span style="margin-left:auto; font-size:0.75rem; color:rgba(0,0,0,0.4)">${new Date(note.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })}</span>
+          <span style="margin-left:auto; font-size:0.75rem; color:rgba(0,0,0,0.4); display:${isActive ? 'none' : 'block'}">${new Date(note.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })}</span>
         </div>
         <div class="qn-editor" id="qn-editor-${note.id}" contenteditable="true" placeholder="Escribe algo rápido aquí...">${note.content}</div>
         <div class="qn-sheet-footer">

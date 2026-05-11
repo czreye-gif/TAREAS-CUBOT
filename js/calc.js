@@ -90,7 +90,7 @@ const RetCalc = {
             <div class="calc-res-row calc-res-total"><span>TOTAL</span><span id="cr-total" style="color:var(--primary-light); font-weight:800;">$0.00</span></div>
           </div>
 
-          <div style="display:flex; gap:6px; margin-top:6px;">
+          <div style="display:flex; gap:12px; margin-top:10px;">
             <button class="calc-clear-btn" id="calc-clear" style="flex:1; font-size:0.7rem; padding:6px;">LIMPIAR</button>
             <button class="calc-copy-btn" id="calc-copy-ret" style="flex:2; background:var(--success); color:white; border-radius:8px; font-weight:800; font-size:0.8rem; border:none; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.3); padding:6px;">📋 COPIAR A NOTA</button>
           </div>
