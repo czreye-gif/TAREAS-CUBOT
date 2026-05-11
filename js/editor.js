@@ -70,6 +70,52 @@ const RichEditor = {
     // Bind table resizing
     this._initTableResizing(editor);
 
+    // Bind highlighter tool (Palette logic)
+    toolbar.querySelectorAll('.rt-highlighter-wrapper').forEach(wrapper => {
+      const btn = wrapper.querySelector('.rt-highlighter-btn');
+      const arrow = wrapper.querySelector('.rt-highlighter-arrow');
+      const palette = wrapper.querySelector('.rt-color-palette');
+      const indicator = wrapper.querySelector('.rt-color-indicator');
+      
+      if (!btn || !palette || !arrow) return;
+
+      // Click main: apply current color
+      btn.onmousedown = (e) => {
+        e.preventDefault();
+        const color = btn.dataset.value;
+        document.execCommand('hiliteColor', false, color === 'transparent' ? '#fdf3c0' : color);
+        editor.focus();
+        palette.classList.remove('show');
+      };
+
+      // Click arrow: show palette
+      arrow.onclick = (e) => {
+        e.preventDefault();
+        palette.classList.toggle('show');
+      };
+
+      // Color options logic
+      palette.querySelectorAll('.rt-color-opt').forEach(opt => {
+        opt.onclick = (e) => {
+          e.stopPropagation();
+          const color = opt.dataset.value;
+          btn.dataset.value = color;
+          if (indicator) indicator.style.background = (color === 'transparent' ? 'transparent' : color);
+          
+          // Apply immediately if there is a selection
+          document.execCommand('hiliteColor', false, color === 'transparent' ? '#fdf3c0' : color);
+          
+          palette.classList.remove('show');
+          editor.focus();
+        };
+      });
+
+      // Close palette when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target)) palette.classList.remove('show');
+      });
+    });
+
     // ── Auto-abrir ventana flotante al hacer foco en el editor ──
     // Solo para editores fuera de modales (el modal de notas ya es una ventana)
     if (!editor.closest('.ui-modal-box') && !editor.id.includes('focus')) {
