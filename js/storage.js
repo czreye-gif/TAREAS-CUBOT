@@ -69,6 +69,19 @@ class TaskStorage {
       }
     });
 
+    // Escucha cambios en Notas Rápidas
+    db.collection("notas_rapidas").onSnapshot(snapshot => {
+      const cloudQNotes = [];
+      snapshot.forEach(doc => cloudQNotes.push(doc.data()));
+      if (cloudQNotes.length > 0 || snapshot.metadata.fromCache === false) {
+        this.data.quickNotes = cloudQNotes.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+        this._saveLocal();
+        if (typeof app !== 'undefined' && app.currentView === 'quick-notes' && typeof QuickNotes !== 'undefined') {
+          QuickNotes.render();
+        }
+      }
+    });
+
     // Escucha cambios en configuraciones (metadata)
     db.collection("metadata").doc("main").onSnapshot(doc => {
       if (doc.exists) {
@@ -102,7 +115,8 @@ class TaskStorage {
       ],
       settings: { theme: 'dark' },
       taskCodeCounter: 0,
-      noteCodeCounter: 0
+      noteCodeCounter: 0,
+      quickNotes: []
     };
   }
 
@@ -330,6 +344,43 @@ class TaskStorage {
     const task = this.getTask(taskId);
     if (!task || !task.tags) return [];
     return task.tags.map(tid => this.getTag(tid)).filter(Boolean);
+  }
+
+  // ---- Notas Rápidas (Quick Notes) ----
+
+  getQuickNotes() {
+    if (!this.data.quickNotes) this.data.quickNotes = [];
+    return this.data.quickNotes;
+  }
+
+  createQuickNote(content = '') {
+    const note = {
+      id: this._id(),
+      content: content,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    if (!this.data.quickNotes) this.data.quickNotes = [];
+    this.data.quickNotes.push(note);
+    this._saveLocal();
+    db.collection("notas_rapidas").doc(note.id).set(note).catch(console.error);
+    return note;
+  }
+
+  updateQuickNote(id, content) {
+    const i = this.data.quickNotes.findIndex(n => n.id === id);
+    if (i === -1) return null;
+    this.data.quickNotes[i].content = content;
+    this.data.quickNotes[i].updatedAt = new Date().toISOString();
+    this._saveLocal();
+    db.collection("notas_rapidas").doc(id).set(this.data.quickNotes[i]).catch(console.error);
+    return this.data.quickNotes[i];
+  }
+
+  deleteQuickNote(id) {
+    this.data.quickNotes = (this.data.quickNotes || []).filter(n => n.id !== id);
+    this._saveLocal();
+    db.collection("notas_rapidas").doc(id).delete().catch(console.error);
   }
 
   // ---- Estadísticas ----

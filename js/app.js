@@ -49,6 +49,7 @@ const app = {
       }
     } catch(e) { console.error("App: Error RichEditor.init", e); }
     try { if (typeof Notes !== 'undefined') Notes.init(); } catch(e) { console.error("App: Error Notes.init", e); }
+    try { if (typeof QuickNotes !== 'undefined') QuickNotes.init(); } catch(e) { console.error("App: Error QuickNotes.init", e); }
 
     // 5. Configuración final
     this.navigate('today');
@@ -219,7 +220,7 @@ const app = {
     const ve = document.getElementById(`view-${view}`);
     if (ve) ve.classList.add('active');
     document.querySelectorAll('.nav-btn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
-    const titles = { 'today':'Hoy','calendar':'Calendario','agenda':'Agenda','day':'Detalle','new-task':'Nueva Tarea','tags':'Etiquetas','completed':'Terminadas','notes':'Notas' };
+    const titles = { 'today':'Hoy','calendar':'Calendario','agenda':'Agenda','day':'Detalle','new-task':'Nueva Tarea','tags':'Etiquetas','completed':'Terminadas','notes':'Notas','quick-notes':'Toma de Nota' };
     const mt = document.getElementById('mobile-title');
     if (mt) mt.textContent = titles[view] || 'Tareas';
     this.renderView(view);
@@ -236,6 +237,7 @@ const app = {
       case 'tags': this.renderTagsView(); break;
       case 'completed': Tasks.renderCompletedTasks('completed-tasks-list'); break;
       case 'notes': if (typeof Notes !== 'undefined') Notes.render(); break;
+      case 'quick-notes': if (typeof QuickNotes !== 'undefined') QuickNotes.render(); break;
     }
   },
 
