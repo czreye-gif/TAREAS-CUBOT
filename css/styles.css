@@ -2296,6 +2296,117 @@ body {
   gap: 4px;
 }
 
+/* New Highlighter Tool Styles */
+.rt-highlighter-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 0;
+}
+
+.rt-highlighter-wrapper .rt-btn {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  height: 28px;
+  border-radius: 4px;
+}
+
+.rt-highlighter-wrapper .rt-btn:hover {
+  background: var(--surface) !important;
+}
+
+.rt-highlighter-btn {
+  width: 32px !important;
+  position: relative;
+}
+
+.rt-highlighter-arrow {
+  width: 18px !important;
+  border-left: 1px solid var(--border) !important;
+  border-radius: 0 4px 4px 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rt-color-indicator {
+  position: absolute;
+  bottom: 2px;
+  left: 4px;
+  right: 4px;
+  height: 3px;
+  border-radius: 2px;
+  transition: background 0.2s;
+  pointer-events: none;
+}
+
+.rt-color-palette {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  gap: 8px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rt-color-palette.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.rt-color-opt {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.rt-color-opt:hover {
+  transform: scale(1.2);
+  border-color: rgba(255,255,255,0.5);
+}
+
+.rt-color-opt.active {
+  border-color: white;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.rt-color-opt.clear-opt {
+  background: #fff;
+  position: relative;
+  border: 1px solid var(--border);
+}
+
+.rt-color-opt.clear-opt::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  right: 2px;
+  height: 2px;
+  background: #ef4444;
+  transform: rotate(-45deg);
+  border-radius: 1px;
+}
+
 /* Post-it Typography inside Editor */
 .rt-editor table {
   width: 100%;
