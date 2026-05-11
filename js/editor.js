@@ -35,6 +35,10 @@ const RichEditor = {
           this.addTableRow(editor);
         } else if (cmd === 'removeTableRow') {
           this.removeTableRow(editor);
+        } else if (cmd === 'insertCheckbox') {
+          this.insertCheckbox(editor);
+        } else if (cmd === 'hiliteColor') {
+          document.execCommand('hiliteColor', false, btn.dataset.value || '#00e5ff');
         } else {
           document.execCommand(cmd, false, null);
         }
@@ -79,6 +83,11 @@ const RichEditor = {
       
       if (!btn || !palette || !arrow) return;
 
+      // Cargar color persistente
+      const savedColor = localStorage.getItem('rt-last-hilite') || '#00e5ff';
+      btn.dataset.value = savedColor;
+      if (indicator) indicator.style.background = (savedColor === 'transparent' ? 'transparent' : savedColor);
+
       // Click main: apply current color
       btn.onmousedown = (e) => {
         e.preventDefault();
@@ -101,6 +110,9 @@ const RichEditor = {
           const color = opt.dataset.value;
           btn.dataset.value = color;
           if (indicator) indicator.style.background = (color === 'transparent' ? 'transparent' : color);
+          
+          // Guardar color persistente
+          localStorage.setItem('rt-last-hilite', color);
           
           // Apply immediately if there is a selection
           document.execCommand('hiliteColor', false, color === 'transparent' ? '#fdf3c0' : color);
@@ -346,6 +358,11 @@ const RichEditor = {
 
     overlay.addEventListener('click', e => { if (e.target === overlay) closeFn(); });
     if (shareBtn) shareBtn.onclick = () => { if (typeof Tasks !== 'undefined') Tasks.shareNote(taskId); };
+  },
+
+  insertCheckbox(editor) {
+    const html = `<input type="checkbox" class="rt-editor-checkbox" style="width:18px; height:18px; vertical-align:middle; cursor:pointer; accent-color:var(--primary); margin-right:6px"> `;
+    document.execCommand('insertHTML', false, html);
   },
 
   insertTable(editor) {

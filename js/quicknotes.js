@@ -159,9 +159,47 @@ const QuickNotes = {
 
       sheet.innerHTML = `
         <div class="qn-sheet-header">
-          <span>${new Date(note.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })}</span>
+          <div class="rt-toolbar" id="qn-toolbar-${note.id}" style="padding:4px; border-bottom:1px solid rgba(0,0,0,0.05); margin-bottom:8px; display:${isActive ? 'flex' : 'none'}">
+            <button type="button" class="rt-btn" data-command="bold" title="Negrita"><b>B</b></button>
+            <button type="button" class="rt-btn" data-command="italic" title="Cursiva"><i>I</i></button>
+            <button type="button" class="rt-btn" data-command="underline" title="Subrayado"><u>U</u></button>
+            
+            <div class="rt-highlighter-wrapper">
+              <button type="button" class="rt-btn rt-highlighter-btn" data-value="#00e5ff" title="Aplicar Marcador">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m9 11-6 6v3h9l3-3"/>
+                  <path d="m22 12-4.6-4.6a2 2 0 0 0-2.8 0l-5.2 5.2a2 2 0 0 0 0 2.8l4.6 4.6a2 2 0 0 0 2.8 0l5.2-5.2a2 2 0 0 0 0-2.8Z"/>
+                  <path d="M18 10l-4.5 4.5"/>
+                </svg>
+                <div class="rt-color-indicator" style="background:#00e5ff"></div>
+              </button>
+              <button type="button" class="rt-btn rt-highlighter-arrow" title="Cambiar Color">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div class="rt-color-palette">
+                <div class="rt-color-opt" data-value="#00e5ff" style="background:#00e5ff" title="Cian"></div>
+                <div class="rt-color-opt" data-value="#ff00ff" style="background:#ff00ff" title="Magenta"></div>
+                <div class="rt-color-opt" data-value="#ccff00" style="background:#ccff00" title="Lima"></div>
+                <div class="rt-color-opt" data-value="#ff9100" style="background:#ff9100" title="Naranja"></div>
+                <div class="rt-color-opt clear-opt" data-value="transparent" title="Quitar Marcador"></div>
+              </div>
+            </div>
+
+            <div class="rt-divider"></div>
+            <button type="button" class="rt-btn" data-command="insertUnorderedList" title="Lista con viñetas">•</button>
+            <button type="button" class="rt-btn" data-command="insertCheckbox" title="Insertar Checkbox">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 11 12 14 22 4"></polyline>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+            </button>
+            <button type="button" class="rt-btn" data-command="insertTable" title="Insertar Tabla">▦</button>
+          </div>
+          <span style="margin-left:auto; font-size:0.75rem; color:rgba(0,0,0,0.4)">${new Date(note.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })}</span>
         </div>
-        <div class="qn-editor" contenteditable="true" placeholder="Escribe algo rápido aquí...">${note.content}</div>
+        <div class="qn-editor" id="qn-editor-${note.id}" contenteditable="true" placeholder="Escribe algo rápido aquí...">${note.content}</div>
         <div class="qn-sheet-footer">
           <button class="qn-delete-btn" title="Eliminar Nota">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -171,6 +209,13 @@ const QuickNotes = {
           </button>
         </div>
       `;
+
+      container.appendChild(sheet);
+
+      // Initialize Rich Editor for this sheet
+      if (typeof RichEditor !== 'undefined') {
+        RichEditor.init(`#qn-editor-${note.id}`, `#qn-toolbar-${note.id}`);
+      }
 
       // Eventos de la hoja
       const editor = sheet.querySelector('.qn-editor');
