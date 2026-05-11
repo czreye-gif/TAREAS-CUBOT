@@ -2739,7 +2739,7 @@ body {
   font-family: var(--font-main);
 }
 .calc-inp-neon { color: #00e5ff; }
-.calc-selectors { display:flex; flex-direction:column; gap:6px; }
+.calc-selectors { display:flex; flex-direction:column; gap:6px; margin-bottom: 10px; }
 .calc-sel-group {}
 .calc-pills { display:flex; gap:4px; margin-top:4px; }
 .calc-pill {
