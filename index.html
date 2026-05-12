@@ -326,10 +326,44 @@
         }
       </style>
       <div class="form-container">
-        <div class="view-header" style="margin-bottom: 20px;">
+        <div class="view-header" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
           <h1 class="view-title" id="form-title" style="font-size: 1.5rem;">Nueva Tarea</h1>
+          <button type="button" id="btn-modal-config" class="rt-btn" title="Configurar Ventana" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
         </div>
-        <form id="task-form" autocomplete="off">
+        <form id="task-form" autocomplete="off" style="position:relative">
+          <!-- Panel de Configuración de Ventana -->
+          <div id="modal-config-panel" style="display:none; position:fixed; top:100px; right:50px; background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:20px; z-index:100000; box-shadow:0 10px 40px rgba(0,0,0,0.6); width:280px; animation: modalIn 0.2s ease-out;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+              <h3 style="margin:0; font-size:1rem">Configurar Ventana</h3>
+              <button type="button" class="btn-close-config" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.2rem">&times;</button>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:15px">
+              <label style="font-size:0.8rem">Ancho (px)</label>
+              <input type="range" id="config-width" min="400" max="1400" step="10" style="width:100%">
+              <div id="config-width-val" style="font-size:0.75rem; text-align:right">770px</div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px">
+              <label style="font-size:0.8rem">Altura Máxima (%)</label>
+              <input type="range" id="config-height" min="50" max="100" step="5" style="width:100%">
+              <div id="config-height-val" style="font-size:0.75rem; text-align:right">90%</div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px">
+              <label style="font-size:0.8rem">Posición Horizontal</label>
+              <div style="display:flex; gap:5px">
+                <button type="button" class="btn-config-pos" data-pos="flex-start" style="flex:1; padding:5px; font-size:0.7rem">Izquierda</button>
+                <button type="button" class="btn-config-pos" data-pos="center" style="flex:1; padding:5px; font-size:0.7rem">Centro</button>
+                <button type="button" class="btn-config-pos" data-pos="flex-end" style="flex:1; padding:5px; font-size:0.7rem">Derecha</button>
+              </div>
+            </div>
+
+            <button type="button" id="btn-save-modal-config" class="btn btn-primary" style="width:100%; padding:10px; font-size:0.85rem">GUARDAR Y CERRAR</button>
+          </div>
+
           <div class="form-layout-split">
             <!-- Columna Principal -->
             <div class="form-main">
@@ -698,5 +732,6 @@
       });
     })();
   </script>
+  <script src="js/ui_config.js"></script>
 </body>
 </html>
