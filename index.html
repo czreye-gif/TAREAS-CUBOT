@@ -300,8 +300,9 @@
           z-index: 2000;
           display: none;
           align-items: center;
-          justify-content: center;
+          justify-content: flex-start;
           padding: 20px;
+          padding-left: 5%;
           backdrop-filter: blur(8px);
         }
         #view-new-task.active {
@@ -567,27 +568,46 @@
 
     <!-- Nueva Vista: Toma de Nota (Block de Notas Rápidas) -->
     <section id="view-quick-notes" class="view">
-      <div class="view-header" style="display:flex;justify-content:space-between;align-items:center;">
-        <h1 class="view-title">Toma de Nota</h1>
-        <div style="display:flex; gap:10px; align-items:center;">
-          <button id="qn-share-img" class="btn btn-secondary" style="background:var(--accent); color:white; border:none;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Compartir Imagen
-          </button>
-          <button id="qn-add-btn" class="btn btn-primary">+ Nueva Hoja</button>
-        </div>
-      </div>
-
       <div class="qn-container">
         <!-- Panel Izquierdo: El Block (Hojas) -->
         <div class="qn-block-wrapper">
           <div id="qn-block" class="qn-block">
             <!-- Las hojas se renderizan aquí -->
           </div>
+          
+          <!-- Nueva Barra de Navegación Estilo Excel -->
           <div class="qn-navigation-bar">
-            <button id="qn-prev" class="qn-nav-btn" title="Anterior">❮</button>
-            <span id="qn-counter">0 / 0</span>
-            <button id="qn-next" class="qn-nav-btn" title="Siguiente">❯</button>
+            <div class="qn-nav-controls">
+              <button id="qn-first" class="qn-nav-tool" title="Primera Hoja">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+              </button>
+              <button id="qn-prev" class="qn-nav-tool" title="Anterior">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button id="qn-next" class="qn-nav-tool" title="Siguiente">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+              <button id="qn-last" class="qn-nav-tool" title="Última Hoja">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+              </button>
+            </div>
+            
+            <div class="qn-tabs-container" id="qn-tabs">
+              <!-- Las pestañas (Hoja 1, Hoja 2...) se inyectan aquí -->
+            </div>
+            
+            <div class="qn-nav-actions">
+              <button id="qn-add-btn" class="qn-nav-tool" title="Nueva Hoja">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+              <button id="qn-share-btn" class="qn-nav-tool" title="Compartir">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+              </button>
+              <div class="qn-nav-divider"></div>
+              <button id="qn-close-btn" class="qn-nav-tool danger" title="Salir">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -596,7 +616,7 @@
 
         <!-- Panel Derecho: Calculadora -->
         <div class="qn-calc-pane" id="qn-calc-pane">
-          <div id="qn-calc-container">
+          <div id="qn-calc-container" class="calc-container">
             <!-- La calculadora se inyecta aquí -->
           </div>
         </div>
@@ -612,6 +632,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/ui.js"></script>
