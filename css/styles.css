@@ -92,6 +92,9 @@ input, select, textarea {
   font-family: var(--font-notes);
   border: 1px solid #e6d385 !important;
   box-shadow: 2px 4px 10px rgba(0,0,0,0.05) inset;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: default !important;
 }
 .postit-note::placeholder {
   color: #8a7b45 !important;
@@ -2278,6 +2281,9 @@ body {
   max-height: 500px;
   overflow-y: auto;
   --rt-selection-color: rgba(0, 120, 215, 0.3);
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: default !important;
 }
 
 .rt-editor::selection, .rt-editor *::selection {
@@ -2715,6 +2721,8 @@ body {
   resize: none !important;
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
+  -webkit-user-select: text !important;
+  user-select: text !important;
 }
 .rt-calc-pane {
   width: 300px;
