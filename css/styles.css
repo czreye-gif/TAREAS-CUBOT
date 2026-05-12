@@ -2716,8 +2716,8 @@ body {
 .calc-panel {
   display: flex;
   flex-direction: column;
-  padding: 12px;
-  gap: 10px;
+  padding: 4px;
+  gap: 6px;
   height: 100%;
   box-sizing: border-box;
   color: var(--text);
@@ -2728,7 +2728,8 @@ body {
 .calc-header-bar {
   text-align: center;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 8px;
+  padding: 4px 8px;
+  margin-bottom: 4px;
 }
 .calc-title { font-size: 1rem; font-weight: 800; color: #f5f5f7; display:block; }
 .calc-sub { font-size: 0.65rem; color: #86868b; font-weight: 700; letter-spacing: 1px; text-transform:uppercase; }
@@ -2775,6 +2776,185 @@ body {
 .calc-key-wide { grid-column: span 2; }
 .calc-key-del { background: #2a1a1a; color: #ff453a; }
 .calc-results { display:flex; flex-direction:column; gap:4px; }
+/* Calculator History Tape (Paper Strip) */
+.calc-history-container {
+  flex: 1;
+  background: #fdfcf0;
+  border: 1px solid #e0d9b5;
+  border-radius: 4px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05), 0 4px 8px rgba(0,0,0,0.1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Aprovechar todo el alto del contenedor */
+  min-width: 180px;
+}
+
+#calc-normal-inner {
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 8px;
+  align-items: stretch;
+  padding: 0;
+  height: calc(100% - 40px);
+}
+
+.calc-std-main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.calc-main-copy-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: block;
+}
+
+.calc-main-copy-btn:active {
+  transform: scale(0.98);
+  filter: brightness(0.9);
+}
+
+.calc-history-container::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background-image: linear-gradient(135deg, #fdfcf0 25%, transparent 25%), 
+                    linear-gradient(225deg, #fdfcf0 25%, transparent 25%);
+  background-size: 8px 12px;
+  background-position: 0 0;
+}
+
+.calc-history-tape {
+  padding: 15px 5px 10px 5px;
+  overflow-y: auto;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.75rem;
+  color: #444;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.tape-row {
+  display: flex;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  min-height: 24px;
+  align-items: center;
+}
+
+.tape-label {
+  flex: 2; /* Más espacio para concepto */
+  padding: 2px 5px;
+  color: #003366;
+  font-style: italic;
+  outline: none;
+  border-right: 1px dashed #e0d9b5;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.tape-label:empty::before {
+  content: "Concepto...";
+  opacity: 0.3;
+}
+
+.tape-label:focus {
+  background: rgba(0,0,0,0.02);
+  white-space: normal;
+}
+
+.tape-value {
+  flex: 1.5; /* Espacio para el número */
+  padding: 2px 5px;
+  text-align: right;
+  font-weight: 500;
+  outline: none;
+  border-right: 1px dashed #e0d9b5;
+  min-width: 60px;
+}
+
+.tape-op {
+  flex: 0.4; /* Columna delgada para el operador */
+  padding: 2px 5px;
+  text-align: center;
+  font-weight: bold;
+  color: #c00;
+  outline: none;
+}
+
+.tape-value:focus, .tape-label:focus, .tape-op:focus {
+  background: rgba(0,0,0,0.05);
+  box-shadow: inset 0 0 2px rgba(0,0,0,0.1);
+  border-radius: 2px;
+}
+
+.tape-row.total {
+  background: rgba(0,0,0,0.02);
+  border-bottom: 1px double #999;
+  font-weight: bold;
+}
+
+.tape-row.total .tape-value {
+  color: #000;
+  font-weight: 800;
+  background: transparent !important; /* El total no se edita manualmente, se calcula */
+  pointer-events: none; 
+}
+
+.tape-actions {
+  display: flex;
+  background: rgba(0,0,0,0.02);
+  border-top: 1px solid #e0d9b5;
+  padding: 4px;
+  gap: 4px;
+}
+
+.tape-btn {
+  flex: 1;
+  font-size: 0.65rem;
+  padding: 4px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  cursor: pointer;
+  color: #666;
+  font-weight: bold;
+}
+
+.tape-btn:hover {
+  background: var(--surface);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.tape-copy-btn {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.tape-copy-btn:hover {
+  background: var(--primary-light);
+  color: white;
+}
+
 .calc-res-divider { height:1px; background:var(--border); margin:4px 0; }
 .calc-res-row { display:flex; justify-content:space-between; font-size:0.82rem; color:#86868b; }
 .calc-res-row span:last-child { color:#f5f5f7; font-weight:600; }
