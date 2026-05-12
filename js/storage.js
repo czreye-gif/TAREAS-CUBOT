@@ -71,6 +71,9 @@ class TaskStorage {
 
     // Escucha cambios en Notas Rápidas
     db.collection("notas_rapidas").onSnapshot(snapshot => {
+      // EVITAR RE-RENDER SI EL CAMBIO ES LOCAL (para evitar saltos mientras se escribe)
+      if (snapshot.metadata.hasPendingWrites) return;
+
       const cloudQNotes = [];
       snapshot.forEach(doc => cloudQNotes.push(doc.data()));
       if (cloudQNotes.length > 0 || snapshot.metadata.fromCache === false) {

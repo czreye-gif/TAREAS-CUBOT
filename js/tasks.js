@@ -185,7 +185,7 @@ const Tasks = {
 
     // ── Construir modal ──────────────────────────────────────
     const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:flex-start;padding:16px;padding-left:5%';
 
     // Recuperar dimensiones persistentes
     // Recuperar dimensiones persistentes
@@ -275,7 +275,7 @@ const Tasks = {
           
           <div class="rt-gutter" id="modal-gutter" style="display:none"></div>
           <div id="modal-calc-pane" class="rt-calc-pane" style="display:none; width:${initCalcW}; flex-shrink:0; border-radius:10px; background:var(--bg2); overflow:hidden;">
-            ${typeof RetCalc !== 'undefined' ? RetCalc.render() : '<p style="padding:20px;color:var(--muted)">Calculadora no disponible</p>'}
+            ${typeof RetCalc !== 'undefined' ? RetCalc.render(false) : '<p style="padding:20px;color:var(--muted)">Calculadora no disponible</p>'}
           </div>
         </div>
         </div>

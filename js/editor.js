@@ -205,7 +205,8 @@ const RichEditor = {
       };
     }
 
-    // (Listener de calculadora removido de aquí para evitar duplicidad)
+    // ── Herramientas de Imagen y Pegado ──
+    this._bindImageTools(editor);
   },
 
   enterFocusMode(originalEditor, originalToolbar) {
@@ -239,7 +240,7 @@ const RichEditor = {
           </div>
           <div class="rt-gutter" id="rt-focus-gutter" style="display:none"></div>
           <div class="rt-calc-pane" id="rt-calc-pane" style="display:none; width:${initCalcW}">
-            ${typeof RetCalc !== 'undefined' ? RetCalc.render() : '<p style="padding:20px;color:var(--muted)">Calculadora no disponible</p>'}
+            ${typeof RetCalc !== 'undefined' ? RetCalc.render(false) : '<p style="padding:20px;color:var(--muted)">Calculadora no disponible</p>'}
           </div>
         </div>
         <div class="rt-resizer" id="rt-focus-resizer"></div>
@@ -757,24 +758,154 @@ const RichEditor = {
         window.addEventListener('touchend', onTouchEnd);
       }
     }, { passive: false });
+  },
+  
+  _bindImageTools(editor) {
+    // 1. Manejar Pegado de Imágenes
+    editor.addEventListener('paste', (e) => {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      let imageFound = false;
+
+      for (const item of items) {
+        if (item.type.indexOf('image') !== -1) {
+          imageFound = true;
+          const blob = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const html = `<img src="${event.target.result}" style="width:300px; height:auto;">`;
+            document.execCommand('insertHTML', false, html);
+            editor.dispatchEvent(new Event('input', { bubbles: true }));
+          };
+          reader.readAsDataURL(blob);
+        }
+      }
+
+      // Si procesamos una imagen, evitamos que el navegador pegue la original gigante
+      if (imageFound) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+
+    // 2. Detectar Click/Touch en Imágenes para mostrar herramientas
+    const handleImgAction = (e) => {
+      if (e.target.tagName === 'IMG') {
+        // En tablets, el click puede ser caprichoso, usamos esto
+        this._showImageMenu(e.target, editor);
+      } else {
+        // Si hacemos clic en cualquier otra parte del editor, ocultamos el menú
+        if (!e.target.closest('.rt-img-tools')) {
+          this._hideImageMenu();
+        }
+      }
+    };
+
+    editor.addEventListener('mousedown', handleImgAction);
+    editor.addEventListener('touchstart', handleImgAction, { passive: true });
+  },
+
+  _showImageMenu(img, editor) {
+    this._hideImageMenu(); // Limpiar si hay uno abierto
+
+    img.classList.add('selected');
+    
+    const menu = document.createElement('div');
+    menu.className = 'rt-img-tools';
+    menu.innerHTML = `
+      <button class="rt-img-btn" data-size="25%">25%</button>
+      <button class="rt-img-btn" data-size="50%">50%</button>
+      <button class="rt-img-btn" data-size="75%">75%</button>
+      <button class="rt-img-btn" data-size="100%">100%</button>
+      <div style="width:1px; background:#444; margin:0 4px"></div>
+      <button class="rt-img-btn danger" data-action="delete">Eliminar</button>
+    `;
+
+    document.body.appendChild(menu);
+
+    // Posicionar el menú sobre la imagen
+    const rect = img.getBoundingClientRect();
+    const menuWidth = menu.offsetWidth || 220;
+    const menuHeight = menu.offsetHeight || 40;
+    
+    let left = (rect.left + rect.width / 2 - menuWidth / 2);
+    let top = (rect.top + window.scrollY - menuHeight - 10);
+
+    // Evitar que se salga por la izquierda
+    if (left < 10) left = 10;
+    // Evitar que se salga por la derecha
+    if (left + menuWidth > window.innerWidth - 10) left = window.innerWidth - menuWidth - 10;
+
+    menu.style.left = left + 'px';
+    menu.style.top = top + 'px';
+
+    // Eventos del menú
+    menu.querySelectorAll('.rt-img-btn').forEach(btn => {
+      const runAction = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (btn.dataset.size) {
+          // Aplicamos el tamaño con !important para sobreescribir cualquier otro estilo
+          img.style.setProperty('width', btn.dataset.size, 'important');
+          img.style.setProperty('height', 'auto', 'important');
+        } else if (btn.dataset.action === 'delete') {
+          img.remove();
+        }
+        
+        this._hideImageMenu();
+        // Disparar evento de cambio para que se guarde la nota
+        editor.dispatchEvent(new Event('input', { bubbles: true }));
+      };
+
+      btn.onmousedown = runAction;
+      btn.ontouchstart = runAction;
+    });
+
+    // Cerrar al hacer clic fuera
+    const closeHandler = (e) => {
+      if (!menu.contains(e.target) && e.target !== img) {
+        this._hideImageMenu();
+        document.removeEventListener('mousedown', closeHandler);
+      }
+    };
+    document.addEventListener('mousedown', closeHandler);
+    
+    this._activeImageMenu = menu;
+  },
+
+  _hideImageMenu() {
+    if (this._activeImageMenu) {
+      this._activeImageMenu.remove();
+      this._activeImageMenu = null;
+    }
+    document.querySelectorAll('.rt-editor img.selected, .qn-editor img.selected').forEach(img => {
+      img.classList.remove('selected');
+    });
   }
 };
 
 // Listener GLOBAL ÚNICO para la calculadora (Evita pegado doble)
 window.addEventListener('calc:copy', (e) => {
   const active = document.activeElement;
-  // Buscamos si el elemento activo es un editor nuestro
+  let target = null;
+
   if (active && (active.classList.contains('rt-editor') || active.classList.contains('qn-editor'))) {
-    active.focus();
-    document.execCommand('insertHTML', false, e.detail.html);
+    target = active;
   } else {
-    // Fallback: si se perdió el foco, buscamos los editores principales por ID o la nota activa en QuickNotes
-    const fallback = document.getElementById('focus-editor') || 
-                     document.getElementById('note-ta') || 
-                     document.querySelector('.qn-sheet.active .qn-editor');
-    if (fallback) {
-      fallback.focus();
-      document.execCommand('insertHTML', false, e.detail.html);
+    target = document.getElementById('focus-editor') || 
+             document.getElementById('note-ta') || 
+             document.querySelector('.qn-sheet.active .qn-editor');
+  }
+
+  if (target) {
+    const scrollPos = target.scrollTop;
+    target.focus();
+    document.execCommand('insertHTML', false, e.detail.html);
+    target.scrollTop = scrollPos;
+    
+    // Disparar guardado automático si estamos en QuickNotes
+    if (typeof QuickNotes !== 'undefined' && target.classList.contains('qn-editor')) {
+      QuickNotes.triggerAutoSave();
     }
   }
 });

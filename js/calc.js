@@ -16,21 +16,21 @@ const RetCalc = {
   stdHistory: [], // Tira de papel historial
 
   // ── Modo activo ─────────────────────────────────────────
-  mode: 'ret', // 'ret' | 'std'
+  mode: 'std', // 'ret' | 'std'
 
   // ── HTML principal ──────────────────────────────────────
-  render() {
+  render(showRet = true) {
     return `
       <div class="calc-panel" id="ret-calc-panel">
 
         <!-- SWITCH DE MODO -->
-        <div class="calc-mode-switch">
-          <button class="calc-mode-btn active" data-mode="ret">📊 Retenciones</button>
-          <button class="calc-mode-btn" data-mode="std">🔢 Normal</button>
+        <div class="calc-mode-switch" style="${showRet ? '' : 'display:none'}">
+          <button class="calc-mode-btn" data-mode="ret">RETENCIONES</button>
+          <button class="calc-mode-btn active" data-mode="std">NORMAL</button>
         </div>
 
         <!-- PANEL RETENCIONES -->
-        <div id="calc-ret-view">
+        <div id="calc-ret-view" style="display:none">
           <div class="calc-inputs">
             <div class="calc-input-group active-input" id="cig-sub" data-field="subtotal">
               <label class="calc-lbl">SUB-TOTAL</label>
@@ -98,13 +98,7 @@ const RetCalc = {
         </div>
 
         <!-- PANEL CALCULADORA NORMAL -->
-        <div id="calc-std-view" style="display:none; flex-direction:column; gap:6px;">
-
-          <!-- Sub-switch Normal / RPN -->
-          <div class="calc-sub-switch">
-            <button class="calc-sub-btn active" data-submode="normal">Normal</button>
-            <button class="calc-sub-btn" data-submode="rpn">RPN</button>
-          </div>
+        <div id="calc-std-view" style="display:flex; flex-direction:column; gap:6px;">
 
           <!-- NORMAL VIEW -->
           <div id="calc-normal-inner">
@@ -114,83 +108,56 @@ const RetCalc = {
                 <div class="calc-std-screen" id="calc-std-screen">0</div>
               </div>
               <div class="calc-std-pad">
+                <!-- Fila 1 -->
+                <button class="calc-key calc-key-fn" data-std="AC">AC</button>
+                <button class="calc-key calc-key-fn" data-std="C">C</button>
                 <button class="calc-key calc-key-fn" data-std="(">(</button>
                 <button class="calc-key calc-key-fn" data-std=")">)</button>
-                <button class="calc-key calc-key-fn" data-std="AC">AC</button>
                 <button class="calc-key calc-key-fn" data-std="back">⌫</button>
                 
-                <button class="calc-key calc-key-fn" data-std="C" style="grid-column: span 2;">C</button>
-                <button class="calc-key calc-key-op" data-std="×">×</button>
-                <button class="calc-key calc-key-op" data-std="÷">÷</button>
+                <!-- Fila 2 -->
                 <button class="calc-key" data-std="7">7</button>
                 <button class="calc-key" data-std="8">8</button>
                 <button class="calc-key" data-std="9">9</button>
-                <button class="calc-key calc-key-op" data-std="×">×</button>
+                <button class="calc-key calc-key-op" data-std="%">%</button>
+                <button class="calc-key calc-key-op" data-std="÷">÷</button>
+
+                <!-- Fila 3 -->
                 <button class="calc-key" data-std="4">4</button>
                 <button class="calc-key" data-std="5">5</button>
                 <button class="calc-key" data-std="6">6</button>
-                <button class="calc-key calc-key-op" data-std="−">−</button>
+                <button class="calc-key calc-key-fn" data-std="+/-">+/-</button>
+                <button class="calc-key calc-key-op" data-std="×">×</button>
+
+                <!-- Fila 4 -->
                 <button class="calc-key" data-std="1">1</button>
                 <button class="calc-key" data-std="2">2</button>
                 <button class="calc-key" data-std="3">3</button>
-                <button class="calc-key calc-key-op" data-std="+">+</button>
-                <button class="calc-key" data-std="0">0</button>
                 <button class="calc-key" data-std=".">.</button>
-                <button class="calc-key calc-key-fn" data-std="+/-">+/-</button>
-                <button class="calc-key calc-key-eq" data-std="=">=</button>
-              </div>
-              <button class="calc-main-copy-btn" onclick="RetCalc.copyTapeToNote(this.closest('.calc-container'))">
-                📋 COPIAR TIRA A NOTA
-              </button>
-            </div>
+                <button class="calc-key calc-key-op" data-std="−">−</button>
 
-            <!-- TIRA DE HISTORIAL -->
-            <div class="calc-history-container">
-              <div class="calc-history-header" style="padding:8px; border-bottom:1px solid #e0d9b5; background:#f0f0f0; font-size:0.65rem; font-weight:800; display:flex; justify-content:space-between; align-items:center;">
-                <span>TIRA DE AUDITORÍA</span>
-                <button class="tape-copy-btn" id="tape-copy" style="background:none; border:none; color:var(--primary); cursor:pointer; padding:2px;" title="Copiar Tira a Nota">
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                </button>
+                <!-- Fila 5 -->
+                <button class="calc-key" data-std="0" style="grid-column: span 2;">0</button>
+                <button class="calc-key calc-key-eq" data-std="=" style="grid-column: span 2;">=</button>
+                <button class="calc-key calc-key-op" data-std="+">+</button>
               </div>
+              </div> <!-- calc-std-main-area -->
+
+              <!-- TIRA DE HISTORIAL -->
+              <div class="calc-history-container" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+                <div class="calc-history-header" style="padding:4px 8px; border-bottom:1px solid #e0d9b5; background:#f0f0f0; font-size:0.6rem; font-weight:800; display:flex; justify-content:space-between; align-items:center;">
+                  <span style="opacity:0.6;">TIRA DE AUDITORÍA</span>
+                  <button class="tape-copy-btn" id="tape-copy" style="background:var(--primary); border:none; color:white; border-radius:4px; cursor:pointer; padding:4px 15px; font-size:0.65rem; font-weight:bold; display:flex; align-items:center; gap:6px; min-width:110px; justify-content:center;" title="Copiar Tira a Nota">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                    COPIAR A NOTA
+                  </button>
+                </div>
               <div class="calc-history-tape" id="std-tape" style="flex:1; overflow-y:auto; padding:10px 5px;">
                 <div style="text-align:center; opacity:0.3; font-size:0.6rem;">*** TIRA LISTA ***</div>
               </div>
             </div>
           </div>
 
-          <!-- RPN VIEW -->
-          <div id="calc-rpn-inner" style="display:none; flex-direction:column; gap:8px;">
-            <div class="calc-rpn-stack" id="calc-rpn-stack">
-              <div class="rpn-row" id="rpn-t"><span class="rpn-lbl">T:</span><span class="rpn-val">0</span></div>
-              <div class="rpn-row" id="rpn-z"><span class="rpn-lbl">Z:</span><span class="rpn-val">0</span></div>
-              <div class="rpn-row" id="rpn-y"><span class="rpn-lbl">Y:</span><span class="rpn-val">0</span></div>
-              <div class="rpn-row rpn-x" id="rpn-x"><span class="rpn-lbl">X:</span><span class="rpn-val rpn-x-val" id="rpn-x-val">0</span></div>
-            </div>
-            <div class="calc-rpn-pad">
-              <!-- Row 1 -->
-              <button class="calc-key calc-key-fn rpn-fn" data-rpn="CHS"><span class="rpn-main">CHS</span><span class="rpn-sub">+/−</span></button>
-              <button class="calc-key rpn-num" data-rpn="7"><span class="rpn-main">7</span></button>
-              <button class="calc-key rpn-num" data-rpn="8"><span class="rpn-main">8</span></button>
-              <button class="calc-key rpn-num" data-rpn="9"><span class="rpn-main">9</span></button>
-              <button class="calc-key calc-key-op" data-rpn="÷">÷</button>
-              <!-- Row 2 -->
-              <button class="calc-key calc-key-fn rpn-fn" data-rpn="SWAP"><span class="rpn-main">XY</span><span class="rpn-sub">swap</span></button>
-              <button class="calc-key rpn-num" data-rpn="4"><span class="rpn-main">4</span></button>
-              <button class="calc-key rpn-num" data-rpn="5"><span class="rpn-main">5</span></button>
-              <button class="calc-key rpn-num" data-rpn="6"><span class="rpn-main">6</span></button>
-              <button class="calc-key calc-key-op" data-rpn="×">×</button>
-              <!-- Row 3: ENTER tall -->
-              <button class="calc-key calc-key-enter" data-rpn="ENTER">E<br>N<br>T<br>E<br>R</button>
-              <button class="calc-key rpn-num" data-rpn="1"><span class="rpn-main">1</span></button>
-              <button class="calc-key rpn-num" data-rpn="2"><span class="rpn-main">2</span></button>
-              <button class="calc-key rpn-num" data-rpn="3"><span class="rpn-main">3</span></button>
-              <button class="calc-key calc-key-op" data-rpn="−">−</button>
-              <!-- Row 4 (ENTER continues col 1) -->
-              <button class="calc-key rpn-num" data-rpn="0"><span class="rpn-main">0</span></button>
-              <button class="calc-key rpn-num" data-rpn="."><span class="rpn-main">.</span></button>
-              <button class="calc-key calc-key-fn rpn-fn" data-rpn="DROP"><span class="rpn-main">DROP</span><span class="rpn-sub">del</span></button>
-              <button class="calc-key calc-key-op" data-rpn="+">+</button>
-            </div>
           </div>
 
         </div>
@@ -231,7 +198,10 @@ const RetCalc = {
     };
 
     const btnCopyTape = container.querySelector('#tape-copy');
-    if (btnCopyTape) btnCopyTape.onclick = () => this.copyTapeToNote(container);
+    if (btnCopyTape) btnCopyTape.onclick = (e) => {
+      e.stopPropagation();
+      this.copyTapeToNote(container);
+    };
 
     // Copy buttons
     const btnCopyRet = container.querySelector('#calc-copy-ret');
@@ -367,6 +337,60 @@ const RetCalc = {
         }
       }
     });
+    return runningTotal;
+  },
+
+  copyTapeToNote(container) {
+    const tape = container.querySelector('#std-tape');
+    if (!tape) return;
+    
+    const rows = tape.querySelectorAll('.tape-row');
+    if (rows.length === 0) return;
+
+    let html = `
+      <table class="rt-calc-table" style="width:100%; border-collapse:collapse; font-family:Courier, monospace; font-size:13px; border:1px solid #ccc; margin:10px 0; background:white;">
+        <tr style="background:#f0f0f0;">
+          <th style="padding:5px; border:1px solid #ccc; text-align:left;">Detalle</th>
+          <th style="padding:5px; border:1px solid #ccc; text-align:right;">Importe</th>
+          <th style="padding:5px; border:1px solid #ccc; text-align:center;">Op</th>
+        </tr>
+    `;
+
+    rows.forEach(row => {
+      if (row.innerText.includes('TIRA')) return;
+      const label = row.querySelector('.tape-label').innerText.trim();
+      const value = row.querySelector('.tape-value').innerText.trim();
+      const op    = row.querySelector('.tape-op').innerText.trim();
+      const isTotal = row.classList.contains('total');
+      
+      html += `
+        <tr style="${isTotal ? 'font-weight:bold; background:#f9f9f9;' : ''}">
+          <td style="padding:3px 5px; border:1px solid #eee;">${label || '-'}</td>
+          <td style="padding:3px 5px; border:1px solid #eee; text-align:right;">${value}</td>
+          <td style="padding:3px 5px; border:1px solid #eee; text-align:center;">${op}</td>
+        </tr>
+      `;
+    });
+
+    html += '</table><br>';
+
+    const event = new CustomEvent('calc:copy', { detail: { html } });
+    window.dispatchEvent(event);
+    if (typeof UI !== 'undefined') UI.toast('Tira copiada al bloc', 'success');
+  },
+
+  clearTape(container) {
+    if (confirm('¿Vaciar la tira de auditoría?')) {
+      this.stdHistory = [];
+      const tape = container.querySelector('#std-tape');
+      if (tape) tape.innerHTML = '<div style="text-align:center; opacity:0.3; font-size:0.6rem;">*** TIRA VACÍA ***</div>';
+      this.stdDisplay = '0';
+      this.stdOp = null;
+      const expr = container.querySelector('#calc-std-expr');
+      const screen = container.querySelector('#calc-std-screen');
+      if (expr) expr.textContent = '';
+      if (screen) screen.textContent = '0';
+    }
   },
 
   copyToNote(type) {
@@ -379,40 +403,40 @@ const RetCalc = {
       const t = this._fmt(this.totalCents / 100);
 
       html = `
-        <table class="rt-table" style="width:100%; border-collapse:collapse; margin:10px 0;">
+        <table class="rt-table" style="width:100%; border-collapse:collapse; margin:10px 0; background:white;">
           <tr style="background:rgba(99,102,241,0.1)">
-            <th style="border:1px solid var(--border); padding:8px; text-align:left;">Concepto</th>
-            <th style="border:1px solid var(--border); padding:8px; text-align:right;">Importe</th>
+            <th style="border:1px solid #ccc; padding:8px; text-align:left;">Concepto</th>
+            <th style="border:1px solid #ccc; padding:8px; text-align:right;">Importe</th>
           </tr>
           <tr>
-            <td style="border:1px solid var(--border); padding:8px;">Subtotal</td>
-            <td style="border:1px solid var(--border); padding:8px; text-align:right;">${s}</td>
+            <td style="border:1px solid #eee; padding:8px;">Subtotal</td>
+            <td style="border:1px solid #eee; padding:8px; text-align:right;">${s}</td>
           </tr>
           <tr>
-            <td style="border:1px solid var(--border); padding:8px;">IVA (${this.ivaRate}%)</td>
-            <td style="border:1px solid var(--border); padding:8px; text-align:right;">${iva}</td>
+            <td style="border:1px solid #eee; padding:8px;">IVA (${this.ivaRate}%)</td>
+            <td style="border:1px solid #eee; padding:8px; text-align:right;">${iva}</td>
           </tr>
           ${this.isrRate > 0 ? `<tr>
-            <td style="border:1px solid var(--border); padding:8px; color:var(--danger)">Ret. ISR (${this.isrRate}%)</td>
-            <td style="border:1px solid var(--border); padding:8px; text-align:right; color:var(--danger)">-${isr}</td>
+            <td style="border:1px solid #eee; padding:8px; color:#ef4444">Ret. ISR (${this.isrRate}%)</td>
+            <td style="border:1px solid #eee; padding:8px; text-align:right; color:#ef4444">-${isr}</td>
           </tr>` : ''}
           ${this.retIvaRate > 0 ? `<tr>
-            <td style="border:1px solid var(--border); padding:8px; color:var(--danger)">Ret. IVA (${this.retIvaRate.toFixed(2)}%)</td>
-            <td style="border:1px solid var(--border); padding:8px; text-align:right; color:var(--danger)">-${riva}</td>
+            <td style="border:1px solid #eee; padding:8px; color:#ef4444">Ret. IVA (${this.retIvaRate.toFixed(2)}%)</td>
+            <td style="border:1px solid #eee; padding:8px; text-align:right; color:#ef4444">-${riva}</td>
           </tr>` : ''}
           <tr style="font-weight:bold; background:rgba(99,102,241,0.05)">
-            <td style="border:1px solid var(--border); padding:8px;">TOTAL</td>
-            <td style="border:1px solid var(--border); padding:8px; text-align:right; color:var(--primary-light)">${t}</td>
+            <td style="border:1px solid #ccc; padding:8px;">TOTAL</td>
+            <td style="border:1px solid #ccc; padding:8px; text-align:right; color:#4f46e5">${t}</td>
           </tr>
         </table><br>
       `;
     } else {
-      html = `<span style="color:#003366; font-weight:bold;">${this._stdFmt(this.stdDisplay)}</span>`;
+      html = `<span style="color:#003366; font-weight:bold; font-size:16px;">${this._stdFmt(this.stdDisplay)}</span>`;
     }
 
     const event = new CustomEvent('calc:copy', { detail: { html } });
     window.dispatchEvent(event);
-    if (typeof UI !== 'undefined') UI.toast('Cálculo listo para insertar', 'success');
+    if (typeof UI !== 'undefined') UI.toast('Insertado en nota', 'success');
   },
 
   _initRet(container) {
@@ -504,31 +528,9 @@ const RetCalc = {
     set('#cr-total', this._fmt(t));
   },
 
-  stdSubMode: 'normal',
-  rpnStack: [0, 0, 0, 0],
-  rpnEntry: '0',
-  rpnEntryActive: false,
-
   _initStd(container) {
-    container.querySelectorAll('.calc-sub-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.stdSubMode = btn.dataset.submode;
-        container.querySelectorAll('.calc-sub-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const ni = container.querySelector('#calc-normal-inner');
-        const ri = container.querySelector('#calc-rpn-inner');
-        if (this.stdSubMode === 'normal') {
-          ni.style.display = 'block'; ri.style.display = 'none';
-        } else {
-          ni.style.display = 'none'; ri.style.display = 'flex';
-        }
-      });
-    });
     container.querySelectorAll('[data-std]').forEach(btn => {
       btn.addEventListener('click', () => this._handleStdKey(btn.dataset.std, container));
-    });
-    container.querySelectorAll('[data-rpn]').forEach(btn => {
-      btn.addEventListener('click', () => this._handleRpnKey(btn.dataset.rpn, container));
     });
     
     // Soporte para teclado físico
@@ -555,6 +557,15 @@ const RetCalc = {
         this.stdDisplay += key;
       } else {
         try {
+          // Si acabamos de dar "=" y presionamos un operador, queremos CONTINUAR
+          // No agregamos el número otra vez a la tira porque ya es el "Total" de arriba
+          if (this.stdWaitingNext) {
+            this.stdOp = key;
+            // Mantenemos stdWaitingNext en true para que el próximo número REEMPLACE al total
+            if (expr) expr.textContent = `${this.stdDisplay} ${key}`;
+            return;
+          }
+
           const formulaToRecord = this.stdDisplay.trim();
           const tape = container.querySelector('#std-tape');
           const rows = tape.querySelectorAll('.tape-row');
@@ -576,24 +587,33 @@ const RetCalc = {
       }
     } else if (key === '=') {
       try {
-        let rawExpr = this.stdDisplay.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
-        const val = Function('"use strict"; return (' + rawExpr + ')')() || 0;
-
+        const formulaToRecord = this.stdDisplay.trim();
         const opToUse = this.stdOp || '+';
-        this._addHistoryLine(`${opToUse} ${this.stdDisplay}`, container);
         
-        // Crear la línea de total si no existe y recalcular
+        // 1. Agregar el último número/operación a la tira
+        this._addHistoryLine(`${opToUse} ${formulaToRecord}`, container);
+        
+        // 2. Asegurar línea de total
         this._addHistoryLine(`= 0`, container, true);
-        this.recalculateTape(container); 
         
+        // 3. Obtener el total real recalculado de la tira
+        const total = this.recalculateTape(container); 
+        
+        // 4. Mostrar el total en el dial
         this.stdOp = null;
         this.stdPrev = null;
-        this.stdDisplay = '0';
+        this.stdDisplay = String(this._stdFmt(total));
         this.stdWaitingNext = true;
         if (expr) expr.textContent = '';
       } catch (e) {
-        if (typeof UI !== 'undefined') UI.toast('Error al cerrar cuenta', 'error');
+        console.error("Error al cerrar cuenta", e);
       }
+    } else if (key === '%') {
+      try {
+        let rawExpr = this.stdDisplay.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-').replace(/,/g, '');
+        const val = Function('"use strict"; return (' + rawExpr + ')')() || 0;
+        this.stdDisplay = String(this._stdFmt(val / 100));
+      } catch (e) {}
     } else if (key === '+/-') {
       if (this.stdDisplay.startsWith('−')) {
         this.stdDisplay = this.stdDisplay.substring(1);
@@ -665,62 +685,4 @@ const RetCalc = {
     return num.toLocaleString('es-MX', { maximumFractionDigits: 4 });
   },
 
-  _handleRpnKey(key, container) {
-    if (key === 'C') {
-      this.rpnStack = [0,0,0,0]; this.rpnEntry = '0'; this.rpnEntryActive = false;
-    } else if (key === 'ENTER') {
-      const x = parseFloat(this.rpnEntry);
-      this.rpnStack[0] = this.rpnStack[1];
-      this.rpnStack[1] = this.rpnStack[2];
-      this.rpnStack[2] = this.rpnStack[3];
-      this.rpnStack[3] = x;
-      this.rpnEntryActive = false;
-    } else if (key === 'DROP') {
-      this.rpnStack[3] = this.rpnStack[2];
-      this.rpnStack[2] = this.rpnStack[1];
-      this.rpnStack[1] = this.rpnStack[0];
-      this.rpnStack[0] = 0;
-      this.rpnEntry = String(this.rpnStack[3]);
-    } else if (key === 'SWAP') {
-      const tmp = this.rpnStack[3];
-      this.rpnStack[3] = this.rpnStack[2];
-      this.rpnStack[2] = tmp;
-      this.rpnEntry = String(this.rpnStack[3]);
-    } else if (key === 'CHS') {
-      const v = parseFloat(this.rpnEntry) * -1;
-      this.rpnEntry = String(v);
-      this.rpnStack[3] = v;
-    } else if (['+','−','×','÷'].includes(key)) {
-      const x = parseFloat(this.rpnEntry);
-      const y = this.rpnStack[2];
-      let result;
-      if (key === '+') result = y + x;
-      if (key === '−') result = y - x;
-      if (key === '×') result = y * x;
-      if (key === '÷') result = x !== 0 ? y / x : 0;
-      this.rpnStack[3] = result;
-      this.rpnStack[2] = this.rpnStack[1];
-      this.rpnStack[1] = this.rpnStack[0];
-      this.rpnStack[0] = 0;
-      this.rpnEntry = String(result);
-      this.rpnEntryActive = false;
-    } else if (key === '.') {
-      if (!this.rpnEntryActive) { this.rpnEntry = '0.'; this.rpnEntryActive = true; }
-      else if (!this.rpnEntry.includes('.')) this.rpnEntry += '.';
-    } else {
-      if (!this.rpnEntryActive) { this.rpnEntry = key; this.rpnEntryActive = true; }
-      else { this.rpnEntry = this.rpnEntry === '0' ? key : this.rpnEntry + key; }
-      this.rpnStack[3] = parseFloat(this.rpnEntry);
-    }
-    this._renderRpnStack(container);
-  },
-
-  _renderRpnStack(c) {
-    ['t','z','y'].forEach((lbl, i) => {
-      const el = c.querySelector(`#rpn-${lbl} .rpn-val`);
-      if (el) el.textContent = this._stdFmt(this.rpnStack[i]);
-    });
-    const xEl = c.querySelector('#rpn-x-val');
-    if (xEl) xEl.textContent = this._stdFmt(this.rpnEntry);
-  }
 };

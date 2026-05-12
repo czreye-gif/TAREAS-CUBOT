@@ -13,7 +13,8 @@ const QuickNotes = {
     if (this.notes.length === 0) {
       this.createNewNote();
     }
-    this.currentIndex = this.notes.length - 1;
+    // No mover el index si ya estamos en una sesión activa
+    if (this.currentIndex === 0) this.currentIndex = this.notes.length - 1;
 
     this.applyPersistedDimensions();
     this.bindEvents();
@@ -42,7 +43,7 @@ const QuickNotes = {
       localStorage.setItem('qn-dim', JSON.stringify({
         w: container.style.width,
         h: container.style.height,
-        calcW: calcPane.style.width
+        calcW: calcPane.offsetWidth + 'px'
       }));
     }
   },
@@ -51,12 +52,18 @@ const QuickNotes = {
     const btnAdd = document.getElementById('qn-add-btn');
     const btnPrev = document.getElementById('qn-prev');
     const btnNext = document.getElementById('qn-next');
-    const btnShare = document.getElementById('qn-share-img');
+    const btnFirst = document.getElementById('qn-first');
+    const btnLast = document.getElementById('qn-last');
+    const btnShare = document.getElementById('qn-share-btn');
+    const btnClose = document.getElementById('qn-close-btn');
 
     if (btnAdd) btnAdd.onclick = () => this.createNewNote();
     if (btnPrev) btnPrev.onclick = () => this.navigate(-1);
     if (btnNext) btnNext.onclick = () => this.navigate(1);
-    if (btnShare) btnShare.onclick = () => this.shareAsImage();
+    if (btnFirst) btnFirst.onclick = () => { this.currentIndex = 0; this.render(); };
+    if (btnLast) btnLast.onclick = () => { this.currentIndex = this.notes.length - 1; this.render(); };
+    if (btnShare) btnShare.onclick = () => this.shareNote();
+    if (btnClose) btnClose.onclick = () => app.navigate('today');
 
     // Resize Window logic
     const resizer = document.getElementById('qn-resizer');
@@ -72,23 +79,12 @@ const QuickNotes = {
       this._bindGutter(gutter, calcPane);
     }
 
-    // Listener para la calculadora
-    window.addEventListener('calc:copy', (e) => {
-      if (app.currentView === 'quick-notes') {
-        const editor = document.querySelector('.qn-sheet.active .qn-editor');
-        if (editor) {
-          editor.focus();
-          document.execCommand('insertHTML', false, e.detail.html);
-          this.triggerAutoSave();
-        }
-      }
-    });
   },
 
   initCalculator() {
     const calcContainer = document.getElementById('qn-calc-container');
     if (calcContainer && typeof RetCalc !== 'undefined') {
-      calcContainer.innerHTML = RetCalc.render();
+      calcContainer.innerHTML = RetCalc.render(true);
       RetCalc.init(calcContainer);
     }
   },
@@ -136,10 +132,37 @@ const QuickNotes = {
 
   render() {
     const container = document.getElementById('qn-block');
-    const counter = document.getElementById('qn-counter');
+    const tabsContainer = document.getElementById('qn-tabs');
     if (!container) return;
 
     this.notes = storage.getQuickNotes();
+    
+    // OPTIMIZACIÓN: Si el número de hojas no ha cambiado, solo alternamos visibilidad
+    // para no perder el foco ni la posición del cursor.
+    const existingSheets = container.querySelectorAll('.qn-sheet');
+    if (existingSheets.length === this.notes.length) {
+      existingSheets.forEach((sheet, index) => {
+        const isActive = index === this.currentIndex;
+        sheet.classList.toggle('active', isActive);
+        sheet.classList.remove('flipped-left', 'flipped-right');
+        if (index < this.currentIndex) sheet.classList.add('flipped-left');
+        else if (index > this.currentIndex) sheet.classList.add('flipped-right');
+        
+        // Mostrar/Ocultar toolbar
+        const toolbar = sheet.querySelector('.rt-toolbar');
+        if (toolbar) toolbar.style.display = isActive ? 'flex' : 'none';
+        
+        // Auto-focus al editor de la hoja activa
+        if (isActive) {
+          const editor = sheet.querySelector('.qn-editor');
+          if (editor && document.activeElement !== editor) {
+            this.moveCursorToEnd(editor);
+          }
+        }
+      });
+      this.renderTabs(tabsContainer);
+      return;
+    }
     
     container.innerHTML = '';
     
@@ -232,8 +255,6 @@ const QuickNotes = {
         </div>
       `;
 
-      container.appendChild(sheet);
-
       // Initialize Rich Editor for this sheet
       if (typeof RichEditor !== 'undefined') {
         RichEditor.init(`#qn-editor-${note.id}`, `#qn-toolbar-${note.id}`);
@@ -250,40 +271,119 @@ const QuickNotes = {
       };
 
       container.appendChild(sheet);
+      
+      // Auto-focus si es la activa recién creada
+      if (isActive) this.moveCursorToEnd(editor);
     });
 
-    if (counter) {
-      counter.textContent = `${this.currentIndex + 1} / ${this.notes.length}`;
+    this.renderTabs(tabsContainer);
+  },
+
+  renderTabs(tabsContainer) {
+    if (!tabsContainer) return;
+    tabsContainer.innerHTML = this.notes.map((note, index) => `
+      <div class="qn-tab ${index === this.currentIndex ? 'active' : ''}" data-index="${index}">
+        Hoja ${index + 1}
+      </div>
+    `).join('');
+
+    tabsContainer.querySelectorAll('.qn-tab').forEach(tab => {
+      tab.onclick = () => {
+        this.currentIndex = parseInt(tab.dataset.index);
+        this.render();
+      };
+    });
+
+    // Auto-scroll para mantener la pestaña activa visible
+    const activeTab = tabsContainer.querySelector('.qn-tab.active');
+    if (activeTab) {
+      activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
   },
 
-  shareAsImage() {
+  moveCursorToEnd(el) {
+    el.focus();
+    if (typeof window.getSelection != "undefined" && typeof document.createRange != "undefined") {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  },
+
+  shareNote() {
     const activeSheet = document.querySelector('.qn-sheet.active');
     if (!activeSheet) return;
+    this.shareAsPDF(activeSheet);
+  },
 
-    UI.toast('Generando imagen...', 'info');
+  shareAsPDF(activeSheet) {
+    UI.toast('Generando PDF...', 'info');
     
-    // Ocultar el botón de borrar temporalmente para la foto
     const delBtn = activeSheet.querySelector('.qn-delete-btn');
     if (delBtn) delBtn.style.visibility = 'hidden';
 
+    // Usamos opciones para asegurar que capture fuera del viewport visible
     html2canvas(activeSheet, {
-      backgroundColor: null,
       scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
       logging: false,
-      useCORS: true
+      onclone: (clonedDoc) => {
+        const clonedSheet = clonedDoc.querySelector('.qn-sheet.active');
+        if (clonedSheet) {
+          // 1. Limpieza visual total
+          clonedSheet.style.background = '#ffffff';
+          clonedSheet.style.backgroundImage = 'none';
+          clonedSheet.style.boxShadow = 'none';
+          clonedSheet.style.color = '#000';
+          clonedSheet.classList.remove('postit-note');
+          
+          // 2. Expandir TODO el contenido para que no haya scroll
+          const editor = clonedSheet.querySelector('.qn-editor');
+          if (editor) {
+            editor.style.height = 'auto';
+            editor.style.maxHeight = 'none';
+            editor.style.overflow = 'visible';
+            editor.style.color = '#000';
+            editor.style.padding = '20px'; // Un poco de margen extra
+          }
+
+          // 3. Quitar elementos de UI que no queremos en el PDF
+          const footer = clonedSheet.querySelector('.qn-sheet-footer');
+          if (footer) footer.style.display = 'none';
+          
+          const title = clonedSheet.querySelector('.qn-sheet-title');
+          if (title) title.style.color = '#000';
+
+          // 4. Asegurar que el contenedor del clon permita crecer
+          clonedSheet.style.height = 'auto';
+          clonedSheet.style.minHeight = 'auto';
+        }
+      }
     }).then(canvas => {
       if (delBtn) delBtn.style.visibility = 'visible';
       
       const imgData = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = `nota_rapida_${new Date().getTime()}.png`;
-      link.href = imgData;
-      link.click();
-      UI.toast('Imagen descargada', 'success');
+      const { jsPDF } = window.jspdf;
+      
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      
+      const imgProps = pdf.getImageProperties(imgData);
+      const imgWidth = pageWidth - 20; 
+      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+      
+      pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+      pdf.save(`Nota_Cubot_${new Date().getTime()}.pdf`);
+      
+      UI.toast('PDF generado con éxito', 'success');
     }).catch(err => {
-      console.error("Error shareAsImage", err);
-      UI.toast('Error al generar imagen', 'error');
+      console.error("Error shareAsPDF", err);
+      UI.toast('Error al generar PDF', 'error');
+      if (delBtn) delBtn.style.visibility = 'visible';
     });
   },
 
@@ -335,7 +435,8 @@ const QuickNotes = {
       if (!dragging) return;
       const delta = cx - gX;
       const newW = gW - delta; // Invertido porque está a la derecha
-      const finalW = Math.max(240, Math.min(500, newW));
+      const maxW = window.innerWidth * 0.4;
+      const finalW = Math.max(240, Math.min(maxW, newW));
       calcPane.style.width = finalW + 'px';
       calcPane.style.minWidth = finalW + 'px';
     };
