@@ -2476,8 +2476,9 @@ body {
   z-index: 99999;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 24px;
+  padding-left: 5%;
   animation: focusOverlayIn 0.25s cubic-bezier(.4,0,.2,1);
 }
 @keyframes focusOverlayIn {
@@ -2545,6 +2546,70 @@ body {
   font-size: 1.05rem;
   overflow-y: auto !important;
   resize: none !important;
+}
+
+
+/* Herramientas de Imagen en Editor */
+.rt-img-tools {
+    position: absolute;
+    background: #1e1e1e;
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+    z-index: 9999999;
+    animation: rtFadeIn 0.2s ease;
+    min-width: 240px;
+    justify-content: center;
+}
+
+.rt-img-btn {
+    background: #333;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rt-img-btn:hover {
+    background: var(--primary);
+}
+
+.rt-img-btn.danger {
+    background: #442222;
+}
+
+.rt-img-btn.danger:hover {
+    background: #ff4444;
+}
+
+.rt-editor img, .qn-editor img {
+    max-width: 100%;
+    height: auto;
+    cursor: pointer;
+    transition: outline 0.2s;
+    border-radius: 4px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.rt-editor img.selected, .qn-editor img.selected {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+}
+
+@keyframes rtFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Manejador de redimensionamiento de ventana (esquina) */
@@ -2715,15 +2780,15 @@ body {
 /* ── Calculadora de Retenciones ───────────────────────── */
 .calc-panel {
   display: flex;
-  flex-direction: column;
-  padding: 4px;
-  gap: 6px;
+  flex-direction: row;
+  padding: 0;
+  gap: 0;
   height: 100%;
   box-sizing: border-box;
   color: var(--text);
   background: var(--bg2);
   font-family: var(--font-main);
-  overflow-y: auto;
+  overflow: hidden;
 }
 .calc-header-bar {
   text-align: center;
@@ -2767,8 +2832,8 @@ body {
   gap: 6px;
 }
 .calc-key {
-  padding: 10px 4px; font-size: 1rem; font-weight: 700;
-  border-radius: 8px; border: none;
+  padding: 6px 2px; font-size: 0.85rem; font-weight: 700;
+  border-radius: 6px; border: none;
   background: var(--surface); color: var(--text);
   cursor: pointer; transition: all .12s;
 }
@@ -2777,8 +2842,26 @@ body {
 .calc-key-del { background: #2a1a1a; color: #ff453a; }
 .calc-results { display:flex; flex-direction:column; gap:4px; }
 /* Calculator History Tape (Paper Strip) */
-.calc-history-container {
+#calc-normal-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+  padding: 0;
+  height: auto;
+  min-height: 0;
   flex: 1;
+}
+
+.calc-std-main-area {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.calc-history-container {
+  flex: 2.5; /* Más peso para la tira */
   background: #fdfcf0;
   border: 1px solid #e0d9b5;
   border-radius: 4px;
@@ -2786,25 +2869,11 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 100%; /* Aprovechar todo el alto del contenedor */
-  min-width: 180px;
+  min-height: 250px;
+  min-width: 0;
 }
 
-#calc-normal-inner {
-  display: flex;
-  flex-direction: row-reverse;
-  gap: 8px;
-  align-items: stretch;
-  padding: 0;
-  height: calc(100% - 40px);
-}
 
-.calc-std-main-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
 
 .calc-main-copy-btn {
   width: 100%;
@@ -2854,20 +2923,24 @@ body {
 .tape-row {
   display: flex;
   border-bottom: 1px solid rgba(0,0,0,0.05);
-  min-height: 24px;
+  min-height: 38px;
   align-items: center;
+  padding: 2px 4px;
+  background: white;
 }
 
 .tape-label {
-  flex: 2; /* Más espacio para concepto */
-  padding: 2px 5px;
-  color: #003366;
+  flex: 1.2; 
+  padding: 2px 8px;
+  color: #666;
+  font-size: 0.7rem;
   font-style: italic;
   outline: none;
-  border-right: 1px dashed #e0d9b5;
+  border-right: 1px dashed rgba(0,0,0,0.05);
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tape-label:empty::before {
@@ -2881,22 +2954,32 @@ body {
 }
 
 .tape-value {
-  flex: 1.5; /* Espacio para el número */
-  padding: 2px 5px;
+  flex: 2; 
+  padding: 2px 10px;
   text-align: right;
-  font-weight: 500;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  color: #1a1a1a;
   outline: none;
-  border-right: 1px dashed #e0d9b5;
-  min-width: 60px;
+  min-width: 80px;
 }
 
 .tape-op {
-  flex: 0.4; /* Columna delgada para el operador */
-  padding: 2px 5px;
-  text-align: center;
-  font-weight: bold;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.3rem;
   color: #c00;
-  outline: none;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin: 2px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  flex-shrink: 0;
 }
 
 .tape-value:focus, .tape-label:focus, .tape-op:focus {
@@ -2979,38 +3062,74 @@ body {
   transform: scale(0.95);
 }
 
-/* Mode switch */
+/* Mode switch as Sidebar */
 .calc-mode-switch {
-  display: flex; gap: 0; border-radius: 10px; overflow: hidden;
-  border: 1px solid var(--border); flex-shrink: 0;
+  display: flex; 
+  flex-direction: column; 
+  width: 32px;
+  border-right: 1px solid var(--border);
+  background: #1a1a2e;
+  flex-shrink: 0;
 }
 .calc-mode-btn {
-  flex: 1; padding: 8px 6px; border: none; cursor: pointer;
-  font-size: 0.72rem; font-weight: 700; background: var(--surface); color: var(--muted);
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: #86868b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   transition: all .2s;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
-.calc-mode-btn.active { background: var(--primary); color: white; }
-.calc-mode-btn:not(.active):hover { background: #1a1a2e; color: #f5f5f7; }
+.calc-mode-btn.active {
+  background: var(--primary);
+  color: white;
+}
+.calc-mode-btn:not(.active):hover {
+  background: rgba(255,255,255,0.05);
+  color: #f5f5f7;
+}
+
+#calc-std-view, #calc-ret-view {
+  flex: 1;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  overflow-y: auto;
+}
 
 /* Standard calculator */
 .calc-std-display {
-  background: var(--surface); border-radius: 10px; padding: 12px 14px;
-  min-height: 72px; display: flex; flex-direction: column;
-  justify-content: flex-end; align-items: flex-end; gap: 4px;
+  background: var(--surface); border-radius: 6px; padding: 2px 10px;
+  min-height: 0; display: flex; flex-direction: column;
+  justify-content: center; align-items: flex-end; gap: 0;
   border: 1px solid var(--border);
+  margin-bottom: 4px;
 }
 .calc-std-expr {
-  font-size: 0.72rem; color: var(--muted); min-height: 16px;
+  font-size: 0.7rem; color: var(--muted); min-height: 12px;
   text-align: right; word-break: break-all;
+  line-height: 1;
 }
 .calc-std-screen {
-  font-size: 2rem; font-weight: 700; color: var(--text);
+  font-size: 1.6rem; font-weight: 700; color: var(--text);
   text-align: right; word-break: break-all; line-height: 1.1;
 }
 .calc-std-pad {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
 }
 .calc-key-fn { background: #2a2a3e; color: #f5f5f7; }
 .calc-key-op { background: #1a1a3e; color: #0a84ff; font-size: 1.2rem; }
@@ -3018,73 +3137,6 @@ body {
 .calc-key-op:active { background: #0a84ff; color: white; }
 .calc-key-eq:active { background: #4f46e5; }
 
-/* Sub-switch Normal / RPN */
-.calc-sub-switch {
-  display: flex; border-radius: 8px; overflow: hidden;
-  border: 1px solid #1f1f2e; flex-shrink: 0;
-}
-.calc-sub-btn {
-  flex: 1; padding: 6px 4px; border: none; cursor: pointer;
-  font-size: 0.72rem; font-weight: 700; background: var(--surface); color: var(--muted);
-  transition: all .2s;
-}
-.calc-sub-btn.active { background: var(--surface2); color: var(--primary-light); }
-
-/* RPN stack display */
-.calc-rpn-stack {
-  background: var(--surface); border-radius: 10px; padding: 10px 12px;
-  border: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px;
-}
-.rpn-row {
-  display: flex; justify-content: space-between; align-items: center;
-  font-size: 0.78rem; color: var(--muted); padding: 2px 0;
-  border-bottom: 1px solid var(--border);
-}
-.rpn-row:last-child { border-bottom: none; }
-.rpn-lbl { font-weight: 700; font-size: 0.65rem; letter-spacing: 1px; }
-.rpn-val { font-weight: 600; font-size: 0.9rem; color: var(--text); }
-.rpn-x { color: var(--text); background: var(--bg2); border-radius: 6px; padding: 4px 6px; }
-.rpn-x-val { color: #00e5ff; font-size: 1.1rem; font-weight: 800; }
-.calc-rpn-pad {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-  grid-template-rows: repeat(4, auto);
-  gap: 5px;
-}
-/* ENTER spans rows 3-4 in column 1 */
-.calc-key-enter {
-  grid-row: span 2;
-  grid-column: 1;
-  background: #0a3060;
-  color: #0a84ff;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 2px;
-  line-height: 1.4;
-  writing-mode: horizontal-tb;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 6px 4px;
-}
-.calc-key-enter:active { background: #0a84ff; color: white; }
-
-/* RPN fn keys (CHS, SWAP, DROP) with 2-line label */
-.rpn-fn {
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 2px; padding: 6px 4px;
-}
-.rpn-main { font-size: 0.78rem; font-weight: 800; color: #f5f5f7; line-height: 1; }
-.rpn-sub  { font-size: 0.55rem; font-weight: 600; color: #c97b00; line-height: 1; text-transform: uppercase; }
-
-/* Number keys with inner span */
-.rpn-num {
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1rem; font-weight: 700;
-}
-.rpn-num .rpn-main { font-size: 1rem; color: #f5f5f7; }
 
 /* ---- Notes Library View ---- */
 .notes-grid {
@@ -3345,18 +3397,50 @@ body {
 }
 
 /* ---- Toma de Nota (Quick Notes) ---- */
+#view-quick-notes.active {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: var(--bg);
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.qn-full-header {
+  padding: 10px 20px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0 !important;
+}
+
+.qn-back-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
 .qn-container {
   display: flex;
   gap: 0;
-  width: 97%;
-  height: 82vh;
-  margin: 10px auto;
-  position: relative; /* CRÍTICO: Para anclar el tirón al módulo */
+  width: 100% !important;
+  height: 100% !important;
+  flex: 1;
+  margin: 0 !important;
+  position: relative;
   background: var(--bg2);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border-radius: 0 !important;
+  border: none !important;
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  box-shadow: none !important;
 }
 
 .qn-block-wrapper {
@@ -3382,7 +3466,7 @@ body {
   inset: 0;
   width: 100%;
   height: 100%;
-  padding: 40px;
+  padding: 20px 40px; /* Reducido para tablet */
   display: flex;
   flex-direction: column;
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, visibility 0.4s;
@@ -3414,12 +3498,12 @@ body {
 .qn-sheet-header {
   display: flex;
   justify-content: flex-end;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: #8a7b45;
-  border-bottom: 2px dashed rgba(138, 123, 69, 0.2);
-  padding-bottom: 12px;
-  margin-bottom: 20px;
+  border-bottom: 1px dashed rgba(138, 123, 69, 0.15);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
 }
 
 .qn-editor {
@@ -3442,9 +3526,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 15px;
-  border-top: 2px dashed rgba(138, 123, 69, 0.2);
-  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(138, 123, 69, 0.15);
+  margin-top: 6px;
 }
 
 .qn-delete-btn {
@@ -3467,31 +3551,104 @@ body {
 .qn-navigation-bar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 30px;
-  padding: 15px;
-  background: var(--surface);
+  background: #e9ecf5;
   border-top: 1px solid var(--border);
+  height: 40px;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  user-select: none;
 }
 
-.qn-nav-btn {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-size: 1.4rem;
+.qn-nav-controls {
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  border-right: 1px solid rgba(0,0,0,0.1);
+  height: 100%;
+}
+
+.qn-nav-tool {
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #555;
+  border-radius: 4px;
   transition: all 0.2s;
 }
 
-.qn-nav-btn:hover {
-  background: var(--primary);
-  color: white;
-  transform: scale(1.1);
+.qn-nav-tool:hover {
+  background: rgba(255,255,255,0.6);
+  color: var(--primary);
+}
+
+.qn-nav-tool.danger:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.qn-tabs-container {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.qn-tabs-container::-webkit-scrollbar { display: none; }
+
+.qn-tab {
+  height: 100%;
+  padding: 0 30px 0 15px;
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #444;
+  background: #dae0ed;
+  border-right: 1px solid rgba(0,0,0,0.1);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.1s;
+  /* Efecto de pestaña trapezoidal (Excel style) */
+  clip-path: polygon(0 0, 85% 0, 100% 100%, 0% 100%);
+  margin-right: -12px;
+  border-bottom: 2px solid transparent;
+}
+
+.qn-tab.active {
+  background: #ffffff;
+  color: #000;
+  font-weight: 800;
+  z-index: 10;
+  clip-path: polygon(0 0, 90% 0, 100% 100%, 0% 100%);
+  padding-right: 35px;
+  border-bottom: 2px solid var(--primary);
+}
+
+.qn-tab:hover:not(.active) {
+  background: #e2e8f3;
+}
+
+.qn-nav-actions {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  height: 100%;
+  border-left: 1px solid rgba(0,0,0,0.1);
+  background: #e9ecf5;
+  z-index: 20;
+}
+
+.qn-nav-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(0,0,0,0.1);
+  margin: 0 8px;
 }
 
 #qn-counter {
@@ -3502,8 +3659,9 @@ body {
 }
 
 .qn-calc-pane {
-  width: 320px; /* Tamaño similar al de Editar Nota */
-  min-width: 320px;
+  width: 320px;
+  min-width: 240px;
+  max-width: 40%;
   background: var(--bg2);
   display: flex;
   flex-direction: column;
@@ -3515,30 +3673,9 @@ body {
   height: 100%;
 }
 
-/* Manejador de redimensionamiento de ventana (esquina) */
+/* Manejador de redimensionamiento de ventana (esquina) - Oculto en Fullscreen */
 .qn-resizer {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 32px;
-  height: 32px;
-  cursor: nwse-resize;
-  z-index: 100;
-  background: linear-gradient(135deg, transparent 60%, var(--primary) 60%);
-  opacity: 0.5;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  padding: 6px;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-  touch-action: none;
-}
-.qn-resizer:hover {
-  opacity: 1;
-  transform: scale(1.1);
+  display: none !important;
 }
 
 /* Barra divisoria arrastrable (Gutter) */
@@ -3574,14 +3711,17 @@ body {
 /* Tablet Optimizations */
 @media (max-width: 1024px) {
   .qn-container {
-    width: 98%;
-    height: 85vh;
+    width: 100% !important;
+    height: 100% !important;
   }
   .qn-calc-pane {
-    width: 300px;
+    width: 350px; /* Un poco más ancho para tablet */
     min-width: 300px;
   }
   .qn-gutter {
-    width: 15px; /* Más ancho en tablet */
+    width: 12px;
+  }
+  .qn-sheet {
+    padding: 15px 25px; /* Más espacio aprovechado */
   }
 }
