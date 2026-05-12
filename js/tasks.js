@@ -206,12 +206,6 @@ const Tasks = {
           <button type="button" class="rt-btn" data-command="bold" title="Negrita"><b>B</b></button>
           <button type="button" class="rt-btn" data-command="italic" title="Cursiva"><i>I</i></button>
           <button type="button" class="rt-btn" data-command="underline" title="Subrayado"><u>U</u></button>
-          <button type="button" class="rt-btn" data-command="pasteFromClipboard" title="Pegar del Portapapeles">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-              <rect x="8" y="2" width="8" height="4" rx="1"></rect>
-            </svg>
-          </button>
           <div class="rt-highlighter-wrapper">
             <button type="button" class="rt-btn rt-highlighter-btn" data-value="#00e5ff" title="Aplicar Marcador">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -269,7 +263,7 @@ const Tasks = {
         </div>
 
         <div style="display:flex; gap:14px; position:relative; flex:1; min-height:0;">
-          <div id="note-ta" class="postit-note rt-editor ${task.type === 'note' ? 'postit-pink' : ''}" contenteditable="true" role="textbox" aria-multiline="true" style="
+          <div id="note-ta" class="postit-note rt-editor ${task.type === 'note' ? 'postit-pink' : ''}" contenteditable="true" style="
             flex:1; min-height:0; overflow-y:auto; resize:none; padding:12px;
             border-radius:8px;
             font-size:0.9rem; line-height:1.6;
@@ -961,17 +955,10 @@ const Tasks = {
     if (!form._attPasteBound) {
       form._attPasteBound = true;
       form.addEventListener('paste', async (e) => {
-        const clipboardData = e.clipboardData || window.clipboardData;
-        const items = Array.from(clipboardData?.items || []);
-        const files = Array.from(clipboardData?.files || []);
-        
-        const imgItem = items.find(it => it.type.startsWith('image/'));
-        const imgFile = files.find(f => f.type.startsWith('image/'));
-        
-        if (!imgItem && !imgFile) return;
-        
+        const img = Array.from(e.clipboardData?.items || []).find(it => it.type.startsWith('image/'));
+        if (!img) return;
         e.preventDefault();
-        const file = imgItem ? imgItem.getAsFile() : imgFile;
+        const file = img.getAsFile();
         if (!file) return;
         pasteZone.style.borderColor = '#6366f1';
         pasteZone.style.color = '#a5b4fc';
