@@ -310,10 +310,8 @@
         }
         #view-new-task .form-container {
           width: 100%;
-          height: 100%;
-          max-width: none;
-          max-height: none;
-          border-radius: 0;
+          max-width: 770px;
+          max-height: 90vh;
           overflow-y: auto;
           box-shadow: 0 24px 60px rgba(0,0,0,0.8);
           animation: modalIn 0.3s cubic-bezier(.4,0,.2,1);
@@ -430,8 +428,12 @@
                     </select>
                     <button type="button" class="rt-btn rt-table-row-btn" data-command="addTableRow" title="Añadir fila" style="display:none; color:var(--primary)">+ Fila</button>
                     <button type="button" class="rt-btn rt-table-row-btn" data-command="removeTableRow" title="Eliminar fila" style="display:none; color:var(--danger)">- Fila</button>
+                    <button type="button" class="rt-btn rt-share-btn" title="Compartir nota" style="margin-left:auto; color:var(--primary)">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
+                      </svg>
+                    </button>
                     <button type="button" class="rt-btn rt-convert-btn" title="Convertir en Tarea" style="background:var(--accent,#8b5cf6); color:white; width:auto; padding:0 12px; font-weight:700; margin-left:8px; display:none">➔ CONVERTIR A TAREA</button>
-                    <button type="button" class="rt-btn" id="main-editor-exit" title="Salir de la nota" style="background:var(--danger); color:white; width:auto; padding:0 12px; font-weight:700; margin-left:8px; height:32px; display:none">SALIR</button>
                   </div>
                   <div id="task-description" class="input-field postit-note rt-editor" contenteditable="true" placeholder="Escribe aquí las notas de esta tarea..."></div>
                 </div>
