@@ -2361,6 +2361,11 @@ body {
   transition: background 0.2s;
   pointer-events: none;
 }
+.rt-highlighter-wrapper.rt-highlighter-active .rt-highlighter-btn {
+  background: var(--primary) !important;
+  box-shadow: 0 0 10px rgba(99,102,241,0.5) !important;
+  color: white !important;
+}
 
 .rt-color-palette {
   position: absolute;
@@ -2494,9 +2499,9 @@ body {
 .rt-focus-window {
   position: relative;
   background: var(--surface);
-  width: 97%;
-  max-width: 960px;
-  height: 82vh;
+  width: 98%;
+  max-width: 1104px;
+  height: 98vh;
   border-radius: 16px;
   display: flex;
   flex-direction: column;
