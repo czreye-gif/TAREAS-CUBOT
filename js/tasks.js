@@ -185,18 +185,18 @@ const Tasks = {
 
     // ── Construir modal ──────────────────────────────────────
     const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;inset:0;background:var(--bg);z-index:10000;display:flex;flex-direction:column;';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:flex-start;padding:16px;padding-left:5%';
 
     // Recuperar dimensiones persistentes
     // Recuperar dimensiones persistentes
     const savedDim = JSON.parse(localStorage.getItem('rt-focus-dim') || '{}');
-    const initialWidth = savedDim.w || '600px';
+    const initialWidth = savedDim.w || '520px';
     const initialHeight = savedDim.h || 'auto';
     const initCalcW = savedDim.calcW || '300px';
 
     const box = document.createElement('div');
     box.id = 'note-modal-box';
-    box.style.cssText = `background:var(--bg);width:100%;height:100%;display:flex;flex-direction:column;padding:20px;position:relative;border:none;border-radius:0;`;
+    box.style.cssText = `background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;width:${initialWidth};height:${initialHeight};max-height:88vh;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;position:relative;min-width:400px;min-height:400px;`;
 
     box.innerHTML = `
       <h3 style="margin:0;font-size:1rem;color:var(--text)">📋 Notas — ${this._escapeHTML(task.title)}</h3>
@@ -267,7 +267,6 @@ const Tasks = {
             </svg>
           </button>
           <button type="button" class="rt-btn rt-convert-btn" title="Convertir en Tarea" style="background:var(--accent); color:white; width:auto; padding:0 8px; font-weight:700; margin-left:8px; display:none">➔ CONVERTIR A TAREA</button>
-          <button type="button" class="rt-btn" id="modal-note-exit" title="Salir de la nota" style="background:var(--danger); color:white; width:auto; padding:0 12px; font-weight:700; margin-left:8px; height:32px">SALIR</button>
         </div>
 
         <div style="display:flex; gap:14px; position:relative; flex:1; min-height:0;">
@@ -597,8 +596,13 @@ const Tasks = {
       app.refreshCurrentView();
     };
 
-    box.querySelector('#note-cancel').onclick = () => overlay.remove();
-    box.querySelector('#modal-note-exit').onclick = () => overlay.remove();
+    box.querySelector('#note-cancel').onclick = () => {
+      app.confirmTaskExit('today', {
+        onSave: doSave,
+        onCancel: () => overlay.remove()
+      });
+    };
+    
     box.querySelector('#note-save').onclick = doSave;
 
     // Close handler (Overlay)
@@ -1301,13 +1305,6 @@ const Tasks = {
     this._renderQuickTags();
     this._formAttachments = [];
     this._renderFormAtts();
-
-    // Configurar botón SALIR
-    const mainExit = document.getElementById('main-editor-exit');
-    if (mainExit) {
-      mainExit.style.display = 'block';
-      mainExit.onclick = (e) => { e.preventDefault(); app.navigate('today'); };
-    }
   },
 
   submitForm() {

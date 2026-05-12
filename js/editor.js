@@ -241,14 +241,14 @@ const RichEditor = {
 
     // Recuperar dimensiones persistentes
     const savedDim = JSON.parse(localStorage.getItem('rt-focus-dim') || '{}');
-    const initW = savedDim.w || '98%';
-    const initH = savedDim.h || '98vh';
+    const initW = savedDim.w || '97%';
+    const initH = savedDim.h || '82vh';
     const initCalcW = savedDim.calcW || '300px';
 
     const overlay = document.createElement('div');
     overlay.className = 'rt-focus-overlay';
     overlay.innerHTML = `
-      <div class="rt-focus-window" id="rt-focus-win" style="width:100%; height:100%; max-width:none; border-radius:0;">
+      <div class="rt-focus-window" id="rt-focus-win" style="width:${initW}; height:${initH}; max-width:none;">
         <div class="rt-focus-header" id="rt-focus-hdr">
           <span>📝 Nota: ${folio}</span>
           <div style="display:flex;gap:6px;align-items:center">
@@ -283,13 +283,8 @@ const RichEditor = {
     const calcToggle  = overlay.querySelector('.rt-calc-toggle');
     const shareBtn    = overlay.querySelector('.rt-share-focus');
 
-    // Clean focus-toolbar and show SALIR button
+    // Clean focus-toolbar
     focusTB.querySelectorAll('.rt-expand-btn,.rt-convert-btn').forEach(b => b.remove());
-    const exitBtn = focusTB.querySelector('#main-editor-exit') || focusTB.querySelector('#modal-note-exit');
-    if (exitBtn) {
-      exitBtn.style.display = 'block';
-      exitBtn.onclick = (e) => { e.stopPropagation(); exitFocus(); };
-    }
     this.init('#focus-editor', '#focus-toolbar');
 
     // Init calculator
