@@ -199,7 +199,43 @@ const Tasks = {
     box.style.cssText = `background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;width:${initialWidth};height:${initialHeight};max-height:88vh;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;position:relative;min-width:400px;min-height:400px;`;
 
     box.innerHTML = `
-      <h3 style="margin:0;font-size:1rem;color:var(--text)">📋 Notas — ${this._escapeHTML(task.title)}</h3>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0">
+        <h3 style="margin:0;font-size:1rem;color:var(--text)">📋 Notas — ${this._escapeHTML(task.title)}</h3>
+        <button type="button" id="btn-note-modal-config" class="rt-btn" title="Configurar Ventana" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+
+      <!-- Panel de Configuración de Ventana de Nota -->
+      <div id="note-modal-config-panel" style="display:none; position:fixed; top:100px; right:50px; background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:20px; z-index:200000; box-shadow:0 10px 40px rgba(0,0,0,0.6); width:280px; animation: modalIn 0.2s ease-out;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+          <h3 style="margin:0; font-size:1rem">Configurar Ventana</h3>
+          <button type="button" class="btn-close-note-config" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.2rem">&times;</button>
+        </div>
+        
+        <div class="form-group" style="margin-bottom:15px">
+          <label style="font-size:0.8rem">Ancho (px)</label>
+          <input type="range" id="note-config-width" min="400" max="1400" step="10" style="width:100%">
+          <div id="note-config-width-val" style="font-size:0.75rem; text-align:right">520px</div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:15px">
+          <label style="font-size:0.8rem">Altura Máxima (%)</label>
+          <input type="range" id="note-config-height" min="50" max="95" step="5" style="width:100%">
+          <div id="note-config-height-val" style="font-size:0.75rem; text-align:right">88%</div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:15px">
+          <label style="font-size:0.8rem">Posición Horizontal</label>
+          <div style="display:flex; gap:5px">
+            <button type="button" class="btn-note-config-pos" data-pos="flex-start" style="flex:1; padding:5px; font-size:0.7rem">Izquierda</button>
+            <button type="button" class="btn-note-config-pos" data-pos="center" style="flex:1; padding:5px; font-size:0.7rem">Centro</button>
+            <button type="button" class="btn-note-config-pos" data-pos="flex-end" style="flex:1; padding:5px; font-size:0.7rem">Derecha</button>
+          </div>
+        </div>
+
+        <button type="button" id="btn-save-note-modal-config" class="btn btn-primary" style="width:100%; padding:10px; font-size:0.85rem">GUARDAR Y CERRAR</button>
+      </div>
 
       <div class="rt-editor-container" id="modal-editor-container">
         <div class="rt-toolbar" id="modal-editor-toolbar">
@@ -405,7 +441,83 @@ const Tasks = {
     gutter.addEventListener('mousedown', e => { startGutter(e.clientX); e.preventDefault(); });
     gutter.addEventListener('touchstart', e => { startGutter(e.touches[0].clientX); }, { passive: true });
 
-    // ── EVENTOS GLOBALES ─────────────────────────────────────────
+      // ── CONFIGURACIÓN DE VENTANA (Nota) ─────────────────────────
+      const btnNoteConfig = box.querySelector('#btn-note-modal-config');
+      const noteConfigPanel = box.querySelector('#note-modal-config-panel');
+      const btnCloseNoteConfig = box.querySelector('.btn-close-note-config');
+      const btnSaveNoteConfig = box.querySelector('#btn-save-note-modal-config');
+      const noteWInp = box.querySelector('#note-config-width');
+      const noteHInp = box.querySelector('#note-config-height');
+      const noteWVal = box.querySelector('#note-config-width-val');
+      const noteHVal = box.querySelector('#note-config-height-val');
+
+      // Cargar valores actuales en inputs
+      const currentConfig = JSON.parse(localStorage.getItem('rt-note-modal-config') || '{"width":520,"height":88,"position":"flex-start"}');
+      noteWInp.value = currentConfig.width || 520;
+      noteHInp.value = currentConfig.height || 88;
+      noteWVal.textContent = `${noteWInp.value}px`;
+      noteHVal.textContent = `${noteHInp.value}%`;
+
+      // Aplicar posición inicial al overlay
+      overlay.style.justifyContent = currentConfig.position || 'flex-start';
+      if (currentConfig.position === 'center') overlay.style.paddingLeft = '16px';
+
+      btnNoteConfig.onclick = (e) => {
+        e.stopPropagation();
+        noteConfigPanel.style.display = noteConfigPanel.style.display === 'none' ? 'block' : 'none';
+      };
+
+      btnCloseNoteConfig.onclick = () => noteConfigPanel.style.display = 'none';
+
+      noteWInp.oninput = () => {
+        box.style.width = noteWInp.value + 'px';
+        noteWVal.textContent = noteWInp.value + 'px';
+      };
+
+      noteHInp.oninput = () => {
+        box.style.maxHeight = noteHInp.value + 'vh';
+        noteHVal.textContent = noteHInp.value + '%';
+      };
+
+      box.querySelectorAll('.btn-note-config-pos').forEach(btn => {
+        // Estilo inicial
+        if (btn.dataset.pos === (currentConfig.position || 'flex-start')) {
+          btn.style.background = 'var(--primary)';
+          btn.style.color = 'white';
+        }
+
+        btn.onclick = () => {
+          const pos = btn.dataset.pos;
+          overlay.style.justifyContent = pos;
+          if (pos === 'center') overlay.style.paddingLeft = '16px';
+          else overlay.style.paddingLeft = '5%';
+
+          box.querySelectorAll('.btn-note-config-pos').forEach(b => {
+            b.style.background = 'rgba(255,255,255,0.05)';
+            b.style.color = 'var(--text)';
+          });
+          btn.style.background = 'var(--primary)';
+          btn.style.color = 'white';
+          btn.dataset.active = 'true';
+        };
+      });
+
+      btnSaveNoteConfig.onclick = () => {
+        const activePosBtn = Array.from(box.querySelectorAll('.btn-note-config-pos')).find(b => b.style.background.includes('var(--primary)') || b.style.background.includes('rgb(99, 102, 241)'));
+        const config = {
+          width: parseInt(noteWInp.value),
+          height: parseInt(noteHInp.value),
+          position: activePosBtn ? activePosBtn.dataset.pos : 'flex-start'
+        };
+        localStorage.setItem('rt-note-modal-config', JSON.stringify(config));
+        // También actualizamos rt-focus-dim para compatibilidad
+        localStorage.setItem('rt-focus-dim', JSON.stringify({ w: config.width + 'px', h: 'auto', calcW: calcPane.style.width }));
+        
+        noteConfigPanel.style.display = 'none';
+        UI.toast('Configuración de nota guardada', 'success');
+      };
+
+      // ── EVENTOS GLOBALES ─────────────────────────────────────────
     const onMouseMove = e => {
       if (resizing) moveResize(e.clientX, e.clientY);
       if (gutterDragging) moveGutter(e.clientX);

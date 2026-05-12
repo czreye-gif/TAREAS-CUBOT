@@ -249,12 +249,46 @@ const RichEditor = {
     overlay.className = 'rt-focus-overlay';
     overlay.innerHTML = `
       <div class="rt-focus-window" id="rt-focus-win" style="width:${initW}; height:${initH}; max-width:none;">
-        <div class="rt-focus-header" id="rt-focus-hdr">
+        <div class="rt-focus-header" id="rt-focus-hdr" style="display:flex; justify-content:space-between; align-items:center;">
           <span>📝 Nota: ${folio}</span>
           <div style="display:flex;gap:6px;align-items:center">
+            <button type="button" id="btn-focus-config" class="rt-btn" title="Configurar Ventana" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 4px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
             <button class="rt-calc-toggle" title="Calculadora de Retenciones">🧮 Calc</button>
             ${taskId ? `<button class="rt-share-focus">Compartir</button>` : ''}
           </div>
+        </div>
+
+        <!-- Panel de Configuración de Ventana de Nota (Focus) -->
+        <div id="focus-config-panel" style="display:none; position:fixed; top:100px; right:50px; background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:20px; z-index:200000; box-shadow:0 10px 40px rgba(0,0,0,0.6); width:280px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+            <h3 style="margin:0; font-size:1rem; color:var(--text)">Configurar Ventana</h3>
+            <button type="button" class="btn-close-focus-config" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.2rem">&times;</button>
+          </div>
+          
+          <div class="form-group" style="margin-bottom:15px">
+            <label style="font-size:0.8rem; color:var(--text)">Ancho (%)</label>
+            <input type="range" id="focus-config-width" min="40" max="100" step="1" style="width:100%">
+            <div id="focus-config-width-val" style="font-size:0.75rem; text-align:right; color:var(--muted)">97%</div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:15px">
+            <label style="font-size:0.8rem; color:var(--text)">Altura (%)</label>
+            <input type="range" id="focus-config-height" min="40" max="100" step="1" style="width:100%">
+            <div id="focus-config-height-val" style="font-size:0.75rem; text-align:right; color:var(--muted)">82%</div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:15px">
+            <label style="font-size:0.8rem; color:var(--text)">Posición Horizontal</label>
+            <div style="display:flex; gap:5px">
+              <button type="button" class="btn-focus-config-pos" data-pos="flex-start" style="flex:1; padding:5px; font-size:0.7rem">Izquierda</button>
+              <button type="button" class="btn-focus-config-pos" data-pos="center" style="flex:1; padding:5px; font-size:0.7rem">Centro</button>
+              <button type="button" class="btn-focus-config-pos" data-pos="flex-end" style="flex:1; padding:5px; font-size:0.7rem">Derecha</button>
+            </div>
+          </div>
+
+          <button type="button" id="btn-save-focus-modal-config" class="btn btn-primary" style="width:100%; padding:10px; font-size:0.85rem">GUARDAR Y CERRAR</button>
         </div>
         <div class="rt-focus-body">
           <div class="rt-note-pane">
@@ -291,6 +325,75 @@ const RichEditor = {
     if (typeof RetCalc !== 'undefined' && calcPane) RetCalc.init(calcPane);
 
     setTimeout(() => focusEditor.focus(), 50);
+
+    // ── CONFIGURACIÓN DE VENTANA (Focus Mode) ───────────────────
+    const btnFocusConfig = win.querySelector('#btn-focus-config');
+    const focusConfigPanel = win.querySelector('#focus-config-panel');
+    const btnCloseFocusConfig = win.querySelector('.btn-close-focus-config');
+    const btnSaveFocusConfig = win.querySelector('#btn-save-focus-modal-config');
+    const focusWInp = win.querySelector('#focus-config-width');
+    const focusHInp = win.querySelector('#focus-config-height');
+    const focusWVal = win.querySelector('#focus-config-width-val');
+    const focusHVal = win.querySelector('#focus-config-height-val');
+
+    // Cargar valores actuales en inputs
+    const currentConfig = JSON.parse(localStorage.getItem('rt-focus-layout-config') || '{"width":97,"height":82,"position":"flex-start"}');
+    focusWInp.value = currentConfig.width;
+    focusHInp.value = currentConfig.height;
+    focusWVal.textContent = `${focusWInp.value}%`;
+    focusHVal.textContent = `${focusHInp.value}%`;
+
+    // Aplicar posición inicial al overlay
+    overlay.style.justifyContent = currentConfig.position || 'flex-start';
+
+    btnFocusConfig.onclick = (e) => {
+      e.stopPropagation();
+      focusConfigPanel.style.display = focusConfigPanel.style.display === 'none' ? 'block' : 'none';
+    };
+
+    btnCloseFocusConfig.onclick = () => focusConfigPanel.style.display = 'none';
+
+    focusWInp.oninput = () => {
+      win.style.width = focusWInp.value + '%';
+      focusWVal.textContent = focusWInp.value + '%';
+    };
+
+    focusHInp.oninput = () => {
+      win.style.height = focusHInp.value + 'vh';
+      focusHVal.textContent = focusHInp.value + '%';
+    };
+
+    win.querySelectorAll('.btn-focus-config-pos').forEach(btn => {
+      if (btn.dataset.pos === (currentConfig.position || 'flex-start')) {
+        btn.style.background = 'var(--primary)';
+        btn.style.color = 'white';
+      }
+      btn.onclick = () => {
+        const pos = btn.dataset.pos;
+        overlay.style.justifyContent = pos;
+        win.querySelectorAll('.btn-focus-config-pos').forEach(b => {
+          b.style.background = 'rgba(255,255,255,0.05)';
+          b.style.color = 'var(--text)';
+        });
+        btn.style.background = 'var(--primary)';
+        btn.style.color = 'white';
+      };
+    });
+
+    btnSaveFocusConfig.onclick = () => {
+      const activePosBtn = Array.from(win.querySelectorAll('.btn-focus-config-pos')).find(b => b.style.background.includes('var(--primary)') || b.style.background.includes('rgb(99, 102, 241)'));
+      const config = {
+        width: parseInt(focusWInp.value),
+        height: parseInt(focusHInp.value),
+        position: activePosBtn ? activePosBtn.dataset.pos : 'flex-start'
+      };
+      localStorage.setItem('rt-focus-layout-config', JSON.stringify(config));
+      // Sincronizar con rt-focus-dim para compatibilidad con el resizer manual
+      localStorage.setItem('rt-focus-dim', JSON.stringify({ w: config.width + '%', h: config.height + 'vh', calcW: calcPane.style.width }));
+      
+      focusConfigPanel.style.display = 'none';
+      UI.toast('Configuración de vista de nota guardada', 'success');
+    };
 
     // ── PERSISTENCIA ─────────────────────────────────────────────
     const saveDimensions = () => {
