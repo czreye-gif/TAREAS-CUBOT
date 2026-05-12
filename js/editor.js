@@ -99,14 +99,19 @@ const RichEditor = {
       };
       setSelectionColor(savedColor);
 
-      // Click main: apply current color
+      // Click main: toggle active state and apply current color
       btn.onmousedown = (e) => {
         e.preventDefault();
         const color = btn.dataset.value;
-        document.execCommand('hiliteColor', false, color === 'transparent' ? '#fdf3c0' : color);
         
-        // Quitar la selección después de marcar para revelar el color real (Opcional, pero ayuda)
-        // window.getSelection().removeAllRanges(); 
+        // Toggle active state
+        const isActive = wrapper.classList.toggle('rt-highlighter-active');
+        
+        // Apply immediately if there is a selection
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0 && selection.toString().length > 0) {
+          document.execCommand('hiliteColor', false, color === 'transparent' ? '#fdf3c0' : color);
+        }
         
         editor.focus();
         palette.classList.remove('show');
@@ -132,8 +137,14 @@ const RichEditor = {
           // Guardar color persistente
           localStorage.setItem('rt-last-hilite', color);
           
-          // Apply immediately if there is a selection
-          document.execCommand('hiliteColor', false, color === 'transparent' ? '#fdf3c0' : color);
+          // ACTIVAR marcador automáticamente al elegir color
+          wrapper.classList.add('rt-highlighter-active');
+          
+          // Aplicar a selección actual SOLO si no está vacía
+          const selection = window.getSelection();
+          if (selection.rangeCount > 0 && selection.toString().length > 0) {
+            document.execCommand('hiliteColor', false, color === 'transparent' ? '#fdf3c0' : color);
+          }
           
           palette.classList.remove('show');
           editor.focus();
@@ -145,25 +156,39 @@ const RichEditor = {
         if (!wrapper.contains(e.target)) palette.classList.remove('show');
       });
 
-      // ── MODO MARCADOR REAL (Auto-Highlight & Auto-Clear) ──
-      const autoHighlight = () => {
-        const color = btn.dataset.value;
-        if (!color) return;
-        
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0 && selection.toString().length > 0) {
-          if (color === 'transparent') {
-            // Modo Borrador: aplicamos el color de fondo del post-it para "limpiar"
-            document.execCommand('hiliteColor', false, '#fdf3c0');
-          } else {
-            // Modo Marcador: aplicamos el color neón activo
-            document.execCommand('hiliteColor', false, color);
-          }
-        }
-      };
+    // ── MODO MARCADOR REAL (Auto-Highlight & Auto-Clear) ──
+    const autoHighlight = () => {
+      const selection = window.getSelection();
+      
+      // Si la selección está vacía, nos aseguramos de que el comando hiliteColor no esté "pegado" al cursor
+      if (!selection.rangeCount || selection.toString().length === 0) {
+        return;
+      }
 
+      // SOLO si el marcador está activo en ESTE toolbar
+      if (!toolbar.querySelector('.rt-highlighter-wrapper.rt-highlighter-active')) {
+        return;
+      }
+
+      const btn = toolbar.querySelector('.rt-highlighter-btn');
+      const color = btn ? btn.dataset.value : null;
+      if (!color) return;
+      
+      if (color === 'transparent') {
+        // Modo Borrador: aplicamos el color de fondo del post-it para "limpiar"
+        document.execCommand('hiliteColor', false, '#fdf3c0');
+      } else {
+        // Modo Marcador: aplicamos el color neón activo
+        document.execCommand('hiliteColor', false, color);
+      }
+    };
+
+    // Evitar duplicar listeners si se re-inicializa el mismo editor
+    if (!editor.dataset.rtListeners) {
       editor.addEventListener('mouseup', autoHighlight);
       editor.addEventListener('touchend', autoHighlight);
+      editor.dataset.rtListeners = 'true';
+    }
     });
 
     // ── Auto-abrir ventana flotante al hacer foco en el editor ──
@@ -216,8 +241,8 @@ const RichEditor = {
 
     // Recuperar dimensiones persistentes
     const savedDim = JSON.parse(localStorage.getItem('rt-focus-dim') || '{}');
-    const initW = savedDim.w || '97%';
-    const initH = savedDim.h || '82vh';
+    const initW = savedDim.w || '98%';
+    const initH = savedDim.h || '98vh';
     const initCalcW = savedDim.calcW || '300px';
 
     const overlay = document.createElement('div');

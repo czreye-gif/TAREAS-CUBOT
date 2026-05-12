@@ -183,6 +183,13 @@ const QuickNotes = {
       sheet.innerHTML = `
         <div class="qn-sheet-header">
           <div class="rt-toolbar" id="qn-toolbar-${note.id}" style="padding:4px; border-bottom:1px solid rgba(0,0,0,0.05); margin-bottom:8px; display:${isActive ? 'flex' : 'none'}">
+            <button type="button" class="rt-btn" data-command="undo" title="Deshacer">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14L4 9l5-5"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>
+            </button>
+            <button type="button" class="rt-btn" data-command="redo" title="Rehacer">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 14l5-5-5-5"/><path d="M4 20v-7a4 4 0 014-4h12"/></svg>
+            </button>
+            <div class="rt-divider"></div>
             <button type="button" class="rt-btn" data-command="bold" title="Negrita"><b>B</b></button>
             <button type="button" class="rt-btn" data-command="italic" title="Cursiva"><i>I</i></button>
             <button type="button" class="rt-btn" data-command="underline" title="Subrayado"><u>U</u></button>

@@ -190,19 +190,26 @@ const Tasks = {
     // Recuperar dimensiones persistentes
     // Recuperar dimensiones persistentes
     const savedDim = JSON.parse(localStorage.getItem('rt-focus-dim') || '{}');
-    const initialWidth = savedDim.w || '520px';
+    const initialWidth = savedDim.w || '600px';
     const initialHeight = savedDim.h || 'auto';
     const initCalcW = savedDim.calcW || '300px';
 
     const box = document.createElement('div');
     box.id = 'note-modal-box';
-    box.style.cssText = `background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;width:${initialWidth};height:${initialHeight};max-height:88vh;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;position:relative;min-width:400px;min-height:400px;`;
+    box.style.cssText = `background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;width:${initialWidth};height:${initialHeight};max-height:98vh;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;position:relative;min-width:400px;min-height:400px;`;
 
     box.innerHTML = `
       <h3 style="margin:0;font-size:1rem;color:var(--text)">📋 Notas — ${this._escapeHTML(task.title)}</h3>
 
       <div class="rt-editor-container" id="modal-editor-container">
         <div class="rt-toolbar" id="modal-editor-toolbar">
+          <button type="button" class="rt-btn" data-command="undo" title="Deshacer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14L4 9l5-5"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>
+          </button>
+          <button type="button" class="rt-btn" data-command="redo" title="Rehacer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 14l5-5-5-5"/><path d="M4 20v-7a4 4 0 014-4h12"/></svg>
+          </button>
+          <div class="rt-divider"></div>
           <button type="button" class="rt-btn" data-command="bold" title="Negrita"><b>B</b></button>
           <button type="button" class="rt-btn" data-command="italic" title="Cursiva"><i>I</i></button>
           <button type="button" class="rt-btn" data-command="underline" title="Subrayado"><u>U</u></button>
