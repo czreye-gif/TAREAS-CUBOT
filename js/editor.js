@@ -248,7 +248,7 @@ const RichEditor = {
     const overlay = document.createElement('div');
     overlay.className = 'rt-focus-overlay';
     overlay.innerHTML = `
-      <div class="rt-focus-window" id="rt-focus-win" style="width:${initW}; height:${initH}; max-width:none;">
+      <div class="rt-focus-window" id="rt-focus-win" style="width:100%; height:100%; max-width:none; border-radius:0;">
         <div class="rt-focus-header" id="rt-focus-hdr">
           <span>📝 Nota: ${folio}</span>
           <div style="display:flex;gap:6px;align-items:center">
@@ -283,8 +283,13 @@ const RichEditor = {
     const calcToggle  = overlay.querySelector('.rt-calc-toggle');
     const shareBtn    = overlay.querySelector('.rt-share-focus');
 
-    // Clean focus-toolbar
+    // Clean focus-toolbar and show SALIR button
     focusTB.querySelectorAll('.rt-expand-btn,.rt-convert-btn').forEach(b => b.remove());
+    const exitBtn = focusTB.querySelector('#main-editor-exit') || focusTB.querySelector('#modal-note-exit');
+    if (exitBtn) {
+      exitBtn.style.display = 'block';
+      exitBtn.onclick = (e) => { e.stopPropagation(); exitFocus(); };
+    }
     this.init('#focus-editor', '#focus-toolbar');
 
     // Init calculator

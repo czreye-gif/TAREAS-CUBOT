@@ -1301,6 +1301,13 @@ const Tasks = {
     this._renderQuickTags();
     this._formAttachments = [];
     this._renderFormAtts();
+
+    // Configurar botón SALIR
+    const mainExit = document.getElementById('main-editor-exit');
+    if (mainExit) {
+      mainExit.style.display = 'block';
+      mainExit.onclick = (e) => { e.preventDefault(); app.navigate('today'); };
+    }
   },
 
   submitForm() {
