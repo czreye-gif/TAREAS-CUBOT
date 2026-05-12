@@ -234,7 +234,7 @@ const RichEditor = {
         <div class="rt-focus-body">
           <div class="rt-note-pane">
             <div class="rt-toolbar" id="focus-toolbar">${originalToolbar.innerHTML}</div>
-            <div class="rt-editor postit-note" contenteditable="true" id="focus-editor"
+            <div class="rt-editor postit-note" contenteditable="true" id="focus-editor" role="textbox" aria-multiline="true"
                  data-task-id="${taskId}" data-folio="${folio}"
                  style="font-family:${font}">${originalEditor.innerHTML}</div>
           </div>
@@ -763,24 +763,35 @@ const RichEditor = {
   _bindImageTools(editor) {
     // 1. Manejar Pegado de Imágenes
     editor.addEventListener('paste', (e) => {
-      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      const clipboardData = e.clipboardData || window.clipboardData;
+      if (!clipboardData) return;
+
+      const items = clipboardData.items;
+      const files = clipboardData.files;
       let imageFound = false;
 
-      for (const item of items) {
-        if (item.type.indexOf('image') !== -1) {
-          imageFound = true;
-          const blob = item.getAsFile();
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            const html = `<img src="${event.target.result}" style="width:300px; height:auto;">`;
-            document.execCommand('insertHTML', false, html);
-            editor.dispatchEvent(new Event('input', { bubbles: true }));
-          };
-          reader.readAsDataURL(blob);
+      // Intentar extraer imagen de 'items' (estándar)
+      if (items && items.length > 0) {
+        for (const item of items) {
+          if (item.type.indexOf('image') !== -1) {
+            imageFound = true;
+            const blob = item.getAsFile();
+            if (blob) this._insertImageBlob(blob, editor);
+          }
+        }
+      } 
+      
+      // Fallback: Intentar extraer de 'files' (algunos navegadores móviles/tablets)
+      if (!imageFound && files && files.length > 0) {
+        for (const file of files) {
+          if (file.type.indexOf('image') !== -1) {
+            imageFound = true;
+            this._insertImageBlob(file, editor);
+          }
         }
       }
 
-      // Si procesamos una imagen, evitamos que el navegador pegue la original gigante
+      // Si detectamos y procesamos una imagen, evitamos el comportamiento por defecto
       if (imageFound) {
         e.preventDefault();
         e.stopPropagation();
@@ -881,6 +892,49 @@ const RichEditor = {
     document.querySelectorAll('.rt-editor img.selected, .qn-editor img.selected').forEach(img => {
       img.classList.remove('selected');
     });
+  },
+
+  /**
+   * Helper para insertar una imagen desde un Blob/File de forma robusta
+   */
+  _insertImageBlob(blob, editor) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const imgHtml = `<img src="${event.target.result}" style="width:300px; height:auto; max-width:100%; cursor:pointer; display:block; margin:10px 0;">`;
+      
+      // Intentamos usar Range para mayor precisión en la inserción (mejor en móviles)
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        try {
+          const range = selection.getRangeAt(0);
+          range.deleteContents();
+          
+          const el = document.createElement('div');
+          el.innerHTML = imgHtml;
+          const imgNode = el.firstChild;
+          
+          range.insertNode(imgNode);
+          
+          // Mover cursor después de la imagen
+          const nextRange = document.createRange();
+          nextRange.setStartAfter(imgNode);
+          nextRange.setEndAfter(imgNode);
+          selection.removeAllRanges();
+          selection.addRange(nextRange);
+        } catch (err) {
+          console.warn("Fallo inserción con Range, usando execCommand:", err);
+          document.execCommand('insertHTML', false, imgHtml);
+        }
+      } else {
+        // Fallback si no hay selección activa
+        editor.focus();
+        document.execCommand('insertHTML', false, imgHtml);
+      }
+      
+      // Forzar evento de cambio para guardado persistente
+      editor.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    reader.readAsDataURL(blob);
   }
 };
 

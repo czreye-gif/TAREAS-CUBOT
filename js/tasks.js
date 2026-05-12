@@ -263,7 +263,7 @@ const Tasks = {
         </div>
 
         <div style="display:flex; gap:14px; position:relative; flex:1; min-height:0;">
-          <div id="note-ta" class="postit-note rt-editor ${task.type === 'note' ? 'postit-pink' : ''}" contenteditable="true" style="
+          <div id="note-ta" class="postit-note rt-editor ${task.type === 'note' ? 'postit-pink' : ''}" contenteditable="true" role="textbox" aria-multiline="true" style="
             flex:1; min-height:0; overflow-y:auto; resize:none; padding:12px;
             border-radius:8px;
             font-size:0.9rem; line-height:1.6;
@@ -955,10 +955,17 @@ const Tasks = {
     if (!form._attPasteBound) {
       form._attPasteBound = true;
       form.addEventListener('paste', async (e) => {
-        const img = Array.from(e.clipboardData?.items || []).find(it => it.type.startsWith('image/'));
-        if (!img) return;
+        const clipboardData = e.clipboardData || window.clipboardData;
+        const items = Array.from(clipboardData?.items || []);
+        const files = Array.from(clipboardData?.files || []);
+        
+        const imgItem = items.find(it => it.type.startsWith('image/'));
+        const imgFile = files.find(f => f.type.startsWith('image/'));
+        
+        if (!imgItem && !imgFile) return;
+        
         e.preventDefault();
-        const file = img.getAsFile();
+        const file = imgItem ? imgItem.getAsFile() : imgFile;
         if (!file) return;
         pasteZone.style.borderColor = '#6366f1';
         pasteZone.style.color = '#a5b4fc';

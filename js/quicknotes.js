@@ -244,7 +244,7 @@ const QuickNotes = {
           </div>
           <span style="margin-left:auto; font-size:0.75rem; color:rgba(0,0,0,0.4); display:${isActive ? 'none' : 'block'}">${new Date(note.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })}</span>
         </div>
-        <div class="qn-editor" id="qn-editor-${note.id}" contenteditable="true" placeholder="Escribe algo rápido aquí...">${note.content}</div>
+        <div class="qn-editor" id="qn-editor-${note.id}" contenteditable="true" role="textbox" aria-multiline="true" placeholder="Escribe algo rápido aquí...">${note.content}</div>
         <div class="qn-sheet-footer">
           <button class="qn-delete-btn" title="Eliminar Nota">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
