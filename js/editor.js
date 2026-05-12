@@ -167,8 +167,8 @@ const RichEditor = {
     });
 
     // ── Auto-abrir ventana flotante al hacer foco en el editor ──
-    // Solo para editores fuera de modales (el modal de notas ya es una ventana)
-    if (!editor.closest('.ui-modal-box') && !editor.id.includes('focus')) {
+    // Solo para editores fuera de modales y que no sean de QuickNotes
+    if (!editor.closest('.ui-modal-box') && !editor.id.includes('focus') && !editor.id.startsWith('qn-editor-')) {
       editor.addEventListener('focus', () => {
         // Pequeña pausa para evitar disparos accidentales
         setTimeout(() => {
@@ -205,14 +205,7 @@ const RichEditor = {
       };
     }
 
-    // Listener para recibir contenido de la calculadora
-    window.addEventListener('calc:copy', (e) => {
-      // Solo actuar si este editor es el que tiene el foco o está visible en el contexto actual
-      if (document.activeElement === editor || editor.id === 'focus-editor' || editor.id === 'note-ta') {
-        editor.focus();
-        document.execCommand('insertHTML', false, e.detail.html);
-      }
-    });
+    // (Listener de calculadora removido de aquí para evitar duplicidad)
   },
 
   enterFocusMode(originalEditor, originalToolbar) {
@@ -766,3 +759,22 @@ const RichEditor = {
     }, { passive: false });
   }
 };
+
+// Listener GLOBAL ÚNICO para la calculadora (Evita pegado doble)
+window.addEventListener('calc:copy', (e) => {
+  const active = document.activeElement;
+  // Buscamos si el elemento activo es un editor nuestro
+  if (active && (active.classList.contains('rt-editor') || active.classList.contains('qn-editor'))) {
+    active.focus();
+    document.execCommand('insertHTML', false, e.detail.html);
+  } else {
+    // Fallback: si se perdió el foco, buscamos los editores principales por ID o la nota activa en QuickNotes
+    const fallback = document.getElementById('focus-editor') || 
+                     document.getElementById('note-ta') || 
+                     document.querySelector('.qn-sheet.active .qn-editor');
+    if (fallback) {
+      fallback.focus();
+      document.execCommand('insertHTML', false, e.detail.html);
+    }
+  }
+});

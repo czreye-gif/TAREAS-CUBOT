@@ -13,6 +13,7 @@ const RetCalc = {
   stdPrev: null,
   stdOp: null,
   stdWaitingNext: false,
+  stdHistory: [], // Tira de papel historial
 
   // ── Modo activo ─────────────────────────────────────────
   mode: 'ret', // 'ret' | 'std'
@@ -107,32 +108,54 @@ const RetCalc = {
 
           <!-- NORMAL VIEW -->
           <div id="calc-normal-inner">
-            <div class="calc-std-display">
-              <div class="calc-std-expr" id="calc-std-expr"></div>
-              <div class="calc-std-screen" id="calc-std-screen">0</div>
+            <div class="calc-std-main-area">
+              <div class="calc-std-display">
+                <div class="calc-std-expr" id="calc-std-expr"></div>
+                <div class="calc-std-screen" id="calc-std-screen">0</div>
+              </div>
+              <div class="calc-std-pad">
+                <button class="calc-key calc-key-fn" data-std="(">(</button>
+                <button class="calc-key calc-key-fn" data-std=")">)</button>
+                <button class="calc-key calc-key-fn" data-std="AC">AC</button>
+                <button class="calc-key calc-key-fn" data-std="back">⌫</button>
+                
+                <button class="calc-key calc-key-fn" data-std="C" style="grid-column: span 2;">C</button>
+                <button class="calc-key calc-key-op" data-std="×">×</button>
+                <button class="calc-key calc-key-op" data-std="÷">÷</button>
+                <button class="calc-key" data-std="7">7</button>
+                <button class="calc-key" data-std="8">8</button>
+                <button class="calc-key" data-std="9">9</button>
+                <button class="calc-key calc-key-op" data-std="×">×</button>
+                <button class="calc-key" data-std="4">4</button>
+                <button class="calc-key" data-std="5">5</button>
+                <button class="calc-key" data-std="6">6</button>
+                <button class="calc-key calc-key-op" data-std="−">−</button>
+                <button class="calc-key" data-std="1">1</button>
+                <button class="calc-key" data-std="2">2</button>
+                <button class="calc-key" data-std="3">3</button>
+                <button class="calc-key calc-key-op" data-std="+">+</button>
+                <button class="calc-key" data-std="0">0</button>
+                <button class="calc-key" data-std=".">.</button>
+                <button class="calc-key calc-key-fn" data-std="+/-">+/-</button>
+                <button class="calc-key calc-key-eq" data-std="=">=</button>
+              </div>
+              <button class="calc-main-copy-btn" onclick="RetCalc.copyTapeToNote(this.closest('.calc-container'))">
+                📋 COPIAR TIRA A NOTA
+              </button>
             </div>
-            <div class="calc-std-pad">
-              <button class="calc-key calc-key-fn" data-std="C">C</button>
-              <button class="calc-key calc-key-fn" data-std="+/-">+/−</button>
-              <button class="calc-key calc-key-fn" data-std="%">%</button>
-              <button class="calc-key calc-key-op" data-std="÷">÷</button>
-              <button class="calc-key" data-std="7">7</button>
-              <button class="calc-key" data-std="8">8</button>
-              <button class="calc-key" data-std="9">9</button>
-              <button class="calc-key calc-key-op" data-std="×">×</button>
-              <button class="calc-key" data-std="4">4</button>
-              <button class="calc-key" data-std="5">5</button>
-              <button class="calc-key" data-std="6">6</button>
-              <button class="calc-key calc-key-op" data-std="−">−</button>
-              <button class="calc-key" data-std="1">1</button>
-              <button class="calc-key" data-std="2">2</button>
-              <button class="calc-key" data-std="3">3</button>
-              <button class="calc-key calc-key-op" data-std="+">+</button>
-              <button class="calc-key calc-key-wide" data-std="0">0</button>
-              <button class="calc-key" data-std=".">.</button>
-              <button class="calc-key calc-key-eq" data-std="=">=</button>
+
+            <!-- TIRA DE HISTORIAL -->
+            <div class="calc-history-container">
+              <div class="calc-history-header" style="padding:8px; border-bottom:1px solid #e0d9b5; background:#f0f0f0; font-size:0.65rem; font-weight:800; display:flex; justify-content:space-between; align-items:center;">
+                <span>TIRA DE AUDITORÍA</span>
+                <button class="tape-copy-btn" id="tape-copy" style="background:none; border:none; color:var(--primary); cursor:pointer; padding:2px;" title="Copiar Tira a Nota">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                </button>
+              </div>
+              <div class="calc-history-tape" id="std-tape" style="flex:1; overflow-y:auto; padding:10px 5px;">
+                <div style="text-align:center; opacity:0.3; font-size:0.6rem;">*** TIRA LISTA ***</div>
+              </div>
             </div>
-            <button id="calc-copy-std" style="width:100%; margin-top:8px; padding:10px; background:var(--primary); color:white; border-radius:8px; font-weight:700; font-size:0.75rem; border:none; cursor:pointer">📋 COPIAR RESULTADO A NOTA</button>
           </div>
 
           <!-- RPN VIEW -->
@@ -199,12 +222,151 @@ const RetCalc = {
     this._initRet(container);
     this._initStd(container);
 
+    // Tape actions
+    const btnClearTape = container.querySelector('#tape-clear');
+    if (btnClearTape) btnClearTape.onclick = () => {
+      this.stdHistory = [];
+      const tape = container.querySelector('#std-tape');
+      if (tape) tape.innerHTML = '<div style="text-align:center; opacity:0.3; font-size:0.6rem;">*** TIRA LIMPIA ***</div>';
+    };
+
+    const btnCopyTape = container.querySelector('#tape-copy');
+    if (btnCopyTape) btnCopyTape.onclick = () => this.copyTapeToNote(container);
+
     // Copy buttons
     const btnCopyRet = container.querySelector('#calc-copy-ret');
     if (btnCopyRet) btnCopyRet.onclick = () => this.copyToNote('ret');
 
     const btnCopyStd = container.querySelector('#calc-copy-std');
     if (btnCopyStd) btnCopyStd.onclick = () => this.copyToNote('std');
+  },
+
+  copyTapeToNote(container) {
+    const tape = container.querySelector('#std-tape');
+    const rows = tape.querySelectorAll('.tape-row');
+    if (rows.length === 0) {
+      if (typeof UI !== 'undefined') UI.toast('La tira está vacía', 'warning');
+      return;
+    }
+
+    let tableRowsHtml = '';
+    rows.forEach(row => {
+      const label = row.querySelector('.tape-label').textContent.trim() || '---';
+      const value = row.querySelector('.tape-value').textContent.trim();
+      const op    = row.querySelector('.tape-op').textContent.trim() || '';
+      const isTotal = row.classList.contains('total');
+      
+      tableRowsHtml += `
+        <tr style="${isTotal ? 'background:#f0f0f0; font-weight:bold;' : 'border-bottom:1px solid #eee;'}">
+          <td style="padding:6px; border:1px solid #ddd; color:#003366; font-style:italic;">${label}</td>
+          <td style="padding:6px; border:1px solid #ddd; text-align:right; font-family:monospace;">${value}</td>
+          <td style="padding:6px; border:1px solid #ddd; text-align:center; font-weight:bold; color:#c00;">${op}</td>
+        </tr>
+      `;
+    });
+
+    let html = `
+      <div class="rt-table-wrapper" style="margin:15px 0;">
+        <table style="width:100%; border-collapse:collapse; background:#fdfcf0; font-family:var(--font-main); font-size:0.85rem; border:1px solid #ccc;">
+          <thead style="background:#eee;">
+            <tr>
+              <th style="padding:8px; border:1px solid #ccc; text-align:left;">CONCEPTO</th>
+              <th style="padding:8px; border:1px solid #ccc; text-align:right;">CIFRA</th>
+              <th style="padding:8px; border:1px solid #ccc; text-align:center;">OP</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRowsHtml}
+          </tbody>
+        </table>
+      </div><br>
+    `;
+
+    const event = new CustomEvent('calc:copy', { detail: { html } });
+    window.dispatchEvent(event);
+    if (typeof UI !== 'undefined') UI.toast('Tabla de 3 columnas copiada', 'success');
+  },
+
+  _addHistoryLine(line, container, isTotal = false) {
+    const tape = container.querySelector('#std-tape');
+    if (tape) {
+      // 1. Si es una petición de TOTAL y ya existe una fila de total, solo la actualizamos
+      let totalRow = tape.querySelector('.tape-row.total');
+      if (isTotal && totalRow) {
+        totalRow.querySelector('.tape-value').innerText = line.replace(/^=/, '').trim();
+        return;
+      }
+
+      const rowEl = document.createElement('div');
+      rowEl.className = 'tape-row' + (isTotal ? ' total' : '');
+      
+      const opMatch = line.match(/^([+−×÷=])/);
+      const op = opMatch ? opMatch[1] : '';
+      const expr = line.replace(/^[+−×÷=]/, '').trim();
+
+      rowEl.innerHTML = `
+        <div class="tape-label" contenteditable="true" spellcheck="false"></div>
+        <div class="tape-value" ${!isTotal ? 'contenteditable="true"' : ''} spellcheck="false">${expr}</div>
+        <div class="tape-op" ${!isTotal ? 'contenteditable="true"' : ''} spellcheck="false">${op}</div>
+      `;
+      
+      if (!isTotal) {
+        rowEl.querySelector('.tape-value').addEventListener('input', () => this.recalculateTape(container));
+        rowEl.querySelector('.tape-op').addEventListener('input', () => this.recalculateTape(container));
+        
+        // 2. Si hay un total, insertamos la nueva fila ANTES del total para que siempre quede al final
+        if (totalRow) {
+          tape.insertBefore(rowEl, totalRow);
+        } else {
+          tape.appendChild(rowEl);
+        }
+      } else {
+        // Es la primera vez que se crea el total
+        tape.appendChild(rowEl);
+      }
+      
+      tape.scrollTop = tape.scrollHeight;
+      // 3. Recalcular inmediatamente para que el total sea "tiempo real"
+      this.recalculateTape(container);
+    }
+  },
+
+  recalculateTape(container) {
+    const tape = container.querySelector('#std-tape');
+    const rows = tape.querySelectorAll('.tape-row');
+    let runningTotal = 0;
+
+    rows.forEach((row, index) => {
+      const valEl = row.querySelector('.tape-value');
+      const opEl  = row.querySelector('.tape-op');
+      const valText = valEl.innerText.trim();
+      const opText  = opEl.innerText.trim();
+      
+      if (row.classList.contains('total')) {
+        valEl.innerText = this._stdFmt(runningTotal);
+        opEl.innerText = '=';
+      } else {
+        // EVALUAR la expresión de la celda (puede ser un número o una fórmula compleja)
+        let result = 0;
+        try {
+          const cleanExpr = valText.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-').replace(/,/g, '');
+          if (cleanExpr) {
+            result = Function('"use strict"; return (' + cleanExpr + ')')() || 0;
+          }
+        } catch(e) { result = 0; }
+
+        const op = opText || '+';
+
+        if (index === 0 && !opText) {
+          runningTotal = result;
+        } else {
+          if (op === '+') runningTotal += result;
+          else if (op === '−') runningTotal -= result;
+          else if (op === '×') runningTotal *= result;
+          else if (op === '÷') runningTotal = (result !== 0) ? runningTotal / result : 0;
+        }
+      }
+    });
   },
 
   copyToNote(type) {
@@ -245,16 +407,14 @@ const RetCalc = {
         </table><br>
       `;
     } else {
-      html = `<p><b>Resultado:</b> ${this._stdFmt(this.stdDisplay)}</p>`;
+      html = `<span style="color:#003366; font-weight:bold;">${this._stdFmt(this.stdDisplay)}</span>`;
     }
 
-    // Trigger event to be caught by the editor
     const event = new CustomEvent('calc:copy', { detail: { html } });
     window.dispatchEvent(event);
     if (typeof UI !== 'undefined') UI.toast('Cálculo listo para insertar', 'success');
   },
 
-  // ── Calculadora Retenciones ─────────────────────────────
   _initRet(container) {
     container.querySelectorAll('.calc-pills').forEach(group => {
       group.querySelectorAll('.calc-pill').forEach(btn => {
@@ -344,14 +504,12 @@ const RetCalc = {
     set('#cr-total', this._fmt(t));
   },
 
-  // ── Calculadora Normal + RPN ────────────────────────────
-  stdSubMode: 'normal', // 'normal' | 'rpn'
-  rpnStack: [0, 0, 0, 0], // [T, Z, Y, X]
+  stdSubMode: 'normal',
+  rpnStack: [0, 0, 0, 0],
   rpnEntry: '0',
   rpnEntryActive: false,
 
   _initStd(container) {
-    // Sub-switch Normal / RPN
     container.querySelectorAll('.calc-sub-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         this.stdSubMode = btn.dataset.submode;
@@ -366,14 +524,15 @@ const RetCalc = {
         }
       });
     });
-    // Normal keys
     container.querySelectorAll('[data-std]').forEach(btn => {
       btn.addEventListener('click', () => this._handleStdKey(btn.dataset.std, container));
     });
-    // RPN keys
     container.querySelectorAll('[data-rpn]').forEach(btn => {
       btn.addEventListener('click', () => this._handleRpnKey(btn.dataset.rpn, container));
     });
+    
+    // Soporte para teclado físico
+    window.addEventListener('keydown', (e) => this._handleKeyboard(e, container));
   },
 
   _handleStdKey(key, container) {
@@ -381,52 +540,131 @@ const RetCalc = {
     const expr   = container.querySelector('#calc-std-expr');
     if (!screen) return;
 
-    if (key === 'C') {
-      this.stdDisplay = '0'; this.stdPrev = null;
-      this.stdOp = null; this.stdWaitingNext = false;
+    if (key === 'AC') {
+      this.stdDisplay = '0'; this.stdPrev = null; this.stdOp = null; this.stdWaitingNext = false;
       if (expr) expr.textContent = '';
-    } else if (key === '+/-') {
-      this.stdDisplay = String(parseFloat(this.stdDisplay) * -1);
-    } else if (key === '%') {
-      this.stdDisplay = String(parseFloat(this.stdDisplay) / 100);
+      const tape = container.querySelector('#std-tape');
+      if (tape) tape.innerHTML = '<div style="text-align:center; opacity:0.3; font-size:0.6rem;">*** TIRA REINICIADA ***</div>';
+    } else if (key === 'C') {
+      this.stdDisplay = '0';
+    } else if (key === 'back') {
+      if (this.stdDisplay.length > 1) this.stdDisplay = this.stdDisplay.slice(0, -1);
+      else this.stdDisplay = '0';
     } else if (['+','−','×','÷'].includes(key)) {
-      this.stdPrev = parseFloat(this.stdDisplay);
-      this.stdOp = key;
-      this.stdWaitingNext = true;
-      if (expr) expr.textContent = `${this._stdFmt(this.stdPrev)} ${key}`;
-    } else if (key === '=') {
-      if (this.stdOp !== null && this.stdPrev !== null) {
-        const curr = parseFloat(this.stdDisplay);
-        if (expr) expr.textContent = `${this._stdFmt(this.stdPrev)} ${this.stdOp} ${this._stdFmt(curr)} =`;
-        let result;
-        if (this.stdOp === '+') result = this.stdPrev + curr;
-        if (this.stdOp === '−') result = this.stdPrev - curr;
-        if (this.stdOp === '×') result = this.stdPrev * curr;
-        if (this.stdOp === '÷') result = curr !== 0 ? this.stdPrev / curr : 'Error';
-        this.stdDisplay = String(result);
-        this.stdPrev = null; this.stdOp = null; this.stdWaitingNext = false;
-      }
-    } else if (key === '.') {
-      if (this.stdWaitingNext) { this.stdDisplay = '0.'; this.stdWaitingNext = false; return; }
-      if (!this.stdDisplay.includes('.')) this.stdDisplay += '.';
-    } else {
-      // Digit
-      if (this.stdWaitingNext) { this.stdDisplay = key; this.stdWaitingNext = false; }
-      else { this.stdDisplay = this.stdDisplay === '0' ? key : this.stdDisplay + key; }
-    }
+      if (this.stdDisplay.includes('(') || this.stdDisplay.includes(')')) {
+        this.stdDisplay += key;
+      } else {
+        try {
+          const formulaToRecord = this.stdDisplay.trim();
+          const tape = container.querySelector('#std-tape');
+          const rows = tape.querySelectorAll('.tape-row');
+          
+          if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes('TIRA'))) {
+            tape.innerHTML = '';
+            this._addHistoryLine(formulaToRecord, container);
+            this._addHistoryLine('= 0', container, true);
+          } else {
+            const opToUse = this.stdOp || '+';
+            this._addHistoryLine(`${opToUse} ${formulaToRecord}`, container);
+          }
 
-    screen.textContent = this._stdFmt(this.stdDisplay);
+          this.stdOp = key;
+          this.stdDisplay = '0';
+          if (expr) expr.textContent = `${formulaToRecord} ${key}`;
+          this.recalculateTape(container);
+        } catch(e) {}
+      }
+    } else if (key === '=') {
+      try {
+        let rawExpr = this.stdDisplay.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
+        const val = Function('"use strict"; return (' + rawExpr + ')')() || 0;
+
+        const opToUse = this.stdOp || '+';
+        this._addHistoryLine(`${opToUse} ${this.stdDisplay}`, container);
+        
+        // Crear la línea de total si no existe y recalcular
+        this._addHistoryLine(`= 0`, container, true);
+        this.recalculateTape(container); 
+        
+        this.stdOp = null;
+        this.stdPrev = null;
+        this.stdDisplay = '0';
+        this.stdWaitingNext = true;
+        if (expr) expr.textContent = '';
+      } catch (e) {
+        if (typeof UI !== 'undefined') UI.toast('Error al cerrar cuenta', 'error');
+      }
+    } else if (key === '+/-') {
+      if (this.stdDisplay.startsWith('−')) {
+        this.stdDisplay = this.stdDisplay.substring(1);
+      } else if (this.stdDisplay !== '0') {
+        this.stdDisplay = '−' + this.stdDisplay;
+      }
+    } else {
+      if (this.stdWaitingNext && !['+','−','×','÷'].includes(key)) {
+        this.stdDisplay = key;
+        this.stdWaitingNext = false;
+      } else {
+        if (this.stdDisplay === '0' && !['+','−','×','÷','.',')'].includes(key)) {
+          this.stdDisplay = key;
+        } else {
+          this.stdDisplay += key;
+        }
+        this.stdWaitingNext = false;
+      }
+    }
+    screen.textContent = this.stdDisplay;
+  },
+
+  _handleKeyboard(e, container) {
+    // Si el usuario está escribiendo en cualquier input o campo editable fuera de la calculadora, ignorar
+    if (document.activeElement.tagName === 'INPUT' || document.activeElement.getAttribute('contenteditable')) {
+      // Excepción: si es uno de los campos de la tira de auditoría, queremos que funcione el teclado pero el navegador ya lo maneja
+      return;
+    }
+    
+    const stdView = container.querySelector('#calc-std-view');
+    const retView = container.querySelector('#calc-ret-view');
+
+    const keyMap = {
+      '0': '0', '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9',
+      '.': '.', '+': '+', '-': '−', '*': '×', '/': '÷',
+      '(': '(', ')': ')', 'Enter': '=', '=': '=',
+      'Backspace': 'back', 'Delete': 'C', 'Escape': 'AC'
+    };
+
+    const key = keyMap[e.key];
+    if (!key) return;
+
+    e.preventDefault();
+
+    // DESPACHAR AL PANEL ACTIVO
+    if (stdView && stdView.style.display !== 'none') {
+      this._handleStdKey(key, container);
+    } else if (retView && retView.style.display !== 'none') {
+      // Para retenciones, mapeamos las teclas a su lógica específica
+      if (['0','1','2','3','4','5','6','7','8','9','.'].includes(key)) {
+        this._handleRetKey(key, container);
+      } else if (key === 'back') {
+        this._handleRetKey('back', container);
+      } else if (key === 'AC' || key === 'C') {
+        // En retenciones usamos el botón de limpiar general
+        const clearBtn = container.querySelector('#calc-clear');
+        if (clearBtn) clearBtn.click();
+      } else if (key === '=') {
+        // Podríamos disparar la copia a nota o similar
+        const copyBtn = container.querySelector('#calc-copy-ret');
+        if (copyBtn) copyBtn.click();
+      }
+    }
   },
 
   _stdFmt(n) {
     const num = parseFloat(n);
     if (isNaN(num)) return String(n);
-    const s = String(n);
-    if (s.includes('.')) return parseFloat(num.toFixed(8)).toLocaleString('es-MX');
-    return num.toLocaleString('es-MX');
+    return num.toLocaleString('es-MX', { maximumFractionDigits: 4 });
   },
 
-  // ── RPN Calculator ─────────────────────────────────────
   _handleRpnKey(key, container) {
     if (key === 'C') {
       this.rpnStack = [0,0,0,0]; this.rpnEntry = '0'; this.rpnEntryActive = false;
