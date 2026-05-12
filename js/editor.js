@@ -37,6 +37,8 @@ const RichEditor = {
           this.removeTableRow(editor);
         } else if (cmd === 'insertCheckbox') {
           this.insertCheckbox(editor);
+        } else if (cmd === 'pasteFromClipboard') {
+          this.pasteFromClipboard(editor);
         } else if (cmd === 'hiliteColor') {
           document.execCommand('hiliteColor', false, btn.dataset.value || '#00e5ff');
         } else {
@@ -935,6 +937,48 @@ const RichEditor = {
       editor.dispatchEvent(new Event('input', { bubbles: true }));
     };
     reader.readAsDataURL(blob);
+  },
+
+  /**
+   * Intenta pegar contenido desde el portapapeles usando la API del navegador
+   */
+  async pasteFromClipboard(editor) {
+    try {
+      // Intentar obtener foco
+      editor.focus();
+
+      // Navegadores modernos requieren permiso y gesto de usuario (el clic del botón lo es)
+      const clipboardItems = await navigator.clipboard.read();
+      let found = false;
+
+      for (const item of clipboardItems) {
+        // 1. Buscar imagen
+        const imageType = item.types.find(type => type.startsWith('image/'));
+        if (imageType) {
+          const blob = await item.getType(imageType);
+          this._insertImageBlob(blob, editor);
+          found = true;
+          break;
+        }
+      }
+
+      // 2. Si no hubo imagen, intentar con texto
+      if (!found) {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          document.execCommand('insertText', false, text);
+          found = true;
+        }
+      }
+
+      if (!found) {
+        UI.toast('El portapapeles está vacío o no es compatible', 'info');
+      }
+    } catch (err) {
+      console.warn('Error al leer portapapeles:', err);
+      // Fallback: mostrar un mensaje informativo sobre permisos
+      UI.toast('Acepta el permiso del navegador para poder pegar desde aquí', 'warning');
+    }
   }
 };
 
