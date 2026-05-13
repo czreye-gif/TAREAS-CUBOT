@@ -327,7 +327,10 @@
       </style>
       <div class="form-container">
         <div class="view-header" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-          <h1 class="view-title" id="form-title" style="font-size: 1.5rem;">Nueva Tarea</h1>
+          <div style="display:flex; align-items:center; gap:12px">
+            <h1 class="view-title" id="form-title" style="font-size: 1.5rem; margin:0">Nueva Tarea</h1>
+            <span id="form-task-code" style="font-size: 1.3rem; font-weight: 900; color: #fff; background: #6366f1; padding: 4px 12px; border-radius: 8px; box-shadow: 0 4px 10px rgba(99,102,241,0.3); display:none">T-0000</span>
+          </div>
           <button type="button" id="btn-modal-config" class="rt-btn" title="Configurar Ventana" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border);">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </button>
@@ -499,9 +502,6 @@
                   </div>
                 </div>
                 
-                <div style="margin-top: 20px;">
-                  <button type="submit" id="form-submit-btn" class="btn btn-primary" style="height:60px; font-size:1.1rem; width:100%">GUARDAR TAREA</button>
-                </div>
               </div>
             </div>
           </form>
