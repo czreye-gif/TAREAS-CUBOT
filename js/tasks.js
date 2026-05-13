@@ -3,7 +3,7 @@
 // ============================================================
 
 const Tasks = {
-
+  expandedTaskIds: new Set(),
   currentFilter: 'all',
 
   // ---- Renderizar lista de tareas ----
@@ -75,6 +75,8 @@ const Tasks = {
 
     const isOverdue = !task.completed && (task.date < storage._todayStr());
 
+    const isExpanded = this.expandedTaskIds.has(task.id);
+
     return `
       <div class="task-card ${task.completed ? 'completed' : ''} ${isOverdue ? 'overdue' : ''} priority-${task.priority}"
            data-task-id="${task.id}" data-date="${task.date}">
@@ -88,7 +90,7 @@ const Tasks = {
               </svg>
             </button>
           ` : `
-            <button class="subtask-toggle-btn ${progressPct === 100 ? 'all-done' : ''}" 
+            <button class="subtask-toggle-btn ${progressPct === 100 ? 'all-done' : ''} ${isExpanded ? 'expanded' : ''}" 
                     onclick="event.stopPropagation(); Tasks._toggleSubtaskCollapse(this)"
                     title="${completedSubs}/${totalSubs} subtareas completadas">
               <svg class="subtask-toggle-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="pointer-events:none">
@@ -141,7 +143,7 @@ const Tasks = {
           <p class="task-description">${this._escapeHTML(task.description)}</p>
         </div>` : ''}
         ${hasSubtasks ? `
-          <div class="subtask-section subtask-collapsed">
+          <div class="subtask-section ${isExpanded ? '' : 'subtask-collapsed'}">
             <div class="subtask-list" data-task-id="${task.id}">
               ${subtasksHTML}
             </div>
@@ -1359,9 +1361,14 @@ const Tasks = {
     });
     this._initSubtaskDrag(list);
 
-    // Update title
+    // Update title and code
     document.getElementById('form-title').textContent = 'Editar Tarea';
-    document.getElementById('form-submit-btn').textContent = 'Guardar Cambios';
+    const codeEl = document.getElementById('form-task-code');
+    if (codeEl) {
+      codeEl.textContent = task.code || '---';
+      codeEl.style.display = 'inline-block';
+      codeEl.style.background = '#6366f1'; // Color para tareas existentes
+    }
 
     // Tags
     this._formSelectedTags = [...(task.tags || [])];
@@ -1410,7 +1417,8 @@ const Tasks = {
     
     // 3. UI y etiquetas
     document.getElementById('form-title').textContent = 'Nueva Tarea';
-    document.getElementById('form-submit-btn').textContent = 'Crear Tarea';
+    const codeEl = document.getElementById('form-task-code');
+    if (codeEl) codeEl.style.display = 'none';
     
     this._formSelectedTags = [];
     this._renderSelectedTags();
@@ -1649,10 +1657,21 @@ const Tasks = {
   _toggleSubtaskCollapse(btn) {
     const card = btn.closest('.task-card, .tl-card');
     if (!card) return;
+    const taskId = card.dataset.taskId;
     const section = card.querySelector('.subtask-section, .tl-subtask-section');
     if (!section) return;
-    section.classList.toggle('subtask-collapsed');
-    btn.classList.toggle('expanded');
+
+    const isCurrentlyCollapsed = section.classList.contains('subtask-collapsed');
+    
+    if (isCurrentlyCollapsed) {
+      section.classList.remove('subtask-collapsed');
+      btn.classList.add('expanded');
+      if (taskId) this.expandedTaskIds.add(taskId);
+    } else {
+      section.classList.add('subtask-collapsed');
+      btn.classList.remove('expanded');
+      if (taskId) this.expandedTaskIds.delete(taskId);
+    }
   },
 
   // ---- Confirmación para eliminar subtarea del formulario ----

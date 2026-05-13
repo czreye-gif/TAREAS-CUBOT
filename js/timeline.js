@@ -106,6 +106,8 @@ const Timeline = {
       return tag ? `<span class="tag-pill-card"><span style="width:7px;height:7px;border-radius:50%;background:${tag.color};display:inline-block;flex-shrink:0"></span>${this._esc(tag.name)}</span>` : '';
     }).join('');
 
+    const isExpanded = (typeof Tasks !== 'undefined' && Tasks.expandedTaskIds) ? Tasks.expandedTaskIds.has(task.id) : false;
+
     return `
       <div class="tl-card ${task.completed ? 'tl-completed' : ''} priority-${task.priority}"
            data-task-id="${task.id}" data-date="${task.date}">
@@ -115,7 +117,7 @@ const Timeline = {
             ${task.completed ? '✓' : ''}
           </button>
         ` : `
-          <button class="subtask-toggle-btn ${progressPct === 100 ? 'all-done' : ''}" 
+          <button class="subtask-toggle-btn ${progressPct === 100 ? 'all-done' : ''} ${isExpanded ? 'expanded' : ''}" 
                   onclick="event.stopPropagation(); Tasks._toggleSubtaskCollapse(this)"
                   title="${subsDone}/${subsTotal} subtareas completadas">
             <svg class="subtask-toggle-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="pointer-events:none">
@@ -152,7 +154,7 @@ const Timeline = {
             ${tagPills}
           </div>
           ${hasSubs ? `
-            <div class="tl-subtask-section subtask-collapsed">
+            <div class="tl-subtask-section ${isExpanded ? '' : 'subtask-collapsed'}">
               <div class="tl-subtask-list">
                 ${task.subtasks.map(sub => `
                   <div class="subtask-item ${sub.completed ? 'completed' : ''}" data-subtask-id="${sub.id}">

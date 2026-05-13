@@ -211,52 +211,6 @@ const RetCalc = {
     if (btnCopyStd) btnCopyStd.onclick = () => this.copyToNote('std');
   },
 
-  copyTapeToNote(container) {
-    const tape = container.querySelector('#std-tape');
-    const rows = tape.querySelectorAll('.tape-row');
-    if (rows.length === 0) {
-      if (typeof UI !== 'undefined') UI.toast('La tira está vacía', 'warning');
-      return;
-    }
-
-    let tableRowsHtml = '';
-    rows.forEach(row => {
-      const label = row.querySelector('.tape-label').textContent.trim() || '---';
-      const value = row.querySelector('.tape-value').textContent.trim();
-      const op    = row.querySelector('.tape-op').textContent.trim() || '';
-      const isTotal = row.classList.contains('total');
-      
-      tableRowsHtml += `
-        <tr style="${isTotal ? 'background:#f0f0f0; font-weight:bold;' : 'border-bottom:1px solid #eee;'}">
-          <td style="padding:6px; border:1px solid #ddd; color:#003366; font-style:italic;">${label}</td>
-          <td style="padding:6px; border:1px solid #ddd; text-align:right; font-family:monospace;">${value}</td>
-          <td style="padding:6px; border:1px solid #ddd; text-align:center; font-weight:bold; color:#c00;">${op}</td>
-        </tr>
-      `;
-    });
-
-    let html = `
-      <div class="rt-table-wrapper" style="margin:15px 0;">
-        <table style="width:100%; border-collapse:collapse; background:#fdfcf0; font-family:var(--font-main); font-size:0.85rem; border:1px solid #ccc;">
-          <thead style="background:#eee;">
-            <tr>
-              <th style="padding:8px; border:1px solid #ccc; text-align:left;">CONCEPTO</th>
-              <th style="padding:8px; border:1px solid #ccc; text-align:right;">CIFRA</th>
-              <th style="padding:8px; border:1px solid #ccc; text-align:center;">OP</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${tableRowsHtml}
-          </tbody>
-        </table>
-      </div><br>
-    `;
-
-    const event = new CustomEvent('calc:copy', { detail: { html } });
-    window.dispatchEvent(event);
-    if (typeof UI !== 'undefined') UI.toast('Tabla de 3 columnas copiada', 'success');
-  },
-
   _addHistoryLine(line, container, isTotal = false) {
     const tape = container.querySelector('#std-tape');
     if (tape) {
@@ -348,12 +302,16 @@ const RetCalc = {
     if (rows.length === 0) return;
 
     let html = `
-      <table class="rt-calc-table" style="width:100%; border-collapse:collapse; font-family:Courier, monospace; font-size:13px; border:1px solid #ccc; margin:10px 0; background:white;">
-        <tr style="background:#f0f0f0;">
-          <th style="padding:5px; border:1px solid #ccc; text-align:left;">Detalle</th>
-          <th style="padding:5px; border:1px solid #ccc; text-align:right;">Importe</th>
-          <th style="padding:5px; border:1px solid #ccc; text-align:center;">Op</th>
-        </tr>
+      <div class="rt-table-wrapper" style="margin:15px 0;">
+        <table class="rt-calc-table" style="width:100%; border-collapse:collapse; font-family:Courier, monospace; font-size:18px; border:2px solid #ccc; background:white;">
+          <thead style="background:#f0f0f0;">
+            <tr>
+              <th style="padding:8px; border:1px solid #ccc; text-align:left;">Detalle</th>
+              <th style="padding:8px; border:1px solid #ccc; text-align:right;">Importe</th>
+              <th style="padding:8px; border:1px solid #ccc; text-align:center;">Op</th>
+            </tr>
+          </thead>
+          <tbody>
     `;
 
     rows.forEach(row => {
@@ -364,15 +322,15 @@ const RetCalc = {
       const isTotal = row.classList.contains('total');
       
       html += `
-        <tr style="${isTotal ? 'font-weight:bold; background:#f9f9f9;' : ''}">
-          <td style="padding:3px 5px; border:1px solid #eee;">${label || '-'}</td>
-          <td style="padding:3px 5px; border:1px solid #eee; text-align:right;">${value}</td>
-          <td style="padding:3px 5px; border:1px solid #eee; text-align:center;">${op}</td>
+        <tr style="${isTotal ? 'font-weight:bold; background:#f9f9f9; border-top:2px solid #ccc;' : ''}">
+          <td style="padding:6px 10px; border:1px solid #eee;">${label || '-'}</td>
+          <td style="padding:6px 10px; border:1px solid #eee; text-align:right; font-family:monospace;">${value}</td>
+          <td style="padding:6px 10px; border:1px solid #eee; text-align:center; font-weight:bold;">${op}</td>
         </tr>
       `;
     });
 
-    html += '</table><br>';
+    html += '</tbody></table></div><br>';
 
     const event = new CustomEvent('calc:copy', { detail: { html } });
     window.dispatchEvent(event);
@@ -403,7 +361,7 @@ const RetCalc = {
       const t = this._fmt(this.totalCents / 100);
 
       html = `
-        <table class="rt-table" style="width:100%; border-collapse:collapse; margin:10px 0; background:white;">
+        <table class="rt-table" style="width:100%; border-collapse:collapse; margin:10px 0; background:white; font-size:18px;">
           <tr style="background:rgba(99,102,241,0.1)">
             <th style="border:1px solid #ccc; padding:8px; text-align:left;">Concepto</th>
             <th style="border:1px solid #ccc; padding:8px; text-align:right;">Importe</th>
@@ -431,7 +389,7 @@ const RetCalc = {
         </table><br>
       `;
     } else {
-      html = `<span style="color:#003366; font-weight:bold; font-size:16px;">${this._stdFmt(this.stdDisplay)}</span>`;
+      html = `<span style="color:#003366; font-weight:bold; font-size:20px;">${this._stdFmt(this.stdDisplay)}</span>`;
     }
 
     const event = new CustomEvent('calc:copy', { detail: { html } });
